@@ -69,7 +69,7 @@ const Navbar = ({
     },
     {
       title: "Dashboard",
-      url: "/dashboard"
+      url: "/admin"
     },
   ],
   auth = {

@@ -41,6 +41,7 @@ export function AppSidebar({
       routes = []
       break;
   }
+  console.log(user.role);
   return (
     <Sidebar {...props}>
 

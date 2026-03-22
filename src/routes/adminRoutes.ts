@@ -16,6 +16,10 @@ export const adminRoutes: Route[] = [
                 title: "Orders",
                 url: "/admin/orders",
             },
+            {
+                title: "home",
+                url: "/",
+            },
         ],
     },
 ]
