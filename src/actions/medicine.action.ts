@@ -18,3 +18,13 @@ export const addMedicine = async (medicineData: MedicineData) => {
     // redirect('/seller/medicines/add?success')
     return res;
 }
+
+export const getMedicineById = async (id: string) => {
+    return await medicineService.getMedicineById(id);
+};
+
+export const updateMedicine = async (id: string, medicineData: MedicineData) => {
+    const res = await medicineService.updateMedicine(id, medicineData);
+    updateTag('medicine');
+    return res;
+};

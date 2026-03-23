@@ -66,5 +66,29 @@ export const medicineService = {
             return { data: null, error: { message: 'Something went wrong' } }
 
         }
+    },
+        updateMedicine: async (id: string, medicineData: MedicineData) => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/medicine/${id}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString()
+                },
+                body: JSON.stringify(medicineData)
+            });
+            const data = await res.json();
+            if (data.error) {
+                return {
+                    data: null,
+                    error: { message: "Error: Medicine could not be updated" }
+                };
+            }
+            console.log(data);
+            return { data, error: null };
+        } catch (error) {
+            return { data: null, error: { message: 'Something went wrong' } };
+        }
     }
 }

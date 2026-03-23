@@ -2,7 +2,8 @@ import './src/env'
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-    images: {
+  images: {
+    formats: ["image/avif", 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
