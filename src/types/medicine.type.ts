@@ -13,7 +13,7 @@ export interface Medicine {
     sellerId: string | number
 }
 
-export interface MedicineData  {
+export interface MedicineData {
     name: string;
     description: string;
     price: number;
@@ -23,3 +23,10 @@ export interface MedicineData  {
     imageUrl: string;
     requiresPrescription: boolean;
 };
+
+export interface GetMedicinesParams {
+    search?: string;
+    minPrice?: string;
+    page?: number;
+    limit?: number;
+}

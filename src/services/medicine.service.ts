@@ -1,17 +1,10 @@
 import { env } from "@/env";
-import { MedicineData } from "@/types/medicine.type";
+import { GetMedicinesParams, MedicineData } from "@/types/medicine.type";
 import { revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 const API_URL = env.API_URL;
-
-interface GetMedicinesParams {
-    search?: string;
-    minPrice?: string;
-}
-
-
 
 export const medicineService = {
     getMedicines: async (params?: GetMedicinesParams) => {
