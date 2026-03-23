@@ -33,7 +33,11 @@ export function MedicineCard({ medicine, onEdit, onDelete }: MedicineCardProps) 
       return <Badge variant="destructive">Out of Stock</Badge>;
     }
     if (medicine.stock < 10) {
-      return <Badge variant="warning">Low Stock: {medicine.stock}</Badge>;
+      return (
+        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+          Low Stock: {medicine.stock}
+        </Badge>
+      );
     }
     return <Badge variant="default">In Stock: {medicine.stock}</Badge>;
   };

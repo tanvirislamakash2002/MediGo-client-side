@@ -12,3 +12,14 @@ export interface Medicine {
     categoryId: string | number;
     sellerId: string | number
 }
+
+export interface MedicineData  {
+    name: string;
+    description: string;
+    price: number;
+    stock: number;
+    manufacturer: string;
+    categoryId: string;
+    imageUrl: string;
+    requiresPrescription: boolean;
+};
