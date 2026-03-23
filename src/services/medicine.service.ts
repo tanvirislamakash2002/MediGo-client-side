@@ -67,7 +67,7 @@ export const medicineService = {
 
         }
     },
-        updateMedicine: async (id: string, medicineData: MedicineData) => {
+    updateMedicine: async (id: string, medicineData: MedicineData) => {
         try {
             const cookieStore = await cookies();
             const res = await fetch(`${API_URL}/medicine/${id}`, {
@@ -90,5 +90,31 @@ export const medicineService = {
         } catch (error) {
             return { data: null, error: { message: 'Something went wrong' } };
         }
-    }
+    },
+    deleteMedicine: async (id: string) => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/medicine/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString()
+                }
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    data: null,
+                    error: { message: data.message || "Error: Medicine could not be deleted" }
+                };
+            }
+
+            return { data, error: null };
+        } catch (error) {
+            console.error("Delete error:", error);
+            return { data: null, error: { message: 'Something went wrong' } };
+        }
+    },
 }
