@@ -139,13 +139,8 @@ export const cartService = {
     // Remove item from cart
     removeCartItem: async (itemId: string) => {
         try {
-            const cookieStore = await cookies();
-            const sessionToken = cookieStore.get("session-token")?.value;
-
-            if (!sessionToken) {
-                return { data: null, error: { message: "Please login to remove items" } };
-            }
-
+const cookieStore = await cookies();
+            console.log('remove---------------------,', itemId);
             const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
                 method: "DELETE",
                 headers: {
@@ -153,7 +148,7 @@ export const cartService = {
                 }
             });
             const data = await res.json();
-
+            console.log('data------------', data);
             if (!res.ok) {
                 return { data: null, error: { message: data.message || "Failed to remove item" } };
             }
