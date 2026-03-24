@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Eye } from "lucide-react";
 import Image from "next/image";
+import { useCart } from "@/hooks/useCart";
 
 interface Medicine {
     id: string;
@@ -20,11 +21,12 @@ interface Medicine {
 
 interface MedicineCardProps {
     medicine: Medicine;
-    onAddToCart: () => void;
     onViewDetails: () => void;
 }
 
-export function MedicineCard({ medicine, onAddToCart, onViewDetails }: MedicineCardProps) {
+export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
+    const { addToCart, isAdding } = useCart();
+
     const isValidUrl = (url: string | null) => {
         if (!url) return false;
         try { new URL(url); return true; }
@@ -35,6 +37,11 @@ export function MedicineCard({ medicine, onAddToCart, onViewDetails }: MedicineC
         if (medicine.stock <= 0) return <Badge variant="destructive">Out of Stock</Badge>;
         if (medicine.stock < 10) return <Badge variant="secondary">Low Stock: {medicine.stock}</Badge>;
         return <Badge variant="default">In Stock</Badge>;
+    };
+
+    const handleAddToCart = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        await addToCart(medicine.id, 1, medicine);
     };
 
     return (
@@ -82,11 +89,11 @@ export function MedicineCard({ medicine, onAddToCart, onViewDetails }: MedicineC
                 <Button 
                     variant="default" 
                     className="flex-1" 
-                    onClick={onAddToCart}
-                    disabled={medicine.stock <= 0}
+                    onClick={handleAddToCart}
+                    disabled={medicine.stock <= 0 || isAdding}
                 >
                     <ShoppingCart className="h-4 w-4 mr-2" />
-                    Add to Cart
+                    {isAdding ? "Adding..." : "Add to Cart"}
                 </Button>
                 <Button variant="outline" size="icon" onClick={onViewDetails}>
                     <Eye className="h-4 w-4" />

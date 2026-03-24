@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShoppingCart, Heart, Truck, Shield, Clock, FileText } from "lucide-react";
-import { toast } from "sonner";
+import { useCart } from "@/hooks/useCart";
 
 interface Medicine {
     id: string;
@@ -15,10 +15,7 @@ interface Medicine {
     stock: number;
     manufacturer: string;
     requiresPrescription: boolean;
-    category: { 
-        id: string; 
-        name: string 
-    };
+    category: { id: string; name: string };
 }
 
 interface MedicineActionsProps {
@@ -27,7 +24,7 @@ interface MedicineActionsProps {
 
 export function MedicineActions({ medicine }: MedicineActionsProps) {
     const [quantity, setQuantity] = useState(1);
-    const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const { addToCart, isAdding } = useCart();
 
     const handleQuantityChange = (value: number) => {
         if (value >= 1 && value <= medicine.stock) {
@@ -36,14 +33,7 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
     };
 
     const handleAddToCart = async () => {
-        setIsAddingToCart(true);
-        // Add to cart logic here
-        toast.success(`Added ${quantity} x ${medicine.name} to cart`);
-        setIsAddingToCart(false);
-    };
-
-    const handleAddToWishlist = () => {
-        toast.info("Added to wishlist");
+        await addToCart(medicine.id, quantity, medicine);
     };
 
     return (
@@ -139,15 +129,15 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
                     size="lg"
                     className="flex-1"
                     onClick={handleAddToCart}
-                    disabled={medicine.stock <= 0 || isAddingToCart}
+                    disabled={medicine.stock <= 0 || isAdding}
                 >
                     <ShoppingCart className="h-5 w-5 mr-2" />
-                    {isAddingToCart ? "Adding..." : "Add to Cart"}
+                    {isAdding ? "Adding..." : "Add to Cart"}
                 </Button>
                 <Button
                     size="lg"
                     variant="outline"
-                    onClick={handleAddToWishlist}
+                    onClick={() => console.log("Add to wishlist")}
                 >
                     <Heart className="h-5 w-5" />
                 </Button>
@@ -171,8 +161,8 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
 
             {/* Prescription Notice */}
             {medicine.requiresPrescription && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <p className="text-sm text-yellow-800">
+                <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300">
                         ⚠️ This medicine requires a valid prescription. Please upload your prescription during checkout.
                     </p>
                 </div>

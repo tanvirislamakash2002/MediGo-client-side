@@ -70,6 +70,10 @@ const Navbar = ({
       url: "/shop"
     },
     {
+      title: "Cart",
+      url: "/cart"
+    },
+    {
       title: "Dashboard",
       url: "/admin"
     },

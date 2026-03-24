@@ -48,7 +48,7 @@ interface ShopGridProps {
 export function ShopGrid({ initialData, ...initialParams }: ShopGridProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    
+
     const [medicinesData, setMedicinesData] = useState<MedicinesResponse | null>(initialData);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -73,7 +73,7 @@ export function ShopGrid({ initialData, ...initialParams }: ShopGridProps) {
                     page: currentPage,
                     limit: parseInt(searchParams.get('limit') || initialParams.initialLimit.toString())
                 });
-                
+
                 if (!result.error) {
                     setMedicinesData(result.data);
                 }
@@ -115,10 +115,6 @@ export function ShopGrid({ initialData, ...initialParams }: ShopGridProps) {
                     <MedicineCard
                         key={medicine.id}
                         medicine={medicine}
-                        onAddToCart={() => {
-                            // Handle add to cart
-                            console.log("Add to cart:", medicine.id);
-                        }}
                         onViewDetails={() => router.push(`/shop/${medicine.id}`)}
                     />
                 ))}
