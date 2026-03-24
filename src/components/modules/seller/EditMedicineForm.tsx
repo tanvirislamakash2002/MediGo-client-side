@@ -12,7 +12,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import * as z from "zod";
-import { getCategory } from "@/actions/category.action";
+import { getCategories } from "@/actions/category.action";
 import { getMedicineById, updateMedicine } from "@/actions/medicine.action";
 import { Category } from "@/types/category.type";
 
@@ -90,7 +90,7 @@ const EditMedicineForm = ({ id }: { id: string }) => {
         const fetchCategories = async () => {
             setIsLoadingCategories(true);
             try {
-                const result = await getCategory();
+                const result = await getCategories();
                 if (result.error) {
                     setError(result.error.message);
                 } else {

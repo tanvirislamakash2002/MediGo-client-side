@@ -9,25 +9,76 @@ const API_URL = env.API_URL;
 export const medicineService = {
     getMedicines: async (params?: GetMedicinesParams) => {
         try {
-            const url = new URL(`${API_URL}/medicine`)
+            const url = new URL(`${API_URL}/medicine`);
+
             if (params) {
+                // Handle each parameter type appropriately
                 Object.entries(params).forEach(([key, value]) => {
                     if (value !== undefined && value !== null && value !== '') {
-                        url.searchParams.append(key, value)
+                        // Handle array parameters (convert to comma-separated string)
+                        if (Array.isArray(value)) {
+                            if (value.length > 0) {
+                                url.searchParams.append(key, value.join(','));
+                            }
+                        }
+                        // Handle boolean parameters (convert to string)
+                        else if (typeof value === 'boolean') {
+                            url.searchParams.append(key, value.toString());
+                        }
+                        // Handle number parameters
+                        else if (typeof value === 'number') {
+                            url.searchParams.append(key, value.toString());
+                        }
+                        // Handle string parameters
+                        else {
+                            url.searchParams.append(key, value);
+                        }
                     }
-                })
+                });
             }
-            console.log(url);
-            const res = await fetch(url.toString(),
-                // {cache:'no-store'}
-                // { next: { revalidate: 10 } }
-                { next: { tags: ["medicine"] } }
-            )
-            const data = await res.json()
-            return { data, error: null }
+
+            console.log('Fetching from URL:', url.toString());
+
+            const res = await fetch(url.toString(), {
+                next: { tags: ["medicine"] }
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    data: null,
+                    error: { message: data.message || 'Failed to fetch medicines' }
+                };
+            }
+
+            return { data, error: null };
         } catch (error) {
-            console.error(error);
-            return { data: null, error: { message: 'Something went wrong' } }
+            console.error('Get medicines error:', error);
+            return { data: null, error: { message: 'Something went wrong' } };
+        }
+    },
+    getPriceRange: async () => {
+        try {
+            const res = await fetch(`${API_URL}/medicine/price-range`, {
+                next: { tags: ["medicine"] }
+            });
+            const data = await res.json();
+            return { data, error: null };
+        } catch (error) {
+            return { data: null, error: { message: 'Failed to fetch price range' } };
+        }
+    },
+
+    getManufacturers: async () => {
+        try {
+            const res = await fetch(`${API_URL}/medicine/manufacturers`, {
+                next: { tags: ["medicine"] }
+            });
+            const data = await res.json();
+            return { data, error: null };
+        } catch (error) {
+            return { data: null, error: { message: 'Failed to fetch manufacturers' } };
         }
     },
     getMedicineById: async (id: string) => {

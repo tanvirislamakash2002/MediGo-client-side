@@ -26,7 +26,23 @@ export interface MedicineData {
 
 export interface GetMedicinesParams {
     search?: string;
-    minPrice?: string;
+    categoryId?: string;
+    categoryName?: string;
+    categoryIds?: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    manufacturer?: string;
+    manufacturerList?: string[];
+    requiresPrescription?: boolean;
+    inStock?: boolean;
+    sellerId?: string;
+    sortBy?: string;
+    sortOrder?: string;
     page?: number;
     limit?: number;
+}
+
+export interface PriceRange {
+    min: number;
+    max: number;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { getCategory } from "@/actions/category.action";
+import { getCategories } from "@/actions/category.action";
 import { addMedicine } from "@/actions/medicine.action";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,7 +41,7 @@ export default function CreateMedicineForm() {
         const fetchCategory = async () => {
             setIsLoading(true);
             try {
-                const result = await getCategory();
+                const result = await getCategories();
                 if (result.error) {
                     setError(result.error.message);
                 } else {

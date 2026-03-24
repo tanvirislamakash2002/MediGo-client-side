@@ -1,56 +1,97 @@
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-    Card,
-    CardAction,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
-import { Medicine } from "@/types"
-import Link from "next/link"
+"use client";
 
-export function MedicineCard({ medicineDetails }: { medicineDetails: Medicine }) {
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ShoppingCart, Eye } from "lucide-react";
+import Image from "next/image";
+
+interface Medicine {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    stock: number;
+    manufacturer: string;
+    imageUrl: string | null;
+    requiresPrescription: boolean;
+    category: { id: string; name: string };
+}
+
+interface MedicineCardProps {
+    medicine: Medicine;
+    onAddToCart: () => void;
+    onViewDetails: () => void;
+}
+
+export function MedicineCard({ medicine, onAddToCart, onViewDetails }: MedicineCardProps) {
+    const isValidUrl = (url: string | null) => {
+        if (!url) return false;
+        try { new URL(url); return true; }
+        catch { return false; }
+    };
+
+    const getStockBadge = () => {
+        if (medicine.stock <= 0) return <Badge variant="destructive">Out of Stock</Badge>;
+        if (medicine.stock < 10) return <Badge variant="secondary">Low Stock: {medicine.stock}</Badge>;
+        return <Badge variant="default">In Stock</Badge>;
+    };
+
     return (
-        <Card className="relative overflow-hidden flex flex-col h-full">
-            {/* Image container without absolute overlay that breaks layout */}
-            <div className="relative aspect-video w-full overflow-hidden">
-                <img
-                    src={medicineDetails.imageUrl || "https://avatar.vercel.sh/shadcn1"}
-                    alt={medicineDetails.name || "Medicine"}
-                    className="w-full h-full object-cover"
-                />
-                {/* Optional overlay if needed */}
-                <div className="absolute inset-0 bg-black/20" />
-            </div>
-
-            <CardHeader className="flex-1">
-                <CardAction>
-                    <Badge variant="secondary">
-                        {medicineDetails.categoryId || "Medicine"}
-                    </Badge>
-                </CardAction>
-                <CardTitle className="line-clamp-1">
-                    {medicineDetails.name || "Medicine Name"}
-                </CardTitle>
-                <CardDescription className="line-clamp-2">
-                    {medicineDetails.description || "Medicine description"}
-                </CardDescription>
-
-                {/* Add price if available */}
-                {medicineDetails.price && (
-                    <div className="mt-2 text-lg font-bold text-primary">
-                        ${medicineDetails.price}
+        <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+            <div className="relative h-48 bg-muted">
+                {isValidUrl(medicine.imageUrl) ? (
+                    <Image
+                        src={medicine.imageUrl!}
+                        alt={medicine.name}
+                        fill
+                        className="object-cover"
+                    />
+                ) : (
+                    <div className="flex items-center justify-center h-full text-4xl text-muted-foreground">
+                        💊
                     </div>
                 )}
+                {medicine.requiresPrescription && (
+                    <Badge className="absolute top-2 right-2 bg-red-500">
+                        Rx Required
+                    </Badge>
+                )}
+            </div>
+
+            <CardHeader>
+                <div>
+                    <CardTitle className="text-lg line-clamp-1">{medicine.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">{medicine.manufacturer}</p>
+                </div>
             </CardHeader>
 
-            <CardFooter>
-                <Button className="w-full">
-                    <Link href={`shop/${medicineDetails?.id as string}`}>View Medicine</Link>
+            <CardContent>
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                    {medicine.description}
+                </p>
+                <div className="flex justify-between items-center">
+                    <span className="text-2xl font-bold text-primary">
+                        ${medicine.price.toFixed(2)}
+                    </span>
+                    {getStockBadge()}
+                </div>
+            </CardContent>
+
+            <CardFooter className="gap-2">
+                <Button 
+                    variant="default" 
+                    className="flex-1" 
+                    onClick={onAddToCart}
+                    disabled={medicine.stock <= 0}
+                >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Add to Cart
+                </Button>
+                <Button variant="outline" size="icon" onClick={onViewDetails}>
+                    <Eye className="h-4 w-4" />
                 </Button>
             </CardFooter>
         </Card>
-    )
+    );
 }
