@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { Menu, Moon, Sun } from "lucide-react";
 
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ModeToggle } from "./ModeToggle";
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 interface MenuItem {
   title: string;
@@ -78,6 +80,20 @@ const Navbar = ({
   },
   className,
 }: Navbar1Props) => {
+
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  const toggleTheme = () => {
+    const newTheme = resolvedTheme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+  };
   return (
     <section className={cn("py-4", className)}>
       <div className="container mx-auto">
@@ -104,7 +120,20 @@ const Navbar = ({
             </div>
           </div>
           <div className="flex gap-2">
-            <ModeToggle></ModeToggle>
+            {/* <ModeToggle></ModeToggle> */}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleTheme}
+              className="h-9 w-9"
+            >
+              {resolvedTheme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+              <span className="sr-only">Toggle theme</span>
+            </Button>
             <Button asChild variant="outline" size="sm">
               <Link href={auth.login.url}>{auth.login.title}</Link>
             </Button>
