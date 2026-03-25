@@ -1,16 +1,21 @@
+import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
-import React from 'react';
+import { CartProvider } from '@/providers/CartProvider';
+import { ToastProvider } from '@/providers/ToastProvider';
 
-const CommonLayout = (
-    { children }:
-        Readonly<{ children: React.ReactNode }>
-) => {
+export default function PublicLayout({
+    children,
+}: Readonly<{ children: React.ReactNode }>) {
     return (
-        <div>
-            <Navbar></Navbar>
-            {children}
+        <div className="min-h-screen flex flex-col bg-background">
+            <CartProvider>
+                <ToastProvider />
+                <Navbar />
+                <main className="flex-1">
+                    {children}
+                </main>
+                <Footer />
+            </CartProvider>
         </div>
     );
-};
-
-export default CommonLayout;
+}

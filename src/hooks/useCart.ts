@@ -39,6 +39,7 @@ interface GuestCartItem {
 export function useCart() {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [cartCount, setCartCount] = useState(0);
+    const [cartTotal, setCartTotal] = useState(0);
     const [isAdding, setIsAdding] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -59,6 +60,11 @@ export function useCart() {
         };
         checkAuth();
     }, []);
+
+    useEffect(() => {
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        setCartTotal(total);
+    }, [cart]);
 
     // Fetch cart from server
     const fetchCart = useCallback(async () => {
@@ -227,6 +233,7 @@ export function useCart() {
     return {
         cart,
         cartCount,
+        cartTotal,
         isAdding,
         isUpdating,
         isLoading,
