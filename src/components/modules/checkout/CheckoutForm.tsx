@@ -129,7 +129,7 @@ export function CheckoutForm({ initialItems, initialTotal, user }: CheckoutFormP
                 }
                 
                 toast.success("Order placed successfully!", { id: toastId });
-                router.push(`/order/${result.data.id}/success`);
+                router.push(`/orders/${result.data.id}/success`);
                 
             } catch (error) {
                 toast.error("Failed to place order. Please try again.", { id: toastId });
