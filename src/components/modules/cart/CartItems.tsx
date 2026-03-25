@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, AlertCircle, Plus, Minus } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -25,17 +26,52 @@ interface CartItem {
 
 interface CartItemsProps {
     initialItems: CartItem[];
+    onSelectionChange?: (selectedItems: CartItem[], total: number) => void;
 }
 
-export function CartItems({ initialItems }: CartItemsProps) {
+export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
     const router = useRouter();
     const [items, setItems] = useState<CartItem[]>(initialItems);
+    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [selectAll, setSelectAll] = useState(false);
 
     const isValidUrl = (url: string | null) => {
         if (!url) return false;
         try { new URL(url); return true; }
         catch { return false; }
+    };
+
+    // Update parent component when selection changes
+    const updateSelection = (newSelected: Set<string>) => {
+        setSelectedItems(newSelected);
+        const selected = items.filter(item => newSelected.has(item.id));
+        const total = selected.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        onSelectionChange?.(selected, total);
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            const allIds = new Set(items.map(item => item.id));
+            setSelectedItems(allIds);
+            updateSelection(allIds);
+        } else {
+            setSelectedItems(new Set());
+            updateSelection(new Set());
+        }
+        setSelectAll(checked);
+    };
+
+    const handleSelectItem = (itemId: string, checked: boolean) => {
+        const newSelected = new Set(selectedItems);
+        if (checked) {
+            newSelected.add(itemId);
+        } else {
+            newSelected.delete(itemId);
+        }
+        setSelectedItems(newSelected);
+        updateSelection(newSelected);
+        setSelectAll(newSelected.size === items.length);
     };
 
     const handleQuantityChange = async (itemId: string, newQuantity: number, stock: number) => {
@@ -70,9 +106,13 @@ export function CartItems({ initialItems }: CartItemsProps) {
                 toast.error(result.error.message);
             } else {
                 setItems(prev => prev.filter(item => item.id !== itemId));
+                // Remove from selected items
+                const newSelected = new Set(selectedItems);
+                newSelected.delete(itemId);
+                setSelectedItems(newSelected);
+                updateSelection(newSelected);
                 toast.success(`${itemName} removed from cart`);
 
-                // Refresh page if cart becomes empty
                 if (items.length === 1) {
                     router.refresh();
                 }
@@ -82,16 +122,81 @@ export function CartItems({ initialItems }: CartItemsProps) {
         }
     };
 
+    const handleRemoveSelected = async () => {
+        if (selectedItems.size === 0) return;
+        
+        const toastId = toast.loading(`Removing ${selectedItems.size} items...`);
+        const itemsToRemove = items.filter(item => selectedItems.has(item.id));
+        
+        try {
+            for (const item of itemsToRemove) {
+                await removeCartItem(item.id);
+            }
+            
+            const remainingItems = items.filter(item => !selectedItems.has(item.id));
+            setItems(remainingItems);
+            setSelectedItems(new Set());
+            updateSelection(new Set());
+            setSelectAll(false);
+            
+            toast.success(`${itemsToRemove.length} items removed`, { id: toastId });
+            
+            if (remainingItems.length === 0) {
+                router.refresh();
+            }
+        } catch (error) {
+            toast.error("Failed to remove items", { id: toastId });
+        }
+    };
+
     if (items.length === 0) {
         return null;
     }
 
     return (
         <div className="space-y-4">
-            {items.map((item) => (
+            {/* Selection Controls */}
+            <div className="flex items-center justify-between pb-2 border-b">
+                <div className="flex items-center gap-3">
+                    <Checkbox
+                        id="select-all"
+                        checked={selectAll}
+                        onCheckedChange={handleSelectAll}
+                    />
+                    <label
+                        htmlFor="select-all"
+                        className="text-sm font-medium cursor-pointer"
+                    >
+                        Select All ({items.length} items)
+                    </label>
+                </div>
+                {selectedItems.size > 0 && (
+                    <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleRemoveSelected}
+                        className="h-8"
+                    >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Remove Selected ({selectedItems.size})
+                    </Button>
+                )}
+            </div>
+
+            {/* Cart Items */}
+            {items.map((item: CartItem) => (
                 <Card key={item.id} className="overflow-hidden">
                     <CardContent className="p-4 sm:p-6">
                         <div className="flex flex-col sm:flex-row gap-4">
+                            {/* Selection Checkbox */}
+                            <div className="flex items-start">
+                                <Checkbox
+                                    checked={selectedItems.has(item.id)}
+                                    onCheckedChange={(checked) => handleSelectItem(item.id, checked as boolean)}
+                                    className="mt-1"
+                                />
+                            </div>
+
                             {/* Product Image */}
                             <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 bg-muted rounded-lg overflow-hidden">
                                 {isValidUrl(item.imageUrl) ? (

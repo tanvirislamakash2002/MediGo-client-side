@@ -139,8 +139,7 @@ export const cartService = {
     // Remove item from cart
     removeCartItem: async (itemId: string) => {
         try {
-const cookieStore = await cookies();
-            console.log('remove---------------------,', itemId);
+            const cookieStore = await cookies();
             const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
                 method: "DELETE",
                 headers: {
@@ -148,7 +147,6 @@ const cookieStore = await cookies();
                 }
             });
             const data = await res.json();
-            console.log('data------------', data);
             if (!res.ok) {
                 return { data: null, error: { message: data.message || "Failed to remove item" } };
             }
@@ -247,5 +245,34 @@ const cookieStore = await cookies();
             console.error("Get cart count error:", error);
             return { data: 0, error: null };
         }
+    },
+    // Get selected cart items by IDs
+    getSelectedCartItems: async (sessionToken: string, selectedItemIds: string[]) => {
+        try {
+            if (!sessionToken) {
+                return { data: null, error: { message: "Please login to view cart" } };
+            }
+
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/cart/selected`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString()
+                },
+                body: JSON.stringify({ itemIds: selectedItemIds })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return { data: null, error: { message: data.message || "Failed to fetch selected items" } };
+            }
+
+            return { data: data.data || data, error: null };
+        } catch (error) {
+            console.error("Get selected cart items error:", error);
+            return { data: null, error: { message: "Something went wrong" } };
+        }
     }
+
 };

@@ -7,7 +7,6 @@ import { userService } from "@/services/user.service";
 // Get cart items - use userService to get session
 export const getCartItems = async () => {
     const { data: session, error: sessionError } = await userService.getSession();
-    // console.log(session);
     if (sessionError || !session) {
         // Not logged in - return empty cart for guest
         return { data: { items: [], totalItems: 0, totalPrice: 0 }, error: null };
@@ -51,7 +50,6 @@ export const removeCartItem = async (itemId: string) => {
     if (sessionError || !session) {
         return { data: null, error: { message: "Please login to remove items" } };
     }
-    console.log('cart2---------------',itemId);
     const result = await cartService.removeCartItem(itemId);
     updateTag("cart");
     revalidatePath("/cart");
@@ -92,4 +90,16 @@ export const getCartCount = async () => {
     }
     
     return await cartService.getCartCount();
+};
+
+export const getSelectedCartItems = async () => {
+    const { data: session, error: sessionError } = await userService.getSession();
+    
+    if (sessionError || !session) {
+        return { data: { items: [], totalItems: 0, totalPrice: 0 }, error: null };
+    }
+    // In a real app, you'd pass selected item IDs from query params
+    // For now, get all cart items
+    const result = await cartService.getCartItems(session?.session?.token);
+    return result;
 };
