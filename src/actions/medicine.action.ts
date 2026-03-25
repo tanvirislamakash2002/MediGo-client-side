@@ -7,6 +7,17 @@ import { redirect } from "next/navigation"
 export const getMedicines = async (params?: GetMedicinesParams) => {
     return await medicineService.getMedicines(params);
 };
+
+export const getSellerMedicines = async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: string;
+}) => {
+    return await medicineService.getSellerMedicines(params);
+};
+
 export const addMedicine = async (medicineData: MedicineData) => {
     const res = await medicineService.addMedicine(medicineData)
     // revalidateTag('medicine', 'max')

@@ -58,6 +58,49 @@ export const medicineService = {
             return { data: null, error: { message: 'Something went wrong' } };
         }
     },
+
+     getSellerMedicines: async (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        sortBy?: string;
+        sortOrder?: string;
+    }) => {
+        try {
+            const cookieStore = await cookies();
+            const url = new URL(`${API_URL}/medicine/my-medicines`);
+
+            if (params) {
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null && value !== '') {
+                        url.searchParams.append(key, value.toString());
+                    }
+                });
+            }
+
+            const res = await fetch(url.toString(), {
+                headers: {
+                    Cookie: cookieStore.toString()
+                },
+                next: { tags: ["seller-medicines"] }
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    data: null,
+                    error: { message: data.message || 'Failed to fetch seller medicines' }
+                };
+            }
+
+            return { data, error: null };
+        } catch (error) {
+            console.error('Get seller medicines error:', error);
+            return { data: null, error: { message: 'Something went wrong' } };
+        }
+    },
+    
     getPriceRange: async () => {
         try {
             const res = await fetch(`${API_URL}/medicine/price-range`, {

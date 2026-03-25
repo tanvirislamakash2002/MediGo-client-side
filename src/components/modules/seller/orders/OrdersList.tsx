@@ -85,7 +85,7 @@ export function OrdersList({
             
             const result = await getSellerOrders({ status, search, sort, page, fromDate, toDate });
             if (!result.error) {
-                setOrders(result?.data || []);
+                setOrders(result.data?.orders || []);
                 setPagination(result.data?.pagination);
             }
             setIsLoading(false);
@@ -188,7 +188,6 @@ export function OrdersList({
             </div>
         );
     }
-
     return (
         <>
             {/* Bulk Actions Bar */}

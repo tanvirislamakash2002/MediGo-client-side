@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Pagination } from "@/components/ui/pagination";
 import { cancelOrder, getMyOrders } from "@/actions/order.action";
 import { Button } from "@/components/ui/button";
 import { Package } from "lucide-react";
 import { OrdersSkeleton } from "./OrdersSkeleton";
 import { OrderCard } from "./OrderCard";
-import { OrderDetailsModal } from "./OrderDetailsModal";
 import { toast } from "sonner";
 
 interface Order {
@@ -58,8 +58,6 @@ export function OrdersList({
     const [orders, setOrders] = useState<Order[]>(initialOrders);
     const [pagination, setPagination] = useState(initialPagination);
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
 
     const currentPage = parseInt(searchParams.get("page") || initialPage.toString());
 
@@ -94,39 +92,38 @@ export function OrdersList({
     };
 
     const handleCancelOrder = async (order: Order) => {
-    // Only allow cancellation for PLACED or PROCESSING orders
-    if (order.status !== "PLACED" && order.status !== "PROCESSING") {
-        toast.error("This order cannot be cancelled as it has already been processed or shipped.");
-        return;
-    }
-    
-    const toastId = toast.loading(`Cancelling order #${order.id.slice(0, 8).toUpperCase()}...`);
-    
-    try {
-        const result = await cancelOrder(order.id);
-        
-        if (result.error) {
-            toast.error(result.error.message, { id: toastId });
+        if (order.status !== "PLACED" && order.status !== "PROCESSING") {
+            toast.error("This order cannot be cancelled as it has already been processed or shipped.");
             return;
         }
         
-        toast.success(`Order #${order.id.slice(0, 8).toUpperCase()} cancelled successfully`, { id: toastId });
+        const toastId = toast.loading(`Cancelling order #${order.id.slice(0, 8).toUpperCase()}...`);
         
-        // Refresh orders list
-        const status = searchParams.get("status") || initialStatus;
-        const search = searchParams.get("search") || initialSearch;
-        const sort = searchParams.get("sort") || initialSort;
-        const page = parseInt(searchParams.get("page") || "1");
-        
-        const refreshResult = await getMyOrders({ status, search, sort, page });
-        if (!refreshResult.error) {
-            setOrders(refreshResult.data?.orders || []);
-            setPagination(refreshResult.data?.pagination);
+        try {
+            const result = await cancelOrder(order.id);
+            
+            if (result.error) {
+                toast.error(result.error.message, { id: toastId });
+                return;
+            }
+            
+            toast.success(`Order #${order.id.slice(0, 8).toUpperCase()} cancelled successfully`, { id: toastId });
+            
+            // Refresh orders list
+            const status = searchParams.get("status") || initialStatus;
+            const search = searchParams.get("search") || initialSearch;
+            const sort = searchParams.get("sort") || initialSort;
+            const page = parseInt(searchParams.get("page") || "1");
+            
+            const refreshResult = await getMyOrders({ status, search, sort, page });
+            if (!refreshResult.error) {
+                setOrders(refreshResult.data?.orders || []);
+                setPagination(refreshResult.data?.pagination);
+            }
+        } catch (error) {
+            toast.error("Failed to cancel order", { id: toastId });
         }
-    } catch (error) {
-        toast.error("Failed to cancel order", { id: toastId });
-    }
-};
+    };
 
     if (isLoading && orders.length === 0) {
         return <OrdersSkeleton />;
@@ -158,10 +155,7 @@ export function OrdersList({
                     <OrderCard
                         key={order.id}
                         order={order}
-                        onViewDetails={() => {
-                            setSelectedOrder(order);
-                            setShowDetailsModal(true);
-                        }}
+                        onViewDetails={() => router.push(`/orders/${order.id}`)}
                         onReorder={() => handleReorder(order)}
                         onCancel={() => handleCancelOrder(order)}
                     />
@@ -177,14 +171,6 @@ export function OrdersList({
                     />
                 </div>
             )}
-            
-            <OrderDetailsModal
-                isOpen={showDetailsModal}
-                order={selectedOrder}
-                onClose={() => setShowDetailsModal(false)}
-                onReorder={handleReorder}
-                onCancel={handleCancelOrder}
-            />
         </>
     );
 }

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getMedicines } from "@/actions/medicine.action";
+import { getMedicines, getSellerMedicines } from "@/actions/medicine.action";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MedicinesGrid } from "@/components/modules/seller/MedicinesGrid";
@@ -21,7 +21,7 @@ export default async function MedicinesPage({ searchParams }: PageProps) {
     const limit = params.limit ? parseInt(params.limit) : 9;
 
     // Fetch initial data on the server
-    const result = await getMedicines({ 
+    const result = await getSellerMedicines({ 
         search, 
         page, 
         limit 

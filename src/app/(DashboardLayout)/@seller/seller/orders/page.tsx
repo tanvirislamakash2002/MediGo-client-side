@@ -53,7 +53,6 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
         cancelled: 0
     };
     const pagination = result.data?.pagination;
-    
     return (
         <div className="space-y-6">
             <OrdersHeader orderCount={stats.total} />

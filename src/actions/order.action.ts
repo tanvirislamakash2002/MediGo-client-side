@@ -167,6 +167,27 @@ export const getMyOrders = async (params?: {
     }
 };
 
+export const getOrderById = async (orderId: string) => {
+    try {
+        const cookieStore = await cookies();
+        const res = await fetch(`${API_URL}/order/${orderId}`, {
+            headers: {
+                Cookie: cookieStore.toString()
+            }
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+            return { data: null, error: { message: data.message || "Failed to fetch order" } };
+        }
+        
+        return { data: data.data, error: null };
+    } catch (error) {
+        console.error("Get order error:", error);
+        return { data: null, error: { message: "Something went wrong" } };
+    }
+};
+
 export const cancelOrder = async (orderId: string) => {
     try {
         const cookieStore = await cookies();
