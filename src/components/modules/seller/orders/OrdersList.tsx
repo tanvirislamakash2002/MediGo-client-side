@@ -10,7 +10,6 @@ import { Package } from "lucide-react";
 import { toast } from "sonner";
 import { OrdersSkeleton } from "./OrdersSkeleton";
 import { OrderCard } from "./OrderCard";
-import { OrderDetailsModal } from "./OrderDetailsModal";
 
 interface Order {
     id: string;
@@ -51,21 +50,19 @@ interface OrdersListProps {
     };
 }
 
-export function OrdersList({ 
-    initialOrders, 
+export function OrdersList({
+    initialOrders,
     initialPage,
     initialStatus,
     initialSearch,
     initialSort,
-    pagination: initialPagination 
+    pagination: initialPagination
 }: OrdersListProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [orders, setOrders] = useState<Order[]>(initialOrders);
     const [pagination, setPagination] = useState(initialPagination);
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
     const [selectAll, setSelectAll] = useState(false);
     const [bulkStatus, setBulkStatus] = useState("");
@@ -82,7 +79,7 @@ export function OrdersList({
             const page = parseInt(searchParams.get("page") || "1");
             const fromDate = searchParams.get("fromDate") || undefined;
             const toDate = searchParams.get("toDate") || undefined;
-            
+
             const result = await getSellerOrders({ status, search, sort, page, fromDate, toDate });
             if (!result.error) {
                 setOrders(result.data?.orders || []);
@@ -120,36 +117,36 @@ export function OrdersList({
             toast.error("Please select a status to apply");
             return;
         }
-        
+
         if (selectedOrders.size === 0) {
             toast.error("No orders selected");
             return;
         }
-        
+
         setIsUpdating(true);
         const toastId = toast.loading(`Updating ${selectedOrders.size} orders to ${bulkStatus}...`);
-        
+
         try {
             // Update each selected order
             const updatePromises = Array.from(selectedOrders).map(orderId =>
                 updateOrderStatus(orderId, bulkStatus)
             );
-            
+
             const results = await Promise.all(updatePromises);
             const errors = results.filter(r => r.error);
-            
+
             if (errors.length > 0) {
                 toast.error(`${errors.length} orders failed to update`, { id: toastId });
             } else {
                 toast.success(`${selectedOrders.size} orders updated to ${bulkStatus}`, { id: toastId });
             }
-            
+
             // Clear selections and refresh
             setSelectedOrders(new Set());
             setSelectAll(false);
             setBulkStatus("");
             router.refresh();
-            
+
         } catch (error) {
             toast.error("Failed to update orders", { id: toastId });
         } finally {
@@ -181,7 +178,7 @@ export function OrdersList({
                 </div>
                 <h3 className="text-lg font-semibold mb-2">No orders found</h3>
                 <p className="text-muted-foreground mb-4">
-                    {searchParams.get("search") 
+                    {searchParams.get("search")
                         ? "No orders match your search criteria"
                         : "You don't have any orders yet"}
                 </p>
@@ -197,16 +194,16 @@ export function OrdersList({
                         <span className="text-sm font-medium">
                             {selectedOrders.size} order{selectedOrders.size !== 1 ? 's' : ''} selected
                         </span>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={handleClearSelection}
                             className="text-muted-foreground"
                         >
                             Clear
                         </Button>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <select
                             value={bulkStatus}
@@ -218,7 +215,7 @@ export function OrdersList({
                             <option value="SHIPPED">Shipped</option>
                             <option value="DELIVERED">Delivered</option>
                         </select>
-                        <Button 
+                        <Button
                             onClick={handleBulkStatusUpdate}
                             disabled={!bulkStatus || isUpdating}
                             size="sm"
@@ -228,7 +225,7 @@ export function OrdersList({
                     </div>
                 </div>
             )}
-            
+
             {/* Orders List */}
             <div className="space-y-4">
                 {/* Header with Select All */}
@@ -239,21 +236,18 @@ export function OrdersList({
                     />
                     <span className="text-sm font-medium">Select All</span>
                 </div>
-                
+
                 {orders.map((order) => (
                     <OrderCard
                         key={order.id}
                         order={order}
                         isSelected={selectedOrders.has(order.id)}
                         onSelect={(checked) => handleSelectOrder(order.id, checked)}
-                        onViewDetails={() => {
-                            setSelectedOrder(order);
-                            setShowDetailsModal(true);
-                        }}
+                        onViewDetails={() => router.push(`/seller/orders/${order.id}`)}
                     />
                 ))}
             </div>
-            
+
             {pagination && pagination.totalPages > 1 && (
                 <div className="mt-8">
                     <Pagination
@@ -263,13 +257,7 @@ export function OrdersList({
                     />
                 </div>
             )}
-            
-            <OrderDetailsModal
-                isOpen={showDetailsModal}
-                order={selectedOrder}
-                onClose={() => setShowDetailsModal(false)}
-                onRefresh={() => router.refresh()}
-            />
+
         </>
     );
 }

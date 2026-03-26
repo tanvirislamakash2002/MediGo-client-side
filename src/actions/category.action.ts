@@ -3,7 +3,17 @@
 import { categoryService } from "@/services/category.service";
 import { updateTag } from "next/cache";
 
-// Get all categories
+// Get all categories with pagination, search, and sorting
+export const getAllCategories = async (params?: {
+    search?: string;
+    sort?: string;
+    page?: number;
+    limit?: number;
+}) => {
+    return await categoryService.getAllCategories(params);
+};
+
+// Get all categories (simple list for dropdowns)
 export const getCategories = async () => {
     return await categoryService.getCategories();
 };

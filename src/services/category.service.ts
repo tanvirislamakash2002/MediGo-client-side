@@ -11,6 +11,49 @@ interface Category {
 }
 
 export const categoryService = {
+    // Get all categories with pagination, search, and sorting
+    getAllCategories: async (params?: {
+        search?: string;
+        sort?: string;
+        page?: number;
+        limit?: number;
+    }) => {
+        try {
+            const url = new URL(`${API_URL}/category`);
+            
+            if (params?.search) {
+                url.searchParams.append("search", params.search);
+            }
+            if (params?.sort) {
+                url.searchParams.append("sort", params.sort);
+            }
+            if (params?.page) {
+                url.searchParams.append("page", params.page.toString());
+            }
+            if (params?.limit) {
+                url.searchParams.append("limit", params.limit.toString());
+            }
+            
+            const res = await fetch(url.toString(), {
+                next: { tags: ["categories"] }
+            });
+            const data = await res.json();
+            
+            if (!res.ok) {
+                return { 
+                    data: null, 
+                    error: { message: data.message || "Failed to fetch categories" } 
+                };
+            }
+            
+            return { data, error: null };
+        } catch (error) {
+            console.error("Get categories error:", error);
+            return { data: null, error: { message: "Something went wrong" } };
+        }
+    },
+
+    // Get all categories (simple list for dropdowns)
     getCategories: async () => {
         try {
             const res = await fetch(`${API_URL}/category`, {

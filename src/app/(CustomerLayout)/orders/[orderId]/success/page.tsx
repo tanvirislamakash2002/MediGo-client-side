@@ -64,7 +64,7 @@ export default async function OrderSuccessPage({ params }: PageProps) {
                         
                         <div className="flex flex-col sm:flex-row gap-3">
                             <Button asChild className="flex-1">
-                                <Link href={`/order/${orderId}`}>
+                                <Link href={`/orders/${orderId}`}>
                                     Track Order
                                 </Link>
                             </Button>
