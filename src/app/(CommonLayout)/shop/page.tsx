@@ -42,7 +42,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
 
     // Fetch categories for sidebar
     const categoriesResult = await getCategories();
-    const categories = categoriesResult.error ? [] : categoriesResult.data;
+    const categories = categoriesResult.error ? [] : categoriesResult?.data?.data?.categories;
 
     // Fetch medicines
     const medicinesResult = await getMedicines({
@@ -60,7 +60,6 @@ export default async function ShopPage({ searchParams }: PageProps) {
     });
 
     const medicinesData = medicinesResult.error ? null : medicinesResult.data;
-
     return (
         <div className="min-h-screen bg-background">
             <ShopHero />

@@ -83,7 +83,6 @@ export function EditCategoryModal({ isOpen, category, onClose, onSuccess }: Edit
             }
         },
     });
-
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-md">

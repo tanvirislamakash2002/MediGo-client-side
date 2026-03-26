@@ -27,6 +27,7 @@ import { CategoriesSkeleton } from "./CategoriesSkeleton";
 import { EditCategoryModal } from "./EditCategoryModal";
 import { DeleteCategoryModal } from "./DeleteCategoryModal";
 import { AddCategoryModal } from "./AddCategoryModal";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Category {
     id: string;
@@ -253,8 +254,23 @@ export function CategoriesTable({
                                     <TableCell className="font-medium">
                                         {category.name}
                                     </TableCell>
-                                    <TableCell className="hidden md:table-cell text-muted-foreground max-w-md truncate">
-                                        {category.description || "—"}
+                                    <TableCell className="hidden md:table-cell text-muted-foreground max-w-md">
+                                        {category.description ? (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <span className="cursor-help [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden text-ellipsis">
+                                                            {category.description}
+                                                        </span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent className="max-w-md">
+                                                        <p>{category.description}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        ) : (
+                                            "—"
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-center">
                                         <Badge variant="secondary" className="font-mono">
@@ -308,6 +324,7 @@ export function CategoriesTable({
 
             {/* Modals */}
             <EditCategoryModal
+                key={selectedCategory?.id}
                 isOpen={showEditModal}
                 category={selectedCategory}
                 onClose={() => setShowEditModal(false)}

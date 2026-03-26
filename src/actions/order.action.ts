@@ -9,10 +9,10 @@ const API_URL = process.env.API_URL || "http://localhost:5000/api/v1";
 export const placeOrder = async (orderData: any) => {
     try {
 
-        
+
         const cookieStore = await cookies();
 
-        
+
         const res = await fetch(`${API_URL}/order`, {
             method: "POST",
             headers: {
@@ -22,13 +22,13 @@ export const placeOrder = async (orderData: any) => {
             body: JSON.stringify(orderData)
         });
 
-        
+
         const data = await res.json();
-        
+
         if (!res.ok) {
             return { data: null, error: { message: data.message || "Failed to place order" } };
         }
-        
+
         updateTag("cart");
         return { data: data.data, error: null };
     } catch (error) {
@@ -41,7 +41,7 @@ export const getSelectedCartItems = async (itemIds: string[]) => {
         if (!itemIds || itemIds.length === 0) {
             return { data: null, error: { message: "No items selected" } };
         }
-        
+
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/cart/selected`, {
             method: "POST",  // Changed to POST to send data
@@ -52,11 +52,11 @@ export const getSelectedCartItems = async (itemIds: string[]) => {
             body: JSON.stringify({ itemIds })  // Send item IDs in body
         });
         const data = await res.json();
-        
+
         if (!res.ok) {
             return { data: null, error: { message: data.message || "Failed to fetch cart" } };
         }
-        
+
         return { data: data.data, error: null };
     } catch (error) {
         console.error("Get selected cart items error:", error);
@@ -79,40 +79,40 @@ export const getMyOrders = async (params?: {
     try {
         const cookieStore = await cookies();
         const url = new URL(`${API_URL}/order`);
-        
+
         // Add filters to URL
         if (params?.status && params.status !== "all") {
             url.searchParams.append("status", params.status);
         }
-        
+
         if (params?.statuses && params.statuses.length > 0) {
             url.searchParams.append("statuses", params.statuses.join(","));
         }
-        
+
         if (params?.search) {
             url.searchParams.append("search", params.search);
         }
-        
+
         if (params?.fromDate) {
             url.searchParams.append("fromDate", params.fromDate);
         }
-        
+
         if (params?.toDate) {
             url.searchParams.append("toDate", params.toDate);
         }
-        
+
         if (params?.minAmount !== undefined) {
             url.searchParams.append("minAmount", params.minAmount.toString());
         }
-        
+
         if (params?.maxAmount !== undefined) {
             url.searchParams.append("maxAmount", params.maxAmount.toString());
         }
-        
+
         if (params?.sort) {
             let sortBy = "createdAt";
             let sortOrder = "desc";
-            
+
             switch (params.sort) {
                 case "newest":
                     sortBy = "createdAt";
@@ -134,32 +134,32 @@ export const getMyOrders = async (params?: {
                     sortBy = "createdAt";
                     sortOrder = "desc";
             }
-            
+
             url.searchParams.append("sortBy", sortBy);
             url.searchParams.append("sortOrder", sortOrder);
         }
-        
+
         if (params?.page) {
             url.searchParams.append("page", params.page.toString());
         }
-        
+
         if (params?.limit) {
             url.searchParams.append("limit", params.limit.toString());
         }
-        
+
         const res = await fetch(url.toString(), {
             headers: {
                 Cookie: cookieStore.toString()
             },
             next: { tags: ["orders"] }
         });
-        
+
         const data = await res.json();
-        
+
         if (!res.ok) {
             return { data: null, error: { message: data.message || "Failed to fetch orders" } };
         }
-        
+
         return { data: data.data, error: null };
     } catch (error) {
         console.error("Get orders error:", error);
@@ -176,11 +176,11 @@ export const getOrderById = async (orderId: string) => {
             }
         });
         const data = await res.json();
-        
+
         if (!res.ok) {
             return { data: null, error: { message: data.message || "Failed to fetch order" } };
         }
-        
+
         return { data: data.data, error: null };
     } catch (error) {
         console.error("Get order error:", error);
@@ -199,11 +199,11 @@ export const cancelOrder = async (orderId: string) => {
             }
         });
         const data = await res.json();
-        
+
         if (!res.ok) {
             return { data: null, error: { message: data.message || "Failed to cancel order" } };
         }
-        
+
         return { data: data.data, error: null };
     } catch (error) {
         console.error("Cancel order error:", error);
@@ -222,7 +222,7 @@ export const getSellerOrders = async (params?: {
     try {
         const cookieStore = await cookies();
         const url = new URL(`${API_URL}/order/seller/orders`);
-        
+
         if (params?.status && params.status !== "all") {
             url.searchParams.append("status", params.status);
         }
@@ -241,7 +241,7 @@ export const getSellerOrders = async (params?: {
         if (params?.toDate) {
             url.searchParams.append("toDate", params.toDate);
         }
-        
+
         const res = await fetch(url.toString(), {
             headers: {
                 Cookie: cookieStore.toString()
@@ -249,11 +249,11 @@ export const getSellerOrders = async (params?: {
             next: { tags: ["seller-orders"] }
         });
         const data = await res.json();
-        
+
         if (!res.ok) {
             return { data: null, error: { message: data.message || "Failed to fetch orders" } };
         }
-        
+
         return { data: data.data, error: null };
     } catch (error) {
         console.error("Get seller orders error:", error);
@@ -273,18 +273,125 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
             body: JSON.stringify({ status })
         });
         const data = await res.json();
-        
+
         if (!res.ok) {
             return { data: null, error: { message: data.message || "Failed to update order status" } };
         }
-        
+
         // Revalidate both customer and seller orders
         updateTag("orders");
         updateTag("seller-orders");
-        
+
         return { data: data.data, error: null };
     } catch (error) {
         console.error("Update order status error:", error);
+        return { data: null, error: { message: "Something went wrong" } };
+    }
+};
+
+export const getAllOrders = async (params?: {
+    status?: string;
+    search?: string;
+    sort?: string;
+    page?: number;
+    fromDate?: string;
+    toDate?: string;
+}) => {
+    try {
+        const cookieStore = await cookies();
+        const url = new URL(`${API_URL}/order/admin/orders`);
+
+        if (params?.status && params.status !== "all") {
+            url.searchParams.append("status", params.status);
+        }
+        if (params?.search) {
+            url.searchParams.append("search", params.search);
+        }
+        if (params?.sort) {
+            url.searchParams.append("sort", params.sort);
+        }
+        if (params?.page) {
+            url.searchParams.append("page", params.page.toString());
+        }
+        if (params?.fromDate) {
+            url.searchParams.append("fromDate", params.fromDate);
+        }
+        if (params?.toDate) {
+            url.searchParams.append("toDate", params.toDate);
+        }
+
+        const res = await fetch(url.toString(), {
+            headers: {
+                Cookie: cookieStore.toString()
+            },
+            next: { tags: ["admin-orders"] }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            return { data: null, error: { message: data.message || "Failed to fetch orders" } };
+        }
+
+        return { data: data.data, error: null };
+    } catch (error) {
+        console.error("Get all orders error:", error);
+        return { data: null, error: { message: "Something went wrong" } };
+    }
+};
+
+export const adminUpdateOrderStatus = async (orderId: string, status: string, reason?: string) => {
+    try {
+        const cookieStore = await cookies();
+        const res = await fetch(`${API_URL}/order/admin/orders/${orderId}/status`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Cookie: cookieStore.toString()
+            },
+            body: JSON.stringify({ status, reason })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            return { data: null, error: { message: data.message || "Failed to update order status" } };
+        }
+
+        // Revalidate all order caches
+        updateTag("orders");
+        updateTag("seller-orders");
+        updateTag("admin-orders");
+
+        return { data: data.data, error: null };
+    } catch (error) {
+        console.error("Admin update order status error:", error);
+        return { data: null, error: { message: "Something went wrong" } };
+    }
+};
+
+export const adminCancelOrder = async (orderId: string, reason?: string) => {
+    try {
+        const cookieStore = await cookies();
+        const res = await fetch(`${API_URL}/order/admin/orders/${orderId}/cancel`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Cookie: cookieStore.toString()
+            },
+            body: JSON.stringify({ reason })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            return { data: null, error: { message: data.message || "Failed to cancel order" } };
+        }
+
+        updateTag("orders");
+        updateTag("seller-orders");
+        updateTag("admin-orders");
+
+        return { data: data.data, error: null };
+    } catch (error) {
+        console.error("Admin cancel order error:", error);
         return { data: null, error: { message: "Something went wrong" } };
     }
 };
