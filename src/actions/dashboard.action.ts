@@ -7,7 +7,7 @@ const API_URL = process.env.API_URL || "http://localhost:5000/api/v1";
 export const getDashboardStats = async (params?: { range?: string }) => {
     try {
         const cookieStore = await cookies();
-        const url = new URL(`${API_URL}/admin/dashboard`);
+        const url = new URL(`${API_URL}/dashboard/admin`);
         
         if (params?.range) {
             url.searchParams.append("range", params.range);

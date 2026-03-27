@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { 
+import { redirect, usePathname } from "next/navigation";
+import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
@@ -16,17 +16,18 @@ import {
     SidebarMenuItem,
     SidebarRail,
 } from "@/components/ui/sidebar";
-import { 
-    LayoutDashboard, 
-    Package, 
-    ShoppingCart, 
-    Users, 
+import {
+    LayoutDashboard,
+    Package,
+    ShoppingCart,
+    Users,
     Tags,
     Home,
     Settings,
     LogOut,
     ChevronRight,
-    Store
+    Store,
+    User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -50,7 +51,7 @@ const sellerRoutes = [
         items: [
             {
                 title: "Dashboard",
-                url: "/seller/dashboard",
+                url: "/seller",
                 icon: LayoutDashboard,
             },
         ],
@@ -73,11 +74,11 @@ const sellerRoutes = [
     {
         title: "Quick Links",
         items: [
-            {
-                title: "View Store",
-                url: "/shop",
-                icon: Store,
-            },
+            // {
+            //     title: "View Store",
+            //     url: "/shop",
+            //     icon: Store,
+            // },
             {
                 title: "Home",
                 url: "/",
@@ -93,7 +94,7 @@ const adminRoutes = [
         items: [
             {
                 title: "Dashboard",
-                url: "/admin/dashboard",
+                url: "/admin",
                 icon: LayoutDashboard,
             },
         ],
@@ -121,11 +122,11 @@ const adminRoutes = [
     {
         title: "Quick Links",
         items: [
-            {
-                title: "View Store",
-                url: "/shop",
-                icon: Store,
-            },
+            // {
+            //     title: "View Store",
+            //     url: "/shop",
+            //     icon: Store,
+            // },
             {
                 title: "Home",
                 url: "/",
@@ -135,6 +136,7 @@ const adminRoutes = [
     },
 ];
 
+// app-sidebar.tsx
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
     const pathname = usePathname();
     const routes = user.role === "ADMIN" ? adminRoutes : sellerRoutes;
@@ -146,9 +148,9 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
     
     const handleLogout = async () => {
         await logout();
+        redirect('/')
     };
     
-    // Get user initials
     const initials = user.name
         .split(" ")
         .map((n) => n[0])
@@ -157,22 +159,28 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         .slice(0, 2);
     
     return (
-        <Sidebar {...props}>
-            <SidebarHeader className="border-b px-4 py-4">
+        <Sidebar 
+            collapsible="icon" 
+            className="border-r shrink-0 h-screen sticky top-0"
+            {...props}
+        >
+            {/* Sidebar Header - Fixed */}
+            <SidebarHeader className="border-b px-4 py-4 h-16 flex-shrink-0">
                 <Link href="/" className="flex items-center gap-2">
-                    <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                    <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent whitespace-nowrap">
                         MediGo
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground hidden group-data-[collapsible=icon]:hidden">
                         {user.role === "ADMIN" ? "Admin" : "Seller"}
                     </span>
                 </Link>
             </SidebarHeader>
             
-            <SidebarContent>
+            {/* Sidebar Content - Scrollable */}
+            <SidebarContent className="flex-1 overflow-y-auto">
                 {routes.map((group) => (
                     <SidebarGroup key={group.title}>
-                        <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider">
+                        <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider px-2">
                             {group.title}
                         </SidebarGroupLabel>
                         <SidebarGroupContent>
@@ -183,12 +191,12 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                                     
                                     return (
                                         <SidebarMenuItem key={item.title}>
-                                            <SidebarMenuButton asChild isActive={active}>
+                                            <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
                                                 <Link href={item.url} className="flex items-center gap-3">
-                                                    <Icon className="h-4 w-4" />
-                                                    <span>{item.title}</span>
+                                                    <Icon className="h-4 w-4 flex-shrink-0" />
+                                                    <span className="truncate">{item.title}</span>
                                                     {active && (
-                                                        <ChevronRight className="h-3 w-3 ml-auto" />
+                                                        <ChevronRight className="h-3 w-3 ml-auto flex-shrink-0" />
                                                     )}
                                                 </Link>
                                             </SidebarMenuButton>
@@ -201,14 +209,15 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                 ))}
             </SidebarContent>
             
-            <SidebarFooter className="border-t p-4">
-                <div className="flex items-center gap-3 mb-3">
-                    <Avatar className="h-9 w-9">
+            {/* Sidebar Footer - Fixed */}
+            <SidebarFooter className="border-t p-4 flex-shrink-0">
+                <div className="flex items-center gap-3 mb-3 min-w-0">
+                    <Avatar className="h-9 w-9 flex-shrink-0">
                         <AvatarFallback className="bg-primary/10 text-primary">
                             {initials}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
                         <p className="text-sm font-medium truncate">{user.name}</p>
                         <p className="text-xs text-muted-foreground truncate">
                             {user.email}
@@ -221,9 +230,9 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                         className="w-full justify-start text-muted-foreground hover:text-foreground"
                         asChild
                     >
-                        <Link href="/profile">
-                            <Settings className="h-4 w-4 mr-2" />
-                            Settings
+                        <Link href="/seller/profile">
+                            <User className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <span className="group-data-[collapsible=icon]:hidden truncate">Profile</span>
                         </Link>
                     </Button>
                     <Button
@@ -231,8 +240,8 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                         className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
                         onClick={handleLogout}
                     >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Logout
+                        <LogOut className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span className="group-data-[collapsible=icon]:hidden truncate">Logout</span>
                     </Button>
                 </div>
             </SidebarFooter>

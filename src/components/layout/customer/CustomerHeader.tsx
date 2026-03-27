@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
-import { 
-    ShoppingCart, 
-    User, 
-    Menu, 
-    X, 
-    Search, 
+import {
+    ShoppingCart,
+    User,
+    Menu,
+    X,
+    Search,
     LogOut,
     Package,
     Heart,
@@ -35,6 +35,7 @@ import { SearchModal } from "./SearchModal";
 import { CartDrawer } from "./CartDrawer";
 import { env } from "@/env";
 import { logout } from "@/actions/auth.action";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface User {
     id: string;
@@ -75,7 +76,10 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
 
     const handleLogout = async () => {
         await logout()
+        redirect('/')
+
     };
+
 
     const isActive = (href: string) => {
         if (href === "/shop") return pathname === "/shop" || pathname.startsWith("/shop/");
@@ -84,9 +88,8 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
 
     return (
         <>
-            <header className={`sticky top-0 z-50 transition-all duration-300 ${
-                isScrolled ? "bg-background/95 backdrop-blur border-b shadow-sm" : "bg-background border-b"
-            }`}>
+            <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? "bg-background/95 backdrop-blur border-b shadow-sm" : "bg-background border-b"
+                }`}>
                 <div className="container mx-auto px-4">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
@@ -103,9 +106,8 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className={`text-sm font-medium transition-colors hover:text-primary ${
-                                        isActive(item.href) ? "text-primary" : "text-muted-foreground"
-                                    }`}
+                                    className={`text-sm font-medium transition-colors hover:text-primary ${isActive(item.href) ? "text-primary" : "text-muted-foreground"
+                                        }`}
                                 >
                                     {item.name}
                                 </Link>
@@ -114,6 +116,7 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
 
                         {/* Desktop Actions */}
                         <div className="flex items-center gap-3">
+                            <ThemeToggle />
                             {/* Search Button */}
                             <Button
                                 variant="ghost"
@@ -223,7 +226,7 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
                                 readOnly
                             />
                         </div>
-                        
+
                         {/* Mobile Navigation */}
                         <div className="space-y-1">
                             {navigation.map((item) => (
@@ -231,17 +234,19 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
                                     key={item.name}
                                     href={item.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        isActive(item.href)
-                                            ? "bg-primary text-primary-foreground"
-                                            : "text-foreground hover:bg-muted"
-                                    }`}
+                                    className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive(item.href)
+                                        ? "bg-primary text-primary-foreground"
+                                        : "text-foreground hover:bg-muted"
+                                        }`}
                                 >
                                     {item.name}
                                 </Link>
                             ))}
                         </div>
-                        
+                        <div className="flex items-center justify-between px-3 py-2 border-t mt-4">
+                            <span className="text-sm">Theme</span>
+                            <ThemeToggle />
+                        </div>
                         {user && (
                             <>
                                 <div className="border-t pt-4">

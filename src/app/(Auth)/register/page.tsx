@@ -1,12 +1,10 @@
 import { RegisterForm } from "@/components/modules/authentication/register-form";
-
+import { Suspense } from "react";
 
 export default function Page() {
-  return (
-    <div className="flex min-h-svh items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <RegisterForm />
-      </div>
-    </div>
-  )
+    return (
+        <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
+            <RegisterForm />
+        </Suspense>
+    );
 }

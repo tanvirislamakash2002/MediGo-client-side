@@ -18,11 +18,7 @@ import { ProfileSkeleton } from "@/components/modules/seller/profile/ProfileSkel
 
 export default async function SellerProfilePage() {
     const { data: session, error: sessionError } = await getSession();
-    
-    if (sessionError || !session || session.user.role !== "SELLER") {
-        redirect("/login?redirect=/seller/profile");
-    }
-    
+        
     const profileResult = await sellerProfile.getSellerProfile();
     const settingsResult = await sellerProfile.getSellerStoreSettings();
     
