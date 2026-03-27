@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Download, Calendar } from "lucide-react";
-import { exportActivityLogs } from "@/actions/profile.action";
+import { adminProfile } from "@/actions/profile";
 import { toast } from "sonner";
 
 interface ActivityLog {
@@ -41,7 +41,7 @@ export function ActivityLogSection({ logs }: ActivityLogSectionProps) {
     const handleExport = async () => {
         const toastId = toast.loading("Exporting logs...");
         try {
-            const result = await exportActivityLogs();
+            const result = await adminProfile.adminExportActivityLogs();
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });
             } else {

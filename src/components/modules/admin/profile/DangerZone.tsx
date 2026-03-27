@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle, Download } from "lucide-react";
-import { deleteAccount, exportAccountData } from "@/actions/profile.action";
+import { adminProfile } from "@/actions/profile";
 import { toast } from "sonner";
 import {
     AlertDialog,
@@ -37,7 +37,7 @@ export function DangerZone() {
         const toastId = toast.loading("Deleting account...");
         
         try {
-            const result = await deleteAccount(reason);
+            const result = await adminProfile.adminDeleteAccount(reason);
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });
             } else {
@@ -54,7 +54,7 @@ export function DangerZone() {
     const handleExportData = async () => {
         const toastId = toast.loading("Exporting data...");
         try {
-            const result = await exportAccountData();
+            const result = await adminProfile.adminExportAccountData();
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });
             } else {

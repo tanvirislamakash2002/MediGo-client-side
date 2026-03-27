@@ -12,6 +12,7 @@ export const getAdminProfile = async () => {
             headers: { Cookie: cookieStore.toString() },
             next: { tags: ["admin-profile"] }
         });
+        console.log('data-----------',res);
         const data = await res.json();
         
         if (!res.ok) return { data: null, error: { message: data.message || "Failed to fetch profile" } };
@@ -21,7 +22,7 @@ export const getAdminProfile = async () => {
     }
 };
 
-export const updateProfile = async (data: { name: string; email: string; phone?: string }) => {
+export const updateAdminProfile = async (data: { name: string; email: string; phone?: string }) => {
     try {
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/admin/profile`, {
@@ -42,7 +43,7 @@ export const updateProfile = async (data: { name: string; email: string; phone?:
     }
 };
 
-export const changePassword = async (data: { currentPassword: string; newPassword: string }) => {
+export const adminChangePassword = async (data: { currentPassword: string; newPassword: string }) => {
     try {
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/admin/profile/change-password`, {
@@ -62,7 +63,7 @@ export const changePassword = async (data: { currentPassword: string; newPasswor
     }
 };
 
-export const getActiveSessions = async () => {
+export const getAdminActiveSessions = async () => {
     try {
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/admin/sessions`, {
@@ -78,7 +79,7 @@ export const getActiveSessions = async () => {
     }
 };
 
-export const terminateSession = async (sessionId: string) => {
+export const adminTerminateSession = async (sessionId: string) => {
     try {
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/admin/sessions/${sessionId}`, {
@@ -95,7 +96,7 @@ export const terminateSession = async (sessionId: string) => {
     }
 };
 
-export const logoutOtherSessions = async () => {
+export const adminLogoutOtherSessions = async () => {
     try {
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/admin/sessions/logout-all`, {
@@ -128,7 +129,7 @@ export const getAdminActivityLogs = async () => {
     }
 };
 
-export const updatePreferences = async (data: { notifications: any; theme: string }) => {
+export const adminUpdatePreferences = async (data: { notifications: any; theme: string }) => {
     try {
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/admin/preferences`, {
@@ -148,7 +149,7 @@ export const updatePreferences = async (data: { notifications: any; theme: strin
     }
 };
 
-export const exportActivityLogs = async () => {
+export const adminExportActivityLogs = async () => {
     try {
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/admin/activity-logs/export`, {
@@ -163,7 +164,7 @@ export const exportActivityLogs = async () => {
     }
 };
 
-export const exportAccountData = async () => {
+export const adminExportAccountData = async () => {
     try {
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/admin/account/export`, {
@@ -178,7 +179,7 @@ export const exportAccountData = async () => {
     }
 };
 
-export const deleteAccount = async (reason?: string) => {
+export const adminDeleteAccount = async (reason?: string) => {
     try {
         const cookieStore = await cookies();
         const res = await fetch(`${API_URL}/admin/account`, {
@@ -198,8 +199,7 @@ export const deleteAccount = async (reason?: string) => {
     }
 };
 
-// Upload avatar
-export const uploadAvatar = async (formData: FormData | null) => {
+export const adminUploadAvatar = async (formData: FormData | null) => {
     try {
         const cookieStore = await cookies();
         

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Shield, LogOut, Smartphone } from "lucide-react";
-import { adminProfile } from "@/actions/profile";
+import { sellerProfile  } from "@/actions/profile";
 import { toast } from "sonner";
 import {
     Dialog,
@@ -29,6 +30,7 @@ interface Session {
 }
 
 export function SecuritySection() {
+    const router = useRouter();
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [showSessionsModal, setShowSessionsModal] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -37,7 +39,7 @@ export function SecuritySection() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [sessions, setSessions] = useState<Session[]>([]);
     const [isLoadingSessions, setIsLoadingSessions] = useState(false);
-
+    
     const [passwordData, setPasswordData] = useState({
         currentPassword: "",
         newPassword: "",
@@ -56,12 +58,12 @@ export function SecuritySection() {
         if (/[a-z]/.test(password)) score++;
         if (/[0-9]/.test(password)) score++;
         if (/[^A-Za-z0-9]/.test(password)) score++;
-
+        
         let message = "";
         if (score <= 2) message = "Weak";
         else if (score <= 4) message = "Good";
         else message = "Strong";
-
+        
         setPasswordStrength({ score, message });
     };
 
@@ -70,22 +72,21 @@ export function SecuritySection() {
             toast.error("New passwords do not match");
             return;
         }
-
+        
         if (passwordData.newPassword.length < 8) {
             toast.error("Password must be at least 8 characters");
             return;
         }
-
+        
         setIsSubmitting(true);
         const toastId = toast.loading("Changing password...");
-
+        
         try {
-            // Use adminProfile.adminChangePassword directly
-            const result = await adminProfile.adminChangePassword({
+            const result = await sellerProfile.sellerChangePassword({
                 currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword,
             });
-
+            
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });
             } else {
@@ -103,8 +104,7 @@ export function SecuritySection() {
     const loadSessions = async () => {
         setIsLoadingSessions(true);
         try {
-            // Use adminProfile.getAdminActiveSessions directly
-            const result = await adminProfile.getAdminActiveSessions();
+            const result = await sellerProfile.getSellerActiveSessions();
             if (!result.error) {
                 setSessions(result.data);
                 setShowSessionsModal(true);
@@ -119,8 +119,7 @@ export function SecuritySection() {
     };
 
     const handleTerminateSession = async (sessionId: string) => {
-        // Use adminProfile.adminTerminateSession directly
-        const result = await adminProfile.adminTerminateSession(sessionId);
+        const result = await sellerProfile.sellerTerminateSession(sessionId);
         if (result.error) {
             toast.error("Failed to terminate session");
         } else {
@@ -130,8 +129,7 @@ export function SecuritySection() {
     };
 
     const handleLogoutAll = async () => {
-        // Use adminProfile.adminLogoutOtherSessions directly
-        const result = await adminProfile.adminLogoutOtherSessions();
+        const result = await sellerProfile.sellerLogoutOtherSessions();
         if (result.error) {
             toast.error("Failed to logout other devices");
         } else {
@@ -147,7 +145,6 @@ export function SecuritySection() {
                     <CardTitle>Security</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {/* Change Password */}
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                             <Shield className="h-5 w-5 text-muted-foreground" />
@@ -163,7 +160,6 @@ export function SecuritySection() {
                         </Button>
                     </div>
 
-                    {/* Two-Factor Authentication */}
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                             <Smartphone className="h-5 w-5 text-muted-foreground" />
@@ -179,7 +175,6 @@ export function SecuritySection() {
                         </Badge>
                     </div>
 
-                    {/* Active Sessions */}
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                             <LogOut className="h-5 w-5 text-muted-foreground" />
@@ -248,21 +243,19 @@ export function SecuritySection() {
                                     <div className="flex items-center gap-2">
                                         <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full transition-all ${passwordStrength.score <= 2
-                                                    ? "bg-red-500 w-1/3"
-                                                    : passwordStrength.score <= 4
+                                                className={`h-full transition-all ${
+                                                    passwordStrength.score <= 2
+                                                        ? "bg-red-500 w-1/3"
+                                                        : passwordStrength.score <= 4
                                                         ? "bg-yellow-500 w-2/3"
                                                         : "bg-green-500 w-full"
-                                                    }`}
+                                                }`}
                                             />
                                         </div>
                                         <span className="text-xs text-muted-foreground">
                                             {passwordStrength.message}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        Password must be at least 8 characters with uppercase, lowercase, number, and special character
-                                    </p>
                                 </div>
                             )}
                         </div>

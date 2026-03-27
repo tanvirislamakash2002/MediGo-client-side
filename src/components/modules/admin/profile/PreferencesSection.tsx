@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { updatePreferences } from "@/actions/profile.action";
+import { adminProfile } from "@/actions/profile";
 import { toast } from "sonner";
 
 interface NotificationSettings {
@@ -41,7 +41,7 @@ export function PreferencesSection() {
         const toastId = toast.loading("Saving preferences...");
         
         try {
-            const result = await updatePreferences({ notifications, theme: theme || "light" });
+            const result = await adminProfile.adminUpdatePreferences({ notifications, theme: theme || "light" });
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });
             } else {

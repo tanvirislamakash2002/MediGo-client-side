@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Phone, Calendar, Edit, Save, X, Camera, Loader2 } from "lucide-react";
-import { updateProfile, uploadAvatar } from "@/actions/profile.action";
+import { adminProfile } from "@/actions/profile";
 import { toast } from "sonner";
 
 interface Profile {
@@ -63,7 +63,7 @@ export function ProfileInfo({ profile }: ProfileInfoProps) {
         const toastId = toast.loading("Updating profile...");
         
         try {
-            const result = await updateProfile(formData);
+            const result = await adminProfile.updateAdminProfile(formData);
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });
             } else {
@@ -101,7 +101,7 @@ export function ProfileInfo({ profile }: ProfileInfoProps) {
             const formData = new FormData();
             formData.append("avatar", file);
 
-            const result = await uploadAvatar(formData);
+            const result = await adminProfile.adminUploadAvatar(formData);
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });
             } else {
@@ -120,7 +120,7 @@ export function ProfileInfo({ profile }: ProfileInfoProps) {
         const toastId = toast.loading("Removing avatar...");
         
         try {
-            const result = await uploadAvatar(null); // Pass null to remove
+            const result = await adminProfile.adminUploadAvatar(null); // Pass null to remove
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });
             } else {

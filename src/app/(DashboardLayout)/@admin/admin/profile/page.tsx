@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
-import { getAdminProfile, getAdminActivityLogs } from "@/actions/profile.action";
 import { ProfileHeader } from "@/components/modules/admin/profile/ProfileHeader";
 import { ProfileInfo } from "@/components/modules/admin/profile/ProfileInfo";
 import { SecuritySection } from "@/components/modules/admin/profile/SecuritySection";
@@ -9,6 +8,7 @@ import { PreferencesSection } from "@/components/modules/admin/profile/Preferenc
 import { ActivityLogSection } from "@/components/modules/admin/profile/ActivityLogSection";
 import { DangerZone } from "@/components/modules/admin/profile/DangerZone";
 import { ProfileSkeleton } from "@/components/modules/admin/profile/ProfileSkeleton";
+import { adminProfile } from "@/actions/profile";
 
 export default async function AdminProfilePage() {
     const { data: session, error: sessionError } = await getSession();
@@ -17,8 +17,8 @@ export default async function AdminProfilePage() {
         redirect("/login?redirect=/admin/profile");
     }
     
-    const profileResult = await getAdminProfile();
-    const logsResult = await getAdminActivityLogs();
+    const profileResult = await adminProfile.getAdminProfile();
+    const logsResult = await adminProfile.getAdminActivityLogs();
     
     const profile = profileResult.error ? null : profileResult.data;
     const activityLogs = logsResult.error ? [] : logsResult.data;
