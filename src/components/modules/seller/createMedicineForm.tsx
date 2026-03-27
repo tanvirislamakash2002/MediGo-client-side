@@ -16,9 +16,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import * as z from "zod";
 
-
-
-
 const formSchema = z.object({
     name: z.string().min(1, "Medicine name is required"),
     description: z.string().min(10, "Description must be at least 10 characters"),
@@ -32,10 +29,9 @@ const formSchema = z.object({
 
 export default function CreateMedicineForm() {
     const router = useRouter();
-    const [categoryData, setCategoryData] = useState<Category[] | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]); // Change to array
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
 
     useEffect(() => {
         const fetchCategory = async () => {
@@ -45,10 +41,11 @@ export default function CreateMedicineForm() {
                 if (result.error) {
                     setError(result.error.message);
                 } else {
-                    setCategoryData(result.data);
+                    // Access the categories array from result.data.categories
+                    setCategories(result.data?.categories || []);
                 }
             } catch (err) {
-                setError("Failed to fetch medicines");
+                setError("Failed to fetch categories");
             } finally {
                 setIsLoading(false);
             }
@@ -57,9 +54,7 @@ export default function CreateMedicineForm() {
         fetchCategory();
     }, []);
 
-    console.log(categoryData);
-
-
+    console.log('categories:', categories);
 
     const form = useForm({
         defaultValues: {
@@ -76,22 +71,46 @@ export default function CreateMedicineForm() {
             onSubmit: formSchema
         },
         onSubmit: async ({ value }) => {
-            const toastId = toast.loading("Logging in")
+            const toastId = toast.loading("Adding medicine...");
 
-            const res = await addMedicine(value)
+            const res = await addMedicine(value);
 
             if (res.error) {
-                toast.error(res.error.message, { id: toastId })
-                return
+                toast.error(res.error.message, { id: toastId });
+                return;
             }
-            try {
-                toast.success('Medicine created', { id: toastId })
-
-            } catch (error) {
-                toast.error('Medicine created', { id: toastId })
-            }
+            
+            toast.success('Medicine created successfully', { id: toastId });
+            router.push("/seller/medicines");
         },
     });
+
+    if (isLoading) {
+        return (
+            <div className="container mx-auto py-6 max-w-2xl">
+                <Card>
+                    <CardContent className="py-12 text-center">
+                        <p>Loading categories...</p>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container mx-auto py-6 max-w-2xl">
+                <Card>
+                    <CardContent className="py-12 text-center">
+                        <p className="text-red-500">Error: {error}</p>
+                        <Button onClick={() => window.location.reload()} className="mt-4">
+                            Retry
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto py-6 max-w-2xl">
@@ -238,7 +257,7 @@ export default function CreateMedicineForm() {
                                                     <SelectValue placeholder="Select a category" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {categoryData?.map((category: Category) => (
+                                                    {categories.map((category: Category) => (
                                                         <SelectItem key={category.id} value={category.id}>
                                                             {category.name}
                                                         </SelectItem>
@@ -297,9 +316,7 @@ export default function CreateMedicineForm() {
                         form="add-medicine-form"
                         type="submit"
                         className="flex-1"
-                    // disabled={addMutation.isPending}
                     >
-                        {/* {addMutation.isPending ? "Adding..." : "Add Medicine"} */}
                         Add Medicine
                     </Button>
                     <Button
