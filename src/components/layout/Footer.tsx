@@ -25,7 +25,7 @@ export function Footer() {
     return (
         <footer className="border-t bg-background">
             {/* Newsletter Section */}
-            <div className="border-b bg-muted/30">
+            {/* <div className="border-b bg-muted/30">
                 <div className="container mx-auto px-4 py-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                         <div className="text-center md:text-left">
@@ -51,7 +51,7 @@ export function Footer() {
                         </form>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             <div className="container mx-auto px-4 py-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

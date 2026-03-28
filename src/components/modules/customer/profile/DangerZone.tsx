@@ -32,17 +32,17 @@ export function DangerZone() {
             toast.error('Please type "DELETE" to confirm');
             return;
         }
-        
+
         setIsSubmitting(true);
         const toastId = toast.loading("Deleting account...");
-        
+
         try {
             const result = await customerProfile.customerDeleteAccount(reason);
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });
             } else {
                 toast.success("Account deleted successfully", { id: toastId });
-                router.push("/logout");
+                router.push("/");
             }
         } catch (error) {
             toast.error("Failed to delete account", { id: toastId });
@@ -81,34 +81,36 @@ export function DangerZone() {
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Account</AlertDialogTitle>
-                        <AlertDialogDescription className="space-y-4">
-                            <p>This action cannot be undone. Deleting your account will permanently remove:</p>
-                            <ul className="list-disc list-inside space-y-1 text-sm">
-                                <li>Your personal information</li>
-                                <li>Order history and records</li>
-                                <li>Saved addresses</li>
-                                <li>Wishlist items</li>
-                                <li>Product reviews</li>
-                            </ul>
-                            <div className="space-y-2">
-                                <Label htmlFor="delete-reason">Reason for deletion (optional)</Label>
-                                <Input
-                                    id="delete-reason"
-                                    placeholder="e.g., Found another store, No longer need"
-                                    value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="confirm-delete">
-                                    Type <span className="font-mono font-bold">DELETE</span> to confirm
-                                </Label>
-                                <Input
-                                    id="confirm-delete"
-                                    value={confirmText}
-                                    onChange={(e) => setConfirmText(e.target.value)}
-                                    placeholder="DELETE"
-                                />
+                        <AlertDialogDescription asChild>
+                            <div className="space-y-4">
+                                <p>This action cannot be undone. Deleting your account will permanently remove:</p>
+                                <ul className="list-disc list-inside space-y-1 text-sm">
+                                    <li>Your personal information</li>
+                                    <li>Order history and records</li>
+                                    <li>Saved addresses</li>
+                                    <li>Wishlist items</li>
+                                    <li>Product reviews</li>
+                                </ul>
+                                <div className="space-y-2">
+                                    <Label htmlFor="delete-reason">Reason for deletion (optional)</Label>
+                                    <Input
+                                        id="delete-reason"
+                                        placeholder="e.g., Found another store, No longer need"
+                                        value={reason}
+                                        onChange={(e) => setReason(e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="confirm-delete">
+                                        Type <span className="font-mono font-bold">DELETE</span> to confirm
+                                    </Label>
+                                    <Input
+                                        id="confirm-delete"
+                                        value={confirmText}
+                                        onChange={(e) => setConfirmText(e.target.value)}
+                                        placeholder="DELETE"
+                                    />
+                                </div>
                             </div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>

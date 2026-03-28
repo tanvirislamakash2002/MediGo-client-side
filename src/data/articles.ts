@@ -1,0 +1,146 @@
+export interface Article {
+    id: string;
+    title: string;
+    excerpt: string;
+    content?: string;
+    imageUrl: string;
+    category: "medicine-guide" | "seasonal" | "wellness" | "nutrition" | "first-aid";
+    categoryName: string;
+    author: string;
+    authorTitle?: string;
+    authorAvatar?: string;
+    publishDate: Date;
+    readTime: number;
+    viewCount: number;
+    isFeatured?: boolean;
+}
+
+export const articles: Article[] = [
+    {
+        id: "1",
+        title: "How to Store Medicines Safely at Home",
+        excerpt: "Learn proper storage techniques to maintain medicine potency and keep your family safe. Discover the ideal temperature, humidity, and storage conditions for different types of medications.",
+        content: "Detailed content about medicine storage...",
+        imageUrl: "https://i.ibb.co/LXHS7H4g/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpg",
+        category: "medicine-guide",
+        categoryName: "Medicine Guide",
+        author: "Dr. Sarah Ahmed",
+        authorTitle: "Clinical Pharmacist",
+        publishDate: new Date("2026-03-26"),
+        readTime: 4,
+        viewCount: 1245,
+        isFeatured: true,
+    },
+    {
+        id: "2",
+        title: "5 Natural Ways to Manage Spring Allergies",
+        excerpt: "Natural remedies to reduce allergy symptoms without medication side effects. From local honey to saline rinses, discover effective ways to combat seasonal allergies.",
+        content: "Detailed content about allergy management...",
+        imageUrl: "https://i.ibb.co/LXHS7H4g/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpg",
+        category: "seasonal",
+        categoryName: "Seasonal Health",
+        author: "Dr. Michael Chen",
+        authorTitle: "Allergy Specialist",
+        publishDate: new Date("2026-03-24"),
+        readTime: 6,
+        viewCount: 892,
+    },
+    {
+        id: "3",
+        title: "The Complete Guide to Boosting Your Immune System",
+        excerpt: "Evidence-based strategies to strengthen your immunity naturally. Learn about nutrition, sleep, exercise, and supplements that support immune function.",
+        content: "Detailed content about immune system...",
+        imageUrl: "https://i.ibb.co/LXHS7H4g/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpgg/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpg",
+        category: "wellness",
+        categoryName: "Wellness",
+        author: "Dr. Sarah Ahmed",
+        authorTitle: "Clinical Pharmacist",
+        publishDate: new Date("2026-03-20"),
+        readTime: 8,
+        viewCount: 2103,
+    },
+    {
+        id: "4",
+        title: "Essential Vitamins: What You Need and When",
+        excerpt: "Understanding vitamin deficiencies and choosing the right supplements. A comprehensive guide to vitamins A, B, C, D, E, and K.",
+        content: "Detailed content about vitamins...",
+        imageUrl: "https://i.ibb.co/LXHS7H4g/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpg",
+        category: "nutrition",
+        categoryName: "Nutrition",
+        author: "Emma Watson",
+        authorTitle: "Registered Dietitian",
+        publishDate: new Date("2026-03-18"),
+        readTime: 5,
+        viewCount: 1567,
+    },
+    {
+        id: "5",
+        title: "Building a Home First Aid Kit: Complete Checklist",
+        excerpt: "Essential items every home should have for emergency situations. From bandages to antiseptics, make sure your family is prepared.",
+        content: "Detailed content about first aid kit...",
+        imageUrl: "https://i.ibb.co/LXHS7H4g/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpg",
+        category: "first-aid",
+        categoryName: "First Aid",
+        author: "Dr. Michael Chen",
+        authorTitle: "Emergency Medicine",
+        publishDate: new Date("2026-03-15"),
+        readTime: 5,
+        viewCount: 734,
+    },
+    {
+        id: "6",
+        title: "Understanding Blood Pressure: What the Numbers Mean",
+        excerpt: "A guide to understanding systolic and diastolic readings, and what you can do to maintain healthy blood pressure.",
+        content: "Detailed content about blood pressure...",
+        imageUrl: "https://i.ibb.co/LXHS7H4g/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpg",
+        category: "wellness",
+        categoryName: "Wellness",
+        author: "Dr. Sarah Ahmed",
+        authorTitle: "Clinical Pharmacist",
+        publishDate: new Date("2026-03-12"),
+        readTime: 7,
+        viewCount: 945,
+    },
+    {
+        id: "7",
+        title: "Monsoon Health: Preventing Waterborne Diseases",
+        excerpt: "Essential tips to stay healthy during the rainy season. Learn about safe drinking water, food hygiene, and common illnesses to watch for.",
+        content: "Detailed content about monsoon health...",
+        imageUrl: "https://i.ibb.co/LXHS7H4g/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpg",
+        category: "seasonal",
+        categoryName: "Seasonal Health",
+        author: "Dr. Michael Chen",
+        authorTitle: "Public Health Specialist",
+        publishDate: new Date("2026-03-10"),
+        readTime: 6,
+        viewCount: 567,
+    },
+    {
+        id: "8",
+        title: "Probiotics and Gut Health: What You Need to Know",
+        excerpt: "Understanding the role of probiotics in digestive health and how to choose the right supplements for your needs.",
+        content: "Detailed content about probiotics...",
+        imageUrl: "https://i.ibb.co/LXHS7H4g/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpg",
+        category: "nutrition",
+        categoryName: "Nutrition",
+        author: "Emma Watson",
+        authorTitle: "Registered Dietitian",
+        publishDate: new Date("2026-03-08"),
+        readTime: 5,
+        viewCount: 823,
+    },
+    {
+        id: "9",
+        title: "Medicine Interactions: What to Avoid",
+        excerpt: "A guide to common drug interactions and how to safely take multiple medications. Always consult your pharmacist before starting new medications.",
+        content: "Detailed content about medicine interactions...",
+        imageUrl: "https://i.ibb.co/LXHS7H4g/admin-He-BRkhl-Yq-Xmmlp36c7-BNb-MJ8-SCWGn-Id-G-1774552102316-p12.jpg",
+        category: "medicine-guide",
+        categoryName: "Medicine Guide",
+        author: "Dr. Sarah Ahmed",
+        authorTitle: "Clinical Pharmacist",
+        publishDate: new Date("2026-03-05"),
+        readTime: 6,
+        viewCount: 1120,
+    },
+];

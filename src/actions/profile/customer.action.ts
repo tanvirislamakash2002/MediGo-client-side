@@ -331,7 +331,7 @@ export const updateNotificationPreferences = async (data: any) => {
 export const customerDeleteAccount = async (reason?: string) => {
     try {
         const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/customer/account`, {
+        const res = await fetch(`${API_URL}/customer/profile/account`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",

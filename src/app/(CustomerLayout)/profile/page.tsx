@@ -39,7 +39,6 @@ export default async function CustomerProfilePage() {
         wishlist: wishlist,
         reviews: reviews
     } : null;
-    console.log('object1-----------------',profileResult);
     return (
         <div className="space-y-6">
             <ProfileHeader customerName={session.user.name} />

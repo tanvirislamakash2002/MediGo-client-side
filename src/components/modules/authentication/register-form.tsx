@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Mail, Lock, User, Store, ShoppingBag } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail, Lock, User, Store, ShoppingBag, Camera, X } from "lucide-react";
 import * as z from "zod";
+import { env } from "@/env";
+import { uploadAvatar } from "@/actions/upload.action";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,6 +30,7 @@ const formSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
   role: z.enum(["CUSTOMER", "SELLER"]),
+  image: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -41,18 +44,20 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Remove <FormValues> - let TypeScript infer
   const form = useForm({
     defaultValues: {
       name: "",
       email: "",
       password: "",
       confirmPassword: "",
-      role: "CUSTOMER" as "CUSTOMER" | "SELLER", // Explicit union type
+      role: "CUSTOMER" as "CUSTOMER" | "SELLER",
+      image: "",
     },
     onSubmit: async ({ value }) => {
-      // Validate manually using Zod
       const result = formSchema.safeParse(value);
 
       if (!result.success) {
@@ -71,6 +76,7 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
           email: result.data.email,
           password: result.data.password,
           role: result.data.role,
+          image: result.data.image,
         } as any);
 
         if (response.error) {
@@ -96,6 +102,57 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
       }
     },
   });
+
+const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
+        return;
+    }
+
+    // Validate file size (2MB limit)
+    if (file.size > 2 * 1024 * 1024) {
+        toast.error("Image must be less than 2MB");
+        return;
+    }
+
+    setIsUploading(true);
+    const toastId = toast.loading("Uploading image...");
+
+    try {
+        const uploadFormData = new FormData();
+        uploadFormData.append("avatar", file);
+
+        // Use the server action
+        const result = await uploadAvatar(uploadFormData);
+
+        if (result.error) {
+            toast.error(result.error.message, { id: toastId });
+            return;
+        }
+
+        // Update form value with image URL
+        form.setFieldValue("image", result.data.url);
+        setAvatarPreview(result.data.url);
+        toast.success("Image uploaded!", { id: toastId });
+    } catch (error) {
+        toast.error("Failed to upload image", { id: toastId });
+        console.error("Upload error:", error);
+    } finally {
+        setIsUploading(false);
+    }
+};
+
+  const removeImage = () => {
+    form.setFieldValue("image", "");
+    setAvatarPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -123,6 +180,15 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
     return { text: "Strong", color: "bg-green-500", width: "w-full" };
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <Card className="border-0 shadow-none lg:shadow-lg w-full max-w-md mx-auto" {...props}>
       <CardHeader className="space-y-1">
@@ -148,6 +214,49 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
           }}
           className="space-y-4"
         >
+          {/* Profile Picture Upload */}
+          <div className="flex justify-center">
+            <div className="relative">
+              <Avatar className="h-24 w-24 border-2 border-muted">
+                <AvatarImage src={avatarPreview || undefined} />
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+                  {getInitials(form.getFieldValue("name") || "U")}
+                </AvatarFallback>
+              </Avatar>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                disabled={isLoading || isUploading}
+              />
+              {!avatarPreview ? (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading || isUploading}
+                  className="absolute -bottom-2 -right-2 p-1.5 bg-primary rounded-full text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  disabled={isLoading || isUploading}
+                  className="absolute -bottom-2 -right-2 p-1.5 bg-destructive rounded-full text-destructive-foreground shadow-md hover:bg-destructive/90 disabled:opacity-50"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Full Name */}
           <form.Field name="name">
             {(field) => {
