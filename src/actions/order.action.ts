@@ -1,69 +1,23 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { orderService } from "@/services/order.service";
 import { updateTag } from "next/cache";
-import { redirect } from "next/navigation";
 
-const API_URL = process.env.API_URL || "http://localhost:5000/api/v1";
-
+// Place a new order
 export const placeOrder = async (orderData: any) => {
-    try {
-
-
-        const cookieStore = await cookies();
-
-
-        const res = await fetch(`${API_URL}/order`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify(orderData)
-        });
-
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to place order" } };
-        }
-
+    const result = await orderService.placeOrder(orderData);
+    if (!result.error) {
         updateTag("cart");
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
     }
+    return result;
 };
-// Fix: Accept itemIds parameter and send to backend
+
+// Get selected cart items for checkout
 export const getSelectedCartItems = async (itemIds: string[]) => {
-    try {
-        if (!itemIds || itemIds.length === 0) {
-            return { data: null, error: { message: "No items selected" } };
-        }
-
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/cart/selected`, {
-            method: "POST",  // Changed to POST to send data
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify({ itemIds })  // Send item IDs in body
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to fetch cart" } };
-        }
-
-        return { data: data.data, error: null };
-    } catch (error) {
-        console.error("Get selected cart items error:", error);
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await orderService.getSelectedCartItems(itemIds);
 };
 
+// Get customer orders
 export const getMyOrders = async (params?: {
     status?: string;
     statuses?: string[];
@@ -76,141 +30,24 @@ export const getMyOrders = async (params?: {
     page?: number;
     limit?: number;
 }) => {
-    try {
-        const cookieStore = await cookies();
-        const url = new URL(`${API_URL}/order`);
-
-        // Add filters to URL
-        if (params?.status && params.status !== "all") {
-            url.searchParams.append("status", params.status);
-        }
-
-        if (params?.statuses && params.statuses.length > 0) {
-            url.searchParams.append("statuses", params.statuses.join(","));
-        }
-
-        if (params?.search) {
-            url.searchParams.append("search", params.search);
-        }
-
-        if (params?.fromDate) {
-            url.searchParams.append("fromDate", params.fromDate);
-        }
-
-        if (params?.toDate) {
-            url.searchParams.append("toDate", params.toDate);
-        }
-
-        if (params?.minAmount !== undefined) {
-            url.searchParams.append("minAmount", params.minAmount.toString());
-        }
-
-        if (params?.maxAmount !== undefined) {
-            url.searchParams.append("maxAmount", params.maxAmount.toString());
-        }
-
-        if (params?.sort) {
-            let sortBy = "createdAt";
-            let sortOrder = "desc";
-
-            switch (params.sort) {
-                case "newest":
-                    sortBy = "createdAt";
-                    sortOrder = "desc";
-                    break;
-                case "oldest":
-                    sortBy = "createdAt";
-                    sortOrder = "asc";
-                    break;
-                case "highest":
-                    sortBy = "totalAmount";
-                    sortOrder = "desc";
-                    break;
-                case "lowest":
-                    sortBy = "totalAmount";
-                    sortOrder = "asc";
-                    break;
-                default:
-                    sortBy = "createdAt";
-                    sortOrder = "desc";
-            }
-
-            url.searchParams.append("sortBy", sortBy);
-            url.searchParams.append("sortOrder", sortOrder);
-        }
-
-        if (params?.page) {
-            url.searchParams.append("page", params.page.toString());
-        }
-
-        if (params?.limit) {
-            url.searchParams.append("limit", params.limit.toString());
-        }
-
-        const res = await fetch(url.toString(), {
-            headers: {
-                Cookie: cookieStore.toString()
-            },
-            next: { tags: ["orders"] }
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to fetch orders" } };
-        }
-
-        return { data: data.data, error: null };
-    } catch (error) {
-        console.error("Get orders error:", error);
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await orderService.getMyOrders(params);
 };
 
+// Get order by ID
 export const getOrderById = async (orderId: string) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/order/${orderId}`, {
-            headers: {
-                Cookie: cookieStore.toString()
-            }
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to fetch order" } };
-        }
-
-        return { data: data.data, error: null };
-    } catch (error) {
-        console.error("Get order error:", error);
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await orderService.getOrderById(orderId);
 };
 
+// Cancel order
 export const cancelOrder = async (orderId: string) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/order/${orderId}/cancel`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            }
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to cancel order" } };
-        }
-
-        return { data: data.data, error: null };
-    } catch (error) {
-        console.error("Cancel order error:", error);
-        return { data: null, error: { message: "Something went wrong" } };
+    const result = await orderService.cancelOrder(orderId);
+    if (!result.error) {
+        updateTag("orders");
     }
+    return result;
 };
 
+// Get seller orders
 export const getSellerOrders = async (params?: {
     status?: string;
     search?: string;
@@ -219,76 +56,20 @@ export const getSellerOrders = async (params?: {
     fromDate?: string;
     toDate?: string;
 }) => {
-    try {
-        const cookieStore = await cookies();
-        const url = new URL(`${API_URL}/order/seller/orders`);
-
-        if (params?.status && params.status !== "all") {
-            url.searchParams.append("status", params.status);
-        }
-        if (params?.search) {
-            url.searchParams.append("search", params.search);
-        }
-        if (params?.sort) {
-            url.searchParams.append("sort", params.sort);
-        }
-        if (params?.page) {
-            url.searchParams.append("page", params.page.toString());
-        }
-        if (params?.fromDate) {
-            url.searchParams.append("fromDate", params.fromDate);
-        }
-        if (params?.toDate) {
-            url.searchParams.append("toDate", params.toDate);
-        }
-
-        const res = await fetch(url.toString(), {
-            headers: {
-                Cookie: cookieStore.toString()
-            },
-            next: { tags: ["seller-orders"] }
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to fetch orders" } };
-        }
-
-        return { data: data.data, error: null };
-    } catch (error) {
-        console.error("Get seller orders error:", error);
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await orderService.getSellerOrders(params);
 };
 
+// Update order status 
 export const updateOrderStatus = async (orderId: string, status: string) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/order/seller/orders/${orderId}/status`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify({ status })
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to update order status" } };
-        }
-
-        // Revalidate both customer and seller orders
+    const result = await orderService.updateOrderStatus(orderId, status);
+    if (!result.error) {
         updateTag("orders");
         updateTag("seller-orders");
-
-        return { data: data.data, error: null };
-    } catch (error) {
-        console.error("Update order status error:", error);
-        return { data: null, error: { message: "Something went wrong" } };
     }
+    return result;
 };
 
+// Get all orders 
 export const getAllOrders = async (params?: {
     status?: string;
     search?: string;
@@ -297,101 +78,27 @@ export const getAllOrders = async (params?: {
     fromDate?: string;
     toDate?: string;
 }) => {
-    try {
-        const cookieStore = await cookies();
-        const url = new URL(`${API_URL}/order/admin/orders`);
-
-        if (params?.status && params.status !== "all") {
-            url.searchParams.append("status", params.status);
-        }
-        if (params?.search) {
-            url.searchParams.append("search", params.search);
-        }
-        if (params?.sort) {
-            url.searchParams.append("sort", params.sort);
-        }
-        if (params?.page) {
-            url.searchParams.append("page", params.page.toString());
-        }
-        if (params?.fromDate) {
-            url.searchParams.append("fromDate", params.fromDate);
-        }
-        if (params?.toDate) {
-            url.searchParams.append("toDate", params.toDate);
-        }
-
-        const res = await fetch(url.toString(), {
-            headers: {
-                Cookie: cookieStore.toString()
-            },
-            next: { tags: ["admin-orders"] }
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to fetch orders" } };
-        }
-
-        return { data: data.data, error: null };
-    } catch (error) {
-        console.error("Get all orders error:", error);
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await orderService.getAllOrders(params);
 };
 
+// Update order status 
 export const adminUpdateOrderStatus = async (orderId: string, status: string, reason?: string) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/order/admin/orders/${orderId}/status`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify({ status, reason })
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to update order status" } };
-        }
-
-        // Revalidate all order caches
+    const result = await orderService.adminUpdateOrderStatus(orderId, status, reason);
+    if (!result.error) {
         updateTag("orders");
         updateTag("seller-orders");
         updateTag("admin-orders");
-
-        return { data: data.data, error: null };
-    } catch (error) {
-        console.error("Admin update order status error:", error);
-        return { data: null, error: { message: "Something went wrong" } };
     }
+    return result;
 };
 
+// Cancel order 
 export const adminCancelOrder = async (orderId: string, reason?: string) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/order/admin/orders/${orderId}/cancel`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify({ reason })
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            return { data: null, error: { message: data.message || "Failed to cancel order" } };
-        }
-
+    const result = await orderService.adminCancelOrder(orderId, reason);
+    if (!result.error) {
         updateTag("orders");
         updateTag("seller-orders");
         updateTag("admin-orders");
-
-        return { data: data.data, error: null };
-    } catch (error) {
-        console.error("Admin cancel order error:", error);
-        return { data: null, error: { message: "Something went wrong" } };
     }
+    return result;
 };

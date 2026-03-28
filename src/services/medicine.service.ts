@@ -1,8 +1,6 @@
 import { env } from "@/env";
 import { GetMedicinesParams, MedicineData } from "@/types/medicine.type";
-import { revalidateTag } from "next/cache";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 const API_URL = env.API_URL;
 
@@ -12,32 +10,25 @@ export const medicineService = {
             const url = new URL(`${API_URL}/medicine`);
 
             if (params) {
-                // Handle each parameter type appropriately
                 Object.entries(params).forEach(([key, value]) => {
                     if (value !== undefined && value !== null && value !== '') {
-                        // Handle array parameters (convert to comma-separated string)
                         if (Array.isArray(value)) {
                             if (value.length > 0) {
                                 url.searchParams.append(key, value.join(','));
                             }
                         }
-                        // Handle boolean parameters (convert to string)
                         else if (typeof value === 'boolean') {
                             url.searchParams.append(key, value.toString());
                         }
-                        // Handle number parameters
                         else if (typeof value === 'number') {
                             url.searchParams.append(key, value.toString());
                         }
-                        // Handle string parameters
                         else {
                             url.searchParams.append(key, value);
                         }
                     }
                 });
             }
-
-            console.log('Fetching from URL:', url.toString());
 
             const res = await fetch(url.toString(), {
                 next: { tags: ["medicine"] }
@@ -179,7 +170,6 @@ export const medicineService = {
                     error: { message: "Error: Medicine could not be updated" }
                 };
             }
-            console.log(data);
             return { data, error: null };
         } catch (error) {
             return { data: null, error: { message: 'Something went wrong' } };

@@ -2,14 +2,6 @@ import { cookies } from "next/headers";
 
 const API_URL = process.env.API_URL || "http://localhost:5000/api/v1";
 
-interface Category {
-    id: string;
-    name: string;
-    description: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
 export const categoryService = {
     // Get all categories with pagination, search, and sorting
     getAllCategories: async (params?: {
@@ -45,7 +37,6 @@ export const categoryService = {
                     error: { message: data.message || "Failed to fetch categories" } 
                 };
             }
-            
             return { data, error: null };
         } catch (error) {
             console.error("Get categories error:", error);
@@ -53,7 +44,7 @@ export const categoryService = {
         }
     },
 
-    // Get all categories (simple list for dropdowns)
+    // Get all categories 
     getCategories: async () => {
         try {
             const res = await fetch(`${API_URL}/category`, {

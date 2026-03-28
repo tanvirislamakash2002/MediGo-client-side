@@ -1,5 +1,5 @@
 // dashboard-layout.tsx
-import { AppSidebar } from "@/components/layout/app-sidebar";
+import { AppSidebar } from "@/components/layout/dashboard/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { userService } from "@/services/user.service";
 import { redirect } from "next/navigation";

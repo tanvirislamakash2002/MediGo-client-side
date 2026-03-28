@@ -1,8 +1,7 @@
 "use server"
 import { medicineService } from "@/services/medicine.service"
 import { GetMedicinesParams, MedicineData } from "@/types/medicine.type"
-import { revalidateTag, updateTag } from "next/cache"
-import { redirect } from "next/navigation"
+import {  updateTag } from "next/cache"
 
 export const getMedicines = async (params?: GetMedicinesParams) => {
     return await medicineService.getMedicines(params);
@@ -20,9 +19,7 @@ export const getSellerMedicines = async (params?: {
 
 export const addMedicine = async (medicineData: MedicineData) => {
     const res = await medicineService.addMedicine(medicineData)
-    // revalidateTag('medicine', 'max')
     updateTag('medicine')
-    // redirect('/seller/medicines/add?success')
     return res;
 }
 

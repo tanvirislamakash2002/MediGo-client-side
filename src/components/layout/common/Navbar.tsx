@@ -15,8 +15,6 @@ import {
   Package,
   Settings,
   Search,
-  Sun,
-  Moon,
   ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,19 +31,10 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "../ui/ThemeToggle";
-import { env } from "@/env";
+import { ThemeToggle } from "../../ui/ThemeToggle";
+import { CategoriesDropdown } from "./CategoriesDropdown";
 
 interface User {
   id: string;
@@ -54,27 +43,14 @@ interface User {
   role: string;
 }
 
-const categories = [
-  { name: "Pain Relief", href: "/shop?categoryName=Pain Relief" },
-  { name: "Vitamins & Supplements", href: "/shop?categoryName=Vitamins" },
-  { name: "Cold & Flu", href: "/shop?categoryName=Cold" },
-  { name: "Allergy & Sinus", href: "/shop?categoryName=Allergy" },
-  { name: "Digestive Health", href: "/shop?categoryName=Digestive" },
-  { name: "First Aid", href: "/shop?categoryName=First Aid" },
-];
-
 const navItems = [
   { name: "Home", href: "/" },
   { name: "Shop", href: "/shop" },
-  // { name: "Offers", href: "/offers" },
-  // { name: "About", href: "/about" },
-  // { name: "Contact", href: "/contact" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { theme, setTheme, resolvedTheme } = useTheme();
   const { cartCount } = useCart();
   const [user, setUser] = useState<User | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -97,8 +73,7 @@ export function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    await logout()
-
+    await logout();
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -112,10 +87,6 @@ export function Navbar() {
   const isActive = (href: string) => {
     if (href === "/") return pathname === href;
     return pathname.startsWith(href);
-  };
-
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   return (
@@ -153,32 +124,8 @@ export function Navbar() {
                 </Link>
               ))}
 
-              {/* Categories Dropdown */}
-              <NavigationMenu>
-                <NavigationMenuList>
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="bg-transparent text-muted-foreground hover:text-primary">
-                      Categories
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-56 gap-1 p-2">
-                        {categories.map((category) => (
-                          <li key={category.name}>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                href={category.href}
-                                className="block select-none rounded-md p-2 text-sm hover:bg-muted transition-colors"
-                              >
-                                {category.name}
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
+              {/* Categories Dropdown - Replaces old categories menu */}
+              <CategoriesDropdown />
             </nav>
 
             {/* Desktop Actions */}
@@ -278,7 +225,7 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Menu Sheet */}
+      {/* Mobile Menu Sheet - Updated */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent side="left" className="w-full max-w-sm p-0">
           <div className="flex flex-col h-full">
@@ -331,22 +278,14 @@ export function Navbar() {
                   </Link>
                 ))}
 
-                {/* Categories Submenu */}
-                <div className="mt-4">
-                  <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Categories
-                  </p>
-                  {categories.map((category) => (
-                    <Link
-                      key={category.name}
-                      href={category.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="block px-3 py-2 text-sm text-muted-foreground hover:bg-muted rounded-lg transition-colors"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </div>
+                {/* Categories Link (Mobile) */}
+                <Link
+                  href="/categories"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                >
+                  Categories
+                </Link>
               </div>
             </div>
 

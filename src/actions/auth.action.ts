@@ -1,16 +1,16 @@
 "use server";
 
-import { env } from "@/env";
 import { userService } from "@/services/user.service";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { env } from "@/env";
 
-
+// Get current session
 export const getSession = async () => {
     return await userService.getSession();
 };
 
-
+// Logout user
 export const logout = async () => {
     try {
         const cookieStore = await cookies();
@@ -26,7 +26,7 @@ export const logout = async () => {
             });
         }
         
-        // Clear the session cookie
+        // Clear the session cookies
         cookieStore.delete("better-auth.session_token");
         cookieStore.delete("better-auth.session_data");
         

@@ -13,31 +13,31 @@ export const getAllCategories = async (params?: {
     return await categoryService.getAllCategories(params);
 };
 
-// Get all categories (simple list for dropdowns)
+// Get all categories 
 export const getCategories = async () => {
     return await categoryService.getCategories();
 };
 
-// Get single category by ID
+// Get category by ID
 export const getCategoryById = async (id: string) => {
     return await categoryService.getCategoryById(id);
 };
 
-// Create category (Admin only)
+// Create category 
 export const createCategory = async (data: { name: string; description?: string }) => {
     const result = await categoryService.createCategory(data);
     updateTag("categories");
     return result;
 };
 
-// Update category (Admin only)
+// Update category 
 export const updateCategory = async (id: string, data: { name?: string; description?: string }) => {
     const result = await categoryService.updateCategory(id, data);
     updateTag("categories");
     return result;
 };
 
-// Delete category (Admin only)
+// Delete category 
 export const deleteCategory = async (id: string) => {
     const result = await categoryService.deleteCategory(id);
     updateTag("categories");

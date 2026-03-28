@@ -1,5 +1,5 @@
-import { Footer } from '@/components/layout/Footer';
-import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/common/Footer';
+import { Navbar } from '@/components/layout/common/Navbar';
 import { CartProvider } from '@/providers/CartProvider';
 import { ToastProvider } from '@/providers/ToastProvider';
 

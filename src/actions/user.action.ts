@@ -1,12 +1,10 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { userService } from "@/services/user.service";
 import { updateTag } from "next/cache";
-import { getSession } from "./auth.action"; // Import getSession
+import { getSession } from "./auth.action";
 
-const API_URL = process.env.API_URL || "http://localhost:5000/api/v1";
-
-// Helper to verify admin access
+// Verify admin access
 const verifyAdmin = async () => {
     const { data: session, error } = await getSession();
     if (error || !session || session.user?.role !== "ADMIN") {
@@ -15,6 +13,7 @@ const verifyAdmin = async () => {
     return true;
 };
 
+// Get all users
 export const getAllUsers = async (params?: {
     role?: string;
     status?: string;
@@ -24,88 +23,63 @@ export const getAllUsers = async (params?: {
     page?: number;
 }) => {
     try {
-        await verifyAdmin(); // Check if admin
-        
-        const cookieStore = await cookies();
-        const url = new URL(`${API_URL}/admin/users`);
-        
-        if (params?.role && params.role !== "all") url.searchParams.append("role", params.role);
-        if (params?.status && params.status !== "all") url.searchParams.append("status", params.status);
-        if (params?.verified && params.verified !== "all") url.searchParams.append("verified", params.verified);
-        if (params?.search) url.searchParams.append("search", params.search);
-        if (params?.sort) url.searchParams.append("sort", params.sort);
-        if (params?.page) url.searchParams.append("page", params.page.toString());
-        
-        const res = await fetch(url.toString(), {
-            headers: { Cookie: cookieStore.toString() },
-            next: { tags: ["admin-users"] }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to fetch users" } };
-        return { data: data.data, error: null };
+        await verifyAdmin();
+        return await userService.getAllUsers(params);
     } catch (error) {
-        return { data: null, error: { message: error instanceof Error ? error.message : "Something went wrong" } };
+        return {
+            data: null,
+            error: { message: error instanceof Error ? error.message : "Something went wrong" }
+        };
     }
 };
 
+// Ban user
 export const banUser = async (userId: string) => {
     try {
         await verifyAdmin();
-        
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/users/${userId}/ban`, {
-            method: "POST",
-            headers: { Cookie: cookieStore.toString() }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to ban user" } };
-        updateTag("admin-users");
-        return { data: data.data, error: null };
+        const result = await userService.banUser(userId);
+        if (!result.error) {
+            updateTag("admin-users");
+        }
+        return result;
     } catch (error) {
-        return { data: null, error: { message: error instanceof Error ? error.message : "Something went wrong" } };
+        return {
+            data: null,
+            error: { message: error instanceof Error ? error.message : "Something went wrong" }
+        };
     }
 };
 
+// Unban user
 export const unbanUser = async (userId: string) => {
     try {
         await verifyAdmin();
-        
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/users/${userId}/unban`, {
-            method: "POST",
-            headers: { Cookie: cookieStore.toString() }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to unban user" } };
-        updateTag("admin-users");
-        return { data: data.data, error: null };
+        const result = await userService.unbanUser(userId);
+        if (!result.error) {
+            updateTag("admin-users");
+        }
+        return result;
     } catch (error) {
-        return { data: null, error: { message: error instanceof Error ? error.message : "Something went wrong" } };
+        return {
+            data: null,
+            error: { message: error instanceof Error ? error.message : "Something went wrong" }
+        };
     }
 };
 
+// Change user role
 export const changeUserRole = async (userId: string, newRole: string) => {
     try {
         await verifyAdmin();
-        
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/users/${userId}/role`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify({ role: newRole })
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to change role" } };
-        updateTag("admin-users");
-        return { data: data.data, error: null };
+        const result = await userService.changeUserRole(userId, newRole);
+        if (!result.error) {
+            updateTag("admin-users");
+        }
+        return result;
     } catch (error) {
-        return { data: null, error: { message: error instanceof Error ? error.message : "Something went wrong" } };
+        return {
+            data: null,
+            error: { message: error instanceof Error ? error.message : "Something went wrong" }
+        };
     }
 };

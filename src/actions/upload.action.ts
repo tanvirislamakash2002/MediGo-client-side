@@ -1,28 +1,44 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { env } from "@/env";
+import { uploadService } from "@/services/upload.service";
+import { updateTag } from "next/cache";
 
-const API_URL = env.API_URL;
-
+// Upload avatar image
 export const uploadAvatar = async (formData: FormData) => {
-    try {
-        const cookieStore = await cookies();
-        console.log(formData);
-        const res = await fetch(`${API_URL}/upload/avatar`, {
-            method: "POST",
-            headers: {
-                Cookie: cookieStore.toString()
-            },
-            body: formData
-        });
-        console.log(res);
-        
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to upload avatar" } };
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
+    const result = await uploadService.upload(formData, "avatar");
+    if (!result.error) {
+        updateTag("profile");
+        updateTag("customer-profile");
+        updateTag("seller-profile");
+        updateTag("admin-profile");
     }
+    return result;
+};
+
+// Upload store logo (seller)
+export const uploadStoreLogo = async (formData: FormData) => {
+    const result = await uploadService.upload(formData, "store-logo");
+    if (!result.error) {
+        updateTag("seller-profile");
+        updateTag("seller-settings");
+    }
+    return result;
+};
+
+// Upload document (seller verification)
+export const uploadDocument = async (formData: FormData) => {
+    const result = await uploadService.upload(formData, "document");
+    if (!result.error) {
+        updateTag("seller-documents");
+    }
+    return result;
+};
+
+// Upload product image (seller)
+export const uploadProductImage = async (formData: FormData) => {
+    const result = await uploadService.upload(formData, "product-image");
+    if (!result.error) {
+        updateTag("medicine");
+    }
+    return result;
 };
