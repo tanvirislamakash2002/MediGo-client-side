@@ -11,134 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/useCart";
 import { toast } from "sonner";
 import { Star, ShoppingCart, Heart, Eye, Loader2, Check } from "lucide-react";
+import { Medicine } from "@/types";
 
-interface Product {
-    id: string;
-    name: string;
-    price: number;
-    originalPrice?: number;
-    imageUrl: string;
-    rating: number;
-    reviewCount: number;
-    stock: number;
-    manufacturer: string;
-    requiresPrescription: boolean;
-    isBestseller?: boolean;
-    discount?: number;
-}
-
-// Mock data - replace with actual API call
-const mockProducts: Product[] = [
-    {
-        id: "1",
-        name: "Paracetamol 500mg",
-        price: 4.99,
-        originalPrice: 6.99,
-        imageUrl: "/products/paracetamol.jpg",
-        rating: 4.8,
-        reviewCount: 245,
-        stock: 150,
-        manufacturer: "Square Pharmaceuticals",
-        requiresPrescription: false,
-        isBestseller: true,
-        discount: 28,
-    },
-    {
-        id: "2",
-        name: "Vitamin C 1000mg",
-        price: 12.99,
-        originalPrice: 15.99,
-        imageUrl: "/products/vitamin-c.jpg",
-        rating: 4.6,
-        reviewCount: 189,
-        stock: 85,
-        manufacturer: "Renata Limited",
-        requiresPrescription: false,
-        isBestseller: true,
-        discount: 19,
-    },
-    {
-        id: "3",
-        name: "Omeprazole 20mg",
-        price: 8.49,
-        originalPrice: 10.99,
-        imageUrl: "/products/omeprazole.jpg",
-        rating: 4.7,
-        reviewCount: 156,
-        stock: 42,
-        manufacturer: "Incepta Pharmaceuticals",
-        requiresPrescription: true,
-        isBestseller: true,
-        discount: 23,
-    },
-    {
-        id: "4",
-        name: "Cetirizine 10mg",
-        price: 3.99,
-        originalPrice: 5.99,
-        imageUrl: "/products/cetirizine.jpg",
-        rating: 4.5,
-        reviewCount: 98,
-        stock: 200,
-        manufacturer: "Opsonin Pharma",
-        requiresPrescription: false,
-        discount: 33,
-    },
-    {
-        id: "5",
-        name: "Amoxicillin 500mg",
-        price: 9.99,
-        originalPrice: 12.99,
-        imageUrl: "/products/amoxicillin.jpg",
-        rating: 4.9,
-        reviewCount: 312,
-        stock: 23,
-        manufacturer: "Beximco Pharma",
-        requiresPrescription: true,
-        isBestseller: true,
-        discount: 23,
-    },
-    {
-        id: "6",
-        name: "Vitamin D3 2000 IU",
-        price: 14.99,
-        originalPrice: 18.99,
-        imageUrl: "/products/vitamin-d3.jpg",
-        rating: 4.7,
-        reviewCount: 178,
-        stock: 0,
-        manufacturer: "Healthcare Pharma",
-        requiresPrescription: false,
-        discount: 21,
-    },
-    {
-        id: "7",
-        name: "Ibuprofen 400mg",
-        price: 5.99,
-        originalPrice: 7.99,
-        imageUrl: "/products/ibuprofen.jpg",
-        rating: 4.4,
-        reviewCount: 134,
-        stock: 95,
-        manufacturer: "ACI Limited",
-        requiresPrescription: false,
-        discount: 25,
-    },
-    {
-        id: "8",
-        name: "Multivitamin Tablets",
-        price: 18.99,
-        originalPrice: 24.99,
-        imageUrl: "/products/multivitamin.jpg",
-        rating: 4.6,
-        reviewCount: 267,
-        stock: 110,
-        manufacturer: "Eskayef Pharma",
-        requiresPrescription: false,
-        isBestseller: true,
-        discount: 24,
-    },
-];
 
 // Skeleton loader for products
 function ProductSkeleton() {
@@ -175,13 +49,12 @@ function RatingStars({ rating, reviewCount }: { rating: number; reviewCount: num
                 {[...Array(5)].map((_, i) => (
                     <Star
                         key={i}
-                        className={`h-3 w-3 ${
-                            i < fullStars
-                                ? "fill-yellow-500 text-yellow-500"
-                                : i === fullStars && hasHalfStar
+                        className={`h-3 w-3 ${i < fullStars
+                            ? "fill-yellow-500 text-yellow-500"
+                            : i === fullStars && hasHalfStar
                                 ? "fill-yellow-500 text-yellow-500 half-star"
                                 : "text-muted-foreground"
-                        }`}
+                            }`}
                     />
                 ))}
             </div>
@@ -191,7 +64,7 @@ function RatingStars({ rating, reviewCount }: { rating: number; reviewCount: num
 }
 
 // Product Card Component
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product }: { product: Medicine }) {
     const router = useRouter();
     const { addToCart, isLoading: cartLoading } = useCart();
     const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -208,7 +81,7 @@ function ProductCard({ product }: { product: Product }) {
 
         setIsAddingToCart(true);
         try {
-            await addToCart(product.id, 1);
+            await addToCart(product.id as string, 1);
             setAddedToCart(true);
             toast.success(`${product.name} added to cart`);
             setTimeout(() => setAddedToCart(false), 2000);
@@ -237,7 +110,7 @@ function ProductCard({ product }: { product: Product }) {
         >
             {/* Image Container */}
             <div className="relative aspect-square bg-muted/20">
-                {product.isBestseller && (
+                {/* {product.isBestseller && (
                     <Badge className="absolute top-2 left-2 z-10 bg-orange-500 hover:bg-orange-600">
                         Bestseller
                     </Badge>
@@ -246,7 +119,7 @@ function ProductCard({ product }: { product: Product }) {
                     <Badge className="absolute top-2 right-2 z-10 bg-red-500 hover:bg-red-600">
                         -{product.discount}%
                     </Badge>
-                )}
+                )} */}
                 <div className="relative h-full w-full overflow-hidden">
                     {!imageError ? (
                         <Image
@@ -293,14 +166,14 @@ function ProductCard({ product }: { product: Product }) {
                     <p className="text-xs text-muted-foreground">{product.manufacturer}</p>
                 </div>
 
-                <RatingStars rating={product.rating} reviewCount={product.reviewCount} />
+                {/* <RatingStars rating={product.rating} reviewCount={product.reviewCount} /> */}
 
                 {/* Pricing */}
                 <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-primary">${product.price.toFixed(2)}</span>
-                    {product.originalPrice && (
+                    {product.price && (
                         <span className="text-sm text-muted-foreground line-through">
-                            ${product.originalPrice.toFixed(2)}
+                            ${parseInt(product.price.toFixed(2)) + 4}
                         </span>
                     )}
                 </div>
@@ -344,17 +217,13 @@ function ProductCard({ product }: { product: Product }) {
     );
 }
 
-export function BestsellingMedicines() {
-    const [products, setProducts] = useState<Product[]>([]);
+export function BestsellingMedicines({ medicineData }: { medicineData: Medicine[] }) {
+    const [products, setProducts] = useState<Medicine[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    // Simulate API call
     useState(() => {
-        setTimeout(() => {
-            setProducts(mockProducts);
-            setLoading(false);
-        }, 1000);
+        setProducts(medicineData);
+        setLoading(false);
     });
 
     if (error) {

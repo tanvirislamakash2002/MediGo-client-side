@@ -1,3 +1,4 @@
+import { getMedicines } from "@/actions/medicine.action";
 import { BestsellingMedicines } from "@/components/modules/home/BestsellingMedicines";
 import { FeaturedCategories } from "@/components/modules/home/FeaturedCategories";
 import { HealthTips } from "@/components/modules/home/HealthTips";
@@ -6,14 +7,17 @@ import { HowItWorks } from "@/components/modules/home/HowItWorks";
 import { SpecialOffers } from "@/components/modules/home/SpecialOffers";
 import { TrustIndicators } from "@/components/modules/home/TrustIndicators";
 
-export default function Home() {
+export default async function Home() {
+  
+const {data} =  await getMedicines()
+
   return (
     <main>
       <HeroSection />
       <TrustIndicators />
       <HowItWorks />
       <FeaturedCategories />
-      <BestsellingMedicines />
+      <BestsellingMedicines medicineData = {data.data} />
       <SpecialOffers />
       <HealthTips />
     </main>
