@@ -1,18 +1,7 @@
+import { env } from "@/env";
 import { cookies } from "next/headers";
 
-const API_URL = process.env.API_URL || "http://localhost:5000/api/v1";
-
-interface CartItem {
-    id: string;
-    medicineId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    stock: number;
-    manufacturer: string;
-    imageUrl: string | null;
-    requiresPrescription: boolean;
-}
+const API_URL = env.API_URL;
 
 interface GuestCartItem {
     medicineId: string;
@@ -71,7 +60,6 @@ export const cartService = {
                     body: JSON.stringify({ medicineId, quantity })
                 });
                 const data = await res.json();
-
                 if (!res.ok) {
                     return { data: null, error: { message: data.message || "Failed to add to cart" } };
                 }

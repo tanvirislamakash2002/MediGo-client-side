@@ -7,22 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, AlertCircle, Plus, Minus } from "lucide-react";
+import { Trash2, AlertCircle, Plus, Minus, Pill } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { updateCartItem, removeCartItem } from "@/actions/cart.action";
-
-interface CartItem {
-    id: string;
-    medicineId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    stock: number;
-    manufacturer: string;
-    imageUrl: string | null;
-    requiresPrescription: boolean;
-}
+import { CartItem } from "@/types/cart.type";
 
 interface CartItemsProps {
     initialItems: CartItem[];
@@ -47,6 +36,8 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
         setSelectedItems(newSelected);
         const selected = items.filter(item => newSelected.has(item.id));
         const total = selected.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        console.log("CartItems - Selected items:", selected);
+        console.log("CartItems - Selected total:", total);
         onSelectionChange?.(selected, total);
     };
 
@@ -113,9 +104,8 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
                 updateSelection(newSelected);
                 toast.success(`${itemName} removed from cart`);
 
-                if (items.length === 1) {
-                    router.refresh();
-                }
+                // Refresh the page to update cart data
+                router.refresh();
             }
         } catch (error) {
             toast.error("Failed to remove item");
@@ -124,26 +114,25 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
 
     const handleRemoveSelected = async () => {
         if (selectedItems.size === 0) return;
-        
+
         const toastId = toast.loading(`Removing ${selectedItems.size} items...`);
         const itemsToRemove = items.filter(item => selectedItems.has(item.id));
-        
+
         try {
             for (const item of itemsToRemove) {
                 await removeCartItem(item.id);
             }
-            
+
             const remainingItems = items.filter(item => !selectedItems.has(item.id));
             setItems(remainingItems);
             setSelectedItems(new Set());
             updateSelection(new Set());
             setSelectAll(false);
-            
+
             toast.success(`${itemsToRemove.length} items removed`, { id: toastId });
-            
-            if (remainingItems.length === 0) {
-                router.refresh();
-            }
+
+            // Refresh the page to update cart data
+            router.refresh();
         } catch (error) {
             toast.error("Failed to remove items", { id: toastId });
         }
@@ -209,7 +198,7 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
                                     />
                                 ) : (
                                     <div className="flex items-center justify-center h-full text-3xl text-muted-foreground">
-                                        💊
+                                        <Pill size={45} />
                                     </div>
                                 )}
                             </div>

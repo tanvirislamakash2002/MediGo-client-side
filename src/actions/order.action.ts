@@ -5,6 +5,7 @@ import { updateTag } from "next/cache";
 
 // Place a new order
 export const placeOrder = async (orderData: any) => {
+    console.log(orderData);
     const result = await orderService.placeOrder(orderData);
     if (!result.error) {
         updateTag("cart");

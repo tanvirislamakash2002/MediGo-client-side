@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-    ShoppingCart, 
-    XCircle, 
+import {
+    ShoppingCart,
+    XCircle,
     MessageSquare,
     Download,
     Package
@@ -61,7 +61,7 @@ export function OrderActions({ order }: OrderActionsProps) {
     const handleCancel = async () => {
         setIsCancelling(true);
         const toastId = toast.loading("Cancelling order...");
-        
+
         try {
             const result = await cancelOrder(order.id);
             if (result.error) {
@@ -113,7 +113,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                             Reorder
                         </Button>
                     )}
-                    
+
                     {canTrack && (
                         <Button
                             variant="outline"
@@ -124,7 +124,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                             Track Order
                         </Button>
                     )}
-                    
+
                     {canCancel && (
                         <Button
                             variant="destructive"
@@ -136,7 +136,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                             {isCancelling ? "Cancelling..." : "Cancel Order"}
                         </Button>
                     )}
-                    
+
                     <Button
                         variant="outline"
                         className="w-full"
@@ -145,43 +145,45 @@ export function OrderActions({ order }: OrderActionsProps) {
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Contact Support
                     </Button>
-                    
-                    <Button
+
+                    {/* <Button
                         variant="outline"
                         className="w-full"
                         onClick={handleDownloadInvoice}
                     >
                         <Download className="h-4 w-4 mr-2" />
                         Download Invoice
-                    </Button>
+                    </Button> */}
                 </CardContent>
             </Card>
-            
+
             <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Cancel Order</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to cancel order #{order.id.slice(0, 8).toUpperCase()}?
-                            <br />
-                            <br />
-                            <strong>Items in this order:</strong>
-                            <ul className="mt-2 space-y-1">
-                                {items.slice(0, 3).map((item) => (
-                                    <li key={item.id} className="text-sm">
-                                        {item.quantity}x {item.name || item.id.slice(0, 8)}
-                                    </li>
-                                ))}
-                                {items.length > 3 && (
-                                    <li className="text-sm text-muted-foreground">
-                                        +{items.length - 3} more items
-                                    </li>
-                                )}
-                            </ul>
-                            <br />
-                            <span className="text-destructive">
-                                This action cannot be undone.
-                            </span>
+                        <AlertDialogDescription asChild>
+                            <div>
+                                Are you sure you want to cancel order #{order.id.slice(0, 8).toUpperCase()}?
+                                <br />
+                                <br />
+                                <strong>Items in this order:</strong>
+                                <ul className="mt-2 space-y-1">
+                                    {items.slice(0, 3).map((item) => (
+                                        <li key={item.id} className="text-sm">
+                                            {item.quantity}x {item.name || item.id.slice(0, 8)}
+                                        </li>
+                                    ))}
+                                    {items.length > 3 && (
+                                        <li className="text-sm text-muted-foreground">
+                                            +{items.length - 3} more items
+                                        </li>
+                                    )}
+                                </ul>
+                                <br />
+                                <span className="text-destructive">
+                                    This action cannot be undone.
+                                </span>
+                            </div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

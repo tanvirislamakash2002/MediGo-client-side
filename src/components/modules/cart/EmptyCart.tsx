@@ -27,12 +27,12 @@ export function EmptyCart() {
                                 </Link>
                             </Button>
                             
-                            <Button asChild variant="outline" className="w-full">
+                            {/* <Button asChild variant="outline" className="w-full">
                                 <Link href="/shop?sortBy=createdAt&sortOrder=desc">
                                     <Heart className="h-4 w-4 mr-2" />
                                     View New Arrivals
                                 </Link>
-                            </Button>
+                            </Button> */}
                         </div>
                         
                         {/* Suggested Categories */}

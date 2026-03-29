@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Eye } from "lucide-react";
+import { ShoppingCart, Eye, Pill } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
 
@@ -56,7 +56,7 @@ export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
                     />
                 ) : (
                     <div className="flex items-center justify-center h-full text-4xl text-muted-foreground">
-                        💊
+                        <Pill size={45} />
                     </div>
                 )}
                 {medicine.requiresPrescription && (
@@ -86,9 +86,9 @@ export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
             </CardContent>
 
             <CardFooter className="gap-2">
-                <Button 
-                    variant="default" 
-                    className="flex-1" 
+                <Button
+                    variant="default"
+                    className="flex-1"
                     onClick={handleAddToCart}
                     disabled={medicine.stock <= 0 || isAdding}
                 >

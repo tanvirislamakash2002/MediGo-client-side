@@ -39,7 +39,6 @@ export default async function OrderDetailsPage({ params }: PageProps) {
     if (result.error || !result.data) {
         notFound();
     }
-    console.log(result);
     const order = result.data;
     
     // Verify this order belongs to the logged-in user

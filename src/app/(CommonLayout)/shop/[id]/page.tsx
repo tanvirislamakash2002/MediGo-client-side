@@ -16,7 +16,6 @@ export async function generateMetadata({ params }: PageProps) {
     const { id } = await params;
     const result = await getMedicineById(id);
     const medicine = result.error ? null : result.data;
-console.log(result);
     if (!medicine) {
         return {
             title: "Medicine Not Found | MediStore",

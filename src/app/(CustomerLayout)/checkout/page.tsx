@@ -1,26 +1,25 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
-import { getSelectedCartItems } from "@/actions/cart.action";
 import { CheckoutForm } from "@/components/modules/checkout/CheckoutForm";
 import { CheckoutSkeleton } from "@/components/modules/checkout/CheckoutSkeleton";
+import { getSelectedCartItems } from "@/actions/cart.action";
 
-export default async function CheckoutPage() {
-    const { data: session, error: sessionError } = await getSession();
-    // Redirect to login if not authenticated
-    if (sessionError || !session) {
-        redirect(`/login?redirect=/checkout`);
-    }
+interface CheckoutPageProps {
+    searchParams: Promise<{ selected?: string }>;
+}
 
-    // Get selected cart items (from query param or localStorage)
-    const result = await getSelectedCartItems();
+export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
+    const params = await searchParams;
+    const selectedIds = params.selected ? params.selected.split(',') : [];
+    
+    const { data: session } = await getSession();
+
+    // Get selected cart items using the IDs from URL
+    const result = await getSelectedCartItems(selectedIds);
     const cartItems = result.error ? [] : result.data?.items || [];
     const cartTotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
-
-    if (cartItems.length === 0) {
-        redirect("/cart");
-    }
-
+console.log(params);
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
