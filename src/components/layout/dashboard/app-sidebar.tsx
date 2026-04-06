@@ -32,6 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { logout } from "@/actions/auth.action";
+import { Roles } from "@/constants/roles";
 
 interface User {
     id: string;
@@ -139,28 +140,33 @@ const adminRoutes = [
 // app-sidebar.tsx
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
     const pathname = usePathname();
+    let profileRoute = ''
+    if (user.role === Roles.admin) {
+        profileRoute = '/admin/profile'
+    } else if (user.role === Roles.seller) {
+        profileRoute = '/admin/seller'
+    }
     const routes = user.role === "ADMIN" ? adminRoutes : sellerRoutes;
-    
     const isActive = (url: string) => {
         if (url === "/") return pathname === url;
         return pathname.startsWith(url);
     };
-    
+
     const handleLogout = async () => {
         await logout();
         redirect('/')
     };
-    
+
     const initials = user.name
         .split(" ")
         .map((n) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2);
-    
+
     return (
-        <Sidebar 
-            collapsible="icon" 
+        <Sidebar
+            collapsible="icon"
             className="border-r shrink-0 h-screen sticky top-0"
             {...props}
         >
@@ -175,7 +181,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                     </span>
                 </Link>
             </SidebarHeader>
-            
+
             {/* Sidebar Content - Scrollable */}
             <SidebarContent className="flex-1 overflow-y-auto">
                 {routes.map((group) => (
@@ -188,7 +194,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                                 {group.items.map((item) => {
                                     const Icon = item.icon;
                                     const active = isActive(item.url);
-                                    
+
                                     return (
                                         <SidebarMenuItem key={item.title}>
                                             <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
@@ -208,7 +214,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                     </SidebarGroup>
                 ))}
             </SidebarContent>
-            
+
             {/* Sidebar Footer - Fixed */}
             <SidebarFooter className="border-t p-4 flex-shrink-0">
                 <div className="flex items-center gap-3 mb-3 min-w-0">
@@ -230,7 +236,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                         className="w-full justify-start text-muted-foreground hover:text-foreground"
                         asChild
                     >
-                        <Link href="/seller/profile">
+                        <Link href={profileRoute}>
                             <User className="h-4 w-4 mr-2 flex-shrink-0" />
                             <span className="group-data-[collapsible=icon]:hidden truncate">Profile</span>
                         </Link>
@@ -245,7 +251,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                     </Button>
                 </div>
             </SidebarFooter>
-            
+
             <SidebarRail />
         </Sidebar>
     );

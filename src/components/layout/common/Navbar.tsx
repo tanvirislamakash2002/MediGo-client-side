@@ -35,6 +35,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "../../ui/ThemeToggle";
 import { CategoriesDropdown } from "./CategoriesDropdown";
+import { Roles } from "@/constants/roles";
 
 interface User {
   id: string;
@@ -56,7 +57,16 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
+  let profileRoute = ''
+  if (user) {
+    if (user.role === Roles.admin) {
+      profileRoute = '/admin/profile'
+    } else if (user.role === Roles.seller) {
+      profileRoute = '/seller/profile'
+    }else{
+      profileRoute = '/profile'
+    }
+  }
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -188,7 +198,7 @@ export function Navbar() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile" className="cursor-pointer">
+                      <Link href={profileRoute} className="cursor-pointer">
                         <Settings className="mr-2 h-4 w-4" />
                         Profile
                       </Link>
@@ -321,7 +331,7 @@ export function Navbar() {
                     asChild
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <Link href="/profile">
+                    <Link href={profileRoute}>
                       <Settings className="h-4 w-4 mr-2" />
                       Profile
                     </Link>
