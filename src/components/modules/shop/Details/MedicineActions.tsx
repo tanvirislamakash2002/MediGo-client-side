@@ -137,7 +137,7 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
                 <Button
                     size="lg"
                     variant="outline"
-                    onClick={() => console.log("Add to wishlist")}
+                    onClick={() => alert("Add to wishlist")}
                 >
                     <Heart className="h-5 w-5" />
                 </Button>

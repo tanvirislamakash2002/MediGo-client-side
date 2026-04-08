@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import { useCart } from "@/hooks/useCart";
 import { getSession, logout } from "@/actions/auth.action";
 import {
@@ -15,7 +14,8 @@ import {
   Package,
   Settings,
   Search,
-  ChevronDown
+  ChevronDown,
+  LayoutDashboard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,13 +36,11 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "../../ui/ThemeToggle";
 import { CategoriesDropdown } from "./CategoriesDropdown";
 import { Roles } from "@/constants/roles";
+import { getDashboardRoute, getProfileRoute } from "@/constants/routes";
+import { User as UserType } from "@/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -53,20 +51,13 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { cartCount } = useCart();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  let profileRoute = ''
-  if (user) {
-    if (user.role === Roles.admin) {
-      profileRoute = '/admin/profile'
-    } else if (user.role === Roles.seller) {
-      profileRoute = '/seller/profile'
-    }else{
-      profileRoute = '/profile'
-    }
-  }
+  let profileRoute = user ? getProfileRoute(user.role) : '/'
+  let dashboardRoute = user ? getDashboardRoute(user.role) : '/'
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -134,7 +125,7 @@ export function Navbar() {
                 </Link>
               ))}
 
-              {/* Categories Dropdown - Replaces old categories menu */}
+              {/* Categories Dropdown */}
               <CategoriesDropdown />
             </nav>
 
@@ -174,14 +165,14 @@ export function Navbar() {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2 px-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-sm font-medium text-primary">
+                    <div className="flex items-center gap-1 cursor-pointer">
+                      <Avatar className="w-8 h-8 transition-transform hover:scale-105">
+                        <AvatarImage src={user.image} alt={user.name} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
                           {user.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <div className="px-2 py-1.5">
@@ -191,15 +182,24 @@ export function Navbar() {
                       </p>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/orders" className="cursor-pointer">
-                        <Package className="mr-2 h-4 w-4" />
-                        My Orders
-                      </Link>
-                    </DropdownMenuItem>
+                    {user.role === Roles.admin || user.role === Roles.seller ? (
+                      <DropdownMenuItem asChild>
+                        <Link href={dashboardRoute} className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem asChild>
+                        <Link href="/orders" className="cursor-pointer">
+                          <Package className="mr-2 h-4 w-4" />
+                          My Orders
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link href={profileRoute} className="cursor-pointer">
-                        <Settings className="mr-2 h-4 w-4" />
+                        <User className="mr-2 h-4 w-4" />
                         Profile
                       </Link>
                     </DropdownMenuItem>
@@ -304,27 +304,42 @@ export function Navbar() {
               {user ? (
                 <>
                   <div className="flex items-center gap-3 px-3 py-2 bg-muted/30 rounded-lg">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-base font-medium text-primary">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={user.image} alt={user.name} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
                         {user.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{user.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    asChild
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Link href="/orders">
-                      <Package className="h-4 w-4 mr-2" />
-                      My Orders
-                    </Link>
-                  </Button>
+                  {user.role === Roles.admin || user.role === Roles.seller ? (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      asChild
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Link href={dashboardRoute}>
+                        <LayoutDashboard className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      asChild
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Link href="/orders">
+                        <Package className="h-4 w-4 mr-2" />
+                        My Orders
+                      </Link>
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     className="w-full"
@@ -332,7 +347,7 @@ export function Navbar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <Link href={profileRoute}>
-                      <Settings className="h-4 w-4 mr-2" />
+                      <User className="h-4 w-4 mr-2" />
                       Profile
                     </Link>
                   </Button>

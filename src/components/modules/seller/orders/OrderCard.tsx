@@ -114,7 +114,6 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
         const toastId = toast.loading(`Updating order #${order.id.slice(0, 8).toUpperCase()} to ${selectedStatus}...`);
         
         try {
-            // console.log(order.id, selectedStatus)
             const result = await updateOrderStatus(order.id, selectedStatus);
             if (result.error) {
                 toast.error(result.error.message, { id: toastId });

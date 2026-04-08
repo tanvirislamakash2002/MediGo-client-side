@@ -41,6 +41,7 @@ interface User {
     name: string;
     email: string;
     role: string;
+    image?: string;
 }
 
 interface DashboardHeaderProps {
@@ -71,9 +72,9 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const breadcrumbs = getBreadcrumbs(pathname);
-    
-    const pageTitle = breadcrumbs.length > 0 
-        ? breadcrumbs[breadcrumbs.length - 1].label 
+
+    const pageTitle = breadcrumbs.length > 0
+        ? breadcrumbs[breadcrumbs.length - 1].label
         : "Dashboard";
 
     useEffect(() => {
@@ -88,22 +89,21 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         await logout();
         redirect('/')
     };
-
+    
     return (
-        <header className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-            isScrolled 
-                ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b shadow-sm" 
+        <header className={`sticky top-0 z-40 w-full transition-all duration-300 ${isScrolled
+                ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b shadow-sm"
                 : "bg-background border-b"
-        }`}>
+            }`}>
             <div className="flex h-16 items-center justify-between px-4 md:px-6 w-full">
                 {/* Left Section */}
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                     <SidebarTrigger className="-ml-1 flex-shrink-0" />
-                    <Separator 
-                        orientation="vertical" 
-                        className="h-4 hidden md:block flex-shrink-0" 
+                    <Separator
+                        orientation="vertical"
+                        className="h-4 hidden md:block flex-shrink-0"
                     />
-                    
+
                     {/* Breadcrumbs - Desktop */}
                     <div className="hidden md:flex min-w-0 overflow-x-auto scrollbar-none">
                         <Breadcrumb>
@@ -137,13 +137,13 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                             </BreadcrumbList>
                         </Breadcrumb>
                     </div>
-                    
+
                     {/* Mobile page title */}
                     <span className="text-lg font-semibold md:hidden truncate">
                         {pageTitle}
                     </span>
                 </div>
-                
+
                 {/* Right Section */}
                 <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
                     {/* Search Button (Mobile) */}
@@ -155,7 +155,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                     >
                         <Search className="h-4 w-4" />
                     </Button> */}
-                    
+
                     {/* Search Bar (Desktop) */}
                     {/* <div className="hidden md:flex relative w-64">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -165,24 +165,32 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                             className="w-full pl-9 pr-4"
                         />
                     </div> */}
-                    
+
                     {/* Notifications */}
                     {/* <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 relative">
                         <Bell className="h-4 w-4" />
                         <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full" />
                     </Button> */}
-                    
+
                     {/* Theme Toggle */}
                     <ThemeToggle />
-                    
+
                     {/* User Menu */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="flex items-center gap-2 px-2 h-9 flex-shrink-0">
-                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <span className="text-sm font-medium text-primary">
-                                        {user.name.charAt(0).toUpperCase()}
-                                    </span>
+                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                                    {user.image ? (
+                                        <img
+                                            src={user.image}
+                                            alt={user.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-sm font-medium text-primary">
+                                            {user.name.charAt(0).toUpperCase()}
+                                        </span>
+                                    )}
                                 </div>
                                 <span className="hidden md:inline text-sm font-medium max-w-[100px] truncate">
                                     {user.name}
@@ -220,8 +228,8 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                                 </Link>
                             </DropdownMenuItem> */}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                                onClick={handleLogout} 
+                            <DropdownMenuItem
+                                onClick={handleLogout}
                                 className="text-red-600 cursor-pointer"
                             >
                                 <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
@@ -231,7 +239,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                     </DropdownMenu>
                 </div>
             </div>
-            
+
             {/* Mobile Search Expanded */}
             {searchOpen && (
                 <div className="md:hidden p-4 border-t">

@@ -82,7 +82,7 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
         const userData = response.data?.user as User;
         const userRole = userData?.role;
         const isEmailVerified = userData?.emailVerified;
-        console.log(response);
+        
         if (!isEmailVerified) {
           toast.info("Please verify your email to get full access to all features", {
             duration: 5000,

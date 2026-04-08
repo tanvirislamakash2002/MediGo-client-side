@@ -91,7 +91,6 @@ export function CategoriesTable({
                 sort: sortValue,
                 page
             });
-            console.log(result);
             if (!result.error) {
                 setCategories(result.data?.data?.categories || []);
                 setPagination(result.data?.data?.pagination);

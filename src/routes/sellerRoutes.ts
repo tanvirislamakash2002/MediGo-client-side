@@ -1,26 +1,40 @@
-import { Route } from "@/types";
+import { RouteGroup } from "@/types/routes.type";
+import { LayoutDashboard, Package, ShoppingCart, Home } from "lucide-react";
 
-export const sellerRoutes: Route[] = [
+export const sellerRoutes: RouteGroup[] = [
     {
-        title: "Seller Management",
+        title: "Overview",
         items: [
             {
                 title: "Dashboard",
-                url: "/seller/dashboard",
+                url: "/seller",
+                icon: LayoutDashboard,
             },
+        ],
+    },
+    {
+        title: "Management",
+        items: [
             {
                 title: "Medicines",
-                url: "/seller/medicines"
+                url: "/seller/medicines",
+                icon: Package,
             },
             {
                 title: "Orders",
                 url: "/seller/orders",
-            },
-            {
-                title: "home",
-                url: "/",
+                icon: ShoppingCart,
             },
         ],
     },
-
-]
+    {
+        title: "Quick Links",
+        items: [
+            {
+                title: "Home",
+                url: "/",
+                icon: Home,
+            },
+        ],
+    },
+];

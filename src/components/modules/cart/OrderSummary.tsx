@@ -59,12 +59,11 @@ export function OrderSummary({
     };
 
     const handleCheckout = () => {
-        console.log("🟢 CHECKOUT BUTTON CLICKED - hasSelectedItems:", hasSelectedItems);
+        
         if (!hasSelectedItems) {
             toast.error("Please select at least one item to checkout");
             return;
         }
-        console.log("🟢 CHECKOUT - Navigating to /checkout");
 
         // Use the passed handler if available
         if (onCheckout) {
@@ -75,9 +74,7 @@ export function OrderSummary({
     };
 
     const finalTotal = selectedTotal - discount + (selectedTotal > 0 ? (selectedTotal > freeShippingThreshold ? 0 : shippingCost) : 0);
-    console.log("order----------", hasSelectedItems);
-    console.log("OrderSummary - selectedItems:", selectedItems);
-    console.log("OrderSummary - selectedTotal:", selectedTotal);
+
     return (
         <Card className="sticky top-24">
             <CardHeader>

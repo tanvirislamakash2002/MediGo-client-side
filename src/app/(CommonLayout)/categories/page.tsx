@@ -13,7 +13,7 @@ export const metadata = {
 
 export default async function CategoriesPage() {
     const result = await getAllCategories({ limit: 100 });
-    console.log(result);
+    
     if (result.error) {
         return (
             <div className="container mx-auto px-4 py-16 text-center">

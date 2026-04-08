@@ -14,7 +14,6 @@ export const getCustomerProfile = async () => {
             headers: { Cookie: cookieStore.toString() },
             next: { tags: ["customer-profile"] }
         });
-        console.log('object----', res);
         const data = await res.json();
         
         if (!res.ok) return { data: null, error: { message: data.message || "Failed to fetch profile" } };

@@ -22,7 +22,7 @@ export default async function AdminProfilePage() {
     
     const profile = profileResult.error ? null : profileResult.data;
     const activityLogs = logsResult.error ? [] : logsResult.data;
-    console.log(profileResult);
+    
     return (
         <div className="space-y-6">
             <ProfileHeader adminName={session.user.name} />

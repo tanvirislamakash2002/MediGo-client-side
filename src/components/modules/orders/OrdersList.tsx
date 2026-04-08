@@ -87,8 +87,7 @@ export function OrdersList({
     };
 
     const handleReorder = async (order: Order) => {
-        // Reorder logic - add all items to cart
-        console.log("Reorder:", order.id);
+
     };
 
     const handleCancelOrder = async (order: Order) => {

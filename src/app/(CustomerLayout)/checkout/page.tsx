@@ -19,7 +19,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     const result = await getSelectedCartItems(selectedIds);
     const cartItems = result.error ? [] : result.data?.items || [];
     const cartTotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
-console.log(params);
+
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">

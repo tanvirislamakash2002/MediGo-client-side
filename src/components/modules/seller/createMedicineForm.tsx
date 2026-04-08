@@ -54,7 +54,6 @@ export default function CreateMedicineForm() {
         fetchCategory();
     }, []);
 
-    console.log('categories:', categories);
 
     const form = useForm({
         defaultValues: {

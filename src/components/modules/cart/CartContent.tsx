@@ -18,18 +18,16 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
     const [selectedTotal, setSelectedTotal] = useState(0);
 
     const handleSelectionChange = (items: CartItem[], total: number) => {
-        console.log("CartContent - Selected items:", items);
-        console.log("CartContent - Selected total:", total);
         setSelectedItems(items);
         setSelectedTotal(total);
     };
 
     const handleCheckout = () => {
         if (selectedItems.length === 0) return;
-        
+
         // Get selected item IDs
         const selectedIds = selectedItems.map(item => item.id);
-        
+
         // Navigate to checkout with selected IDs in URL
         router.push(`/checkout?selected=${selectedIds.join(',')}`);
     };
@@ -41,8 +39,8 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
             <div className="flex flex-col lg:flex-row gap-8 mt-6">
                 {/* Left Column - Cart Items */}
                 <div className="lg:w-2/3">
-                    <CartItems 
-                        initialItems={initialItems} 
+                    <CartItems
+                        initialItems={initialItems}
                         onSelectionChange={handleSelectionChange}
                     />
                 </div>

@@ -1,8 +1,10 @@
-export interface Route {
+export interface RouteItem {
     title: string;
-    items: {
-        title: string;
-        url: string;
-        icon?: React.ElementType;
-    }[];
+    url: string;
+    icon?: React.ElementType;
+}
+
+export interface RouteGroup {
+    title: string;
+    items: RouteItem[];
 }

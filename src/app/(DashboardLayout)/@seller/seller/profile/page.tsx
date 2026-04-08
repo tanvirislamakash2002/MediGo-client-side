@@ -41,7 +41,7 @@ export default async function SellerProfilePage() {
         }
     } : null;
     
-    console.log('object---------------', settingsWithDefaults.payoutInfo);
+   
     
     return (
         <div className="space-y-6">

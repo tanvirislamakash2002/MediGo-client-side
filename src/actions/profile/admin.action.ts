@@ -12,7 +12,6 @@ export const getAdminProfile = async () => {
             headers: { Cookie: cookieStore.toString() },
             next: { tags: ["admin-profile"] }
         });
-        console.log('data-----------',res);
         const data = await res.json();
         
         if (!res.ok) return { data: null, error: { message: data.message || "Failed to fetch profile" } };

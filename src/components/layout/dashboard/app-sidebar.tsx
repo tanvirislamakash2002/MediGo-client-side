@@ -17,140 +17,31 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar";
 import {
-    LayoutDashboard,
-    Package,
-    ShoppingCart,
-    Users,
-    Tags,
-    Home,
-    Settings,
     LogOut,
     ChevronRight,
-    Store,
     User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { logout } from "@/actions/auth.action";
 import { Roles } from "@/constants/roles";
+import { adminRoutes, sellerRoutes } from "@/routes";
+import { getProfileRoute, isActiveRoute } from "@/constants/routes";
+import { User as UserType } from "@/types";
 
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-}
+
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-    user: User;
+    user: UserType;
 }
 
-// Route definitions
-const sellerRoutes = [
-    {
-        title: "Overview",
-        items: [
-            {
-                title: "Dashboard",
-                url: "/seller",
-                icon: LayoutDashboard,
-            },
-        ],
-    },
-    {
-        title: "Management",
-        items: [
-            {
-                title: "Medicines",
-                url: "/seller/medicines",
-                icon: Package,
-            },
-            {
-                title: "Orders",
-                url: "/seller/orders",
-                icon: ShoppingCart,
-            },
-        ],
-    },
-    {
-        title: "Quick Links",
-        items: [
-            // {
-            //     title: "View Store",
-            //     url: "/shop",
-            //     icon: Store,
-            // },
-            {
-                title: "Home",
-                url: "/",
-                icon: Home,
-            },
-        ],
-    },
-];
-
-const adminRoutes = [
-    {
-        title: "Overview",
-        items: [
-            {
-                title: "Dashboard",
-                url: "/admin",
-                icon: LayoutDashboard,
-            },
-        ],
-    },
-    {
-        title: "Management",
-        items: [
-            {
-                title: "Users",
-                url: "/admin/users",
-                icon: Users,
-            },
-            {
-                title: "Categories",
-                url: "/admin/categories",
-                icon: Tags,
-            },
-            {
-                title: "Orders",
-                url: "/admin/orders",
-                icon: ShoppingCart,
-            },
-        ],
-    },
-    {
-        title: "Quick Links",
-        items: [
-            // {
-            //     title: "View Store",
-            //     url: "/shop",
-            //     icon: Store,
-            // },
-            {
-                title: "Home",
-                url: "/",
-                icon: Home,
-            },
-        ],
-    },
-];
-
-// app-sidebar.tsx
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
     const pathname = usePathname();
-    let profileRoute = ''
-    if (user.role === Roles.admin) {
-        profileRoute = '/admin/profile'
-    } else if (user.role === Roles.seller) {
-        profileRoute = '/admin/seller'
-    }
-    const routes = user.role === "ADMIN" ? adminRoutes : sellerRoutes;
-    const isActive = (url: string) => {
-        if (url === "/") return pathname === url;
-        return pathname.startsWith(url);
-    };
+
+    const profileRoute = getProfileRoute(user.role)
+
+    // Select routes based on user role
+    const routes = user.role === Roles.admin ? adminRoutes : sellerRoutes;
 
     const handleLogout = async () => {
         await logout();
@@ -177,7 +68,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                         MediGo
                     </span>
                     <span className="text-xs text-muted-foreground hidden group-data-[collapsible=icon]:hidden">
-                        {user.role === "ADMIN" ? "Admin" : "Seller"}
+                        {user.role === Roles.admin ? "Admin" : "Seller"}
                     </span>
                 </Link>
             </SidebarHeader>
@@ -193,13 +84,13 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                             <SidebarMenu>
                                 {group.items.map((item) => {
                                     const Icon = item.icon;
-                                    const active = isActive(item.url);
+                                    const active = isActiveRoute(pathname, item.url);
 
                                     return (
                                         <SidebarMenuItem key={item.title}>
                                             <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
                                                 <Link href={item.url} className="flex items-center gap-3">
-                                                    <Icon className="h-4 w-4 flex-shrink-0" />
+                                                    {Icon && <Icon className="h-4 w-4 flex-shrink-0" />}
                                                     <span className="truncate">{item.title}</span>
                                                     {active && (
                                                         <ChevronRight className="h-3 w-3 ml-auto flex-shrink-0" />
@@ -219,6 +110,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             <SidebarFooter className="border-t p-4 flex-shrink-0">
                 <div className="flex items-center gap-3 mb-3 min-w-0">
                     <Avatar className="h-9 w-9 flex-shrink-0">
+                        <AvatarImage src={user.image} alt={user.name} />
                         <AvatarFallback className="bg-primary/10 text-primary">
                             {initials}
                         </AvatarFallback>

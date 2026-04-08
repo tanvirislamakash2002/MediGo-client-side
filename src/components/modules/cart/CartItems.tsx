@@ -36,8 +36,7 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
         setSelectedItems(newSelected);
         const selected = items.filter(item => newSelected.has(item.id));
         const total = selected.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        console.log("CartItems - Selected items:", selected);
-        console.log("CartItems - Selected total:", total);
+
         onSelectionChange?.(selected, total);
     };
 

@@ -32,7 +32,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
     const result = await getMyOrders({ status, search, sort, page });
     const orders = result.error ? [] : result.data?.orders || [];
     const pagination = result.data?.pagination;
-    // console.log(result.data?.orders);
+    
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">

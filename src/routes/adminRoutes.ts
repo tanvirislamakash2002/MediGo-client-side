@@ -1,25 +1,45 @@
-import { Route } from "@/types";
+import { RouteGroup } from "@/types/routes.type";
+import { LayoutDashboard, Users, Tags, ShoppingCart, Home } from "lucide-react";
 
-export const adminRoutes: Route[] = [
+export const adminRoutes: RouteGroup[] = [
     {
-        title: "Admin Management",
+        title: "Overview",
+        items: [
+            {
+                title: "Dashboard",
+                url: "/admin",
+                icon: LayoutDashboard,
+            },
+        ],
+    },
+    {
+        title: "Management",
         items: [
             {
                 title: "Users",
                 url: "/admin/users",
+                icon: Users,
             },
             {
                 title: "Categories",
-                url: "/admin/categories"
+                url: "/admin/categories",
+                icon: Tags,
             },
             {
                 title: "Orders",
                 url: "/admin/orders",
-            },
-            {
-                title: "home",
-                url: "/",
+                icon: ShoppingCart,
             },
         ],
     },
-]
+    {
+        title: "Quick Links",
+        items: [
+            {
+                title: "Home",
+                url: "/",
+                icon: Home,
+            },
+        ],
+    },
+];

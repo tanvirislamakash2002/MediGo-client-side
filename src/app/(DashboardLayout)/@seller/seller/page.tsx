@@ -35,7 +35,7 @@ export default async function SellerDashboardPage({ searchParams }: PageProps) {
     
     const result = await getSellerDashboardStats({ range });
     const stats = result.error ? null : result.data;
-    console.log(stats);
+    
     return (
         <div className="space-y-6">
             <DashboardHeader 
