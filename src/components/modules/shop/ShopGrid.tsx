@@ -20,18 +20,15 @@ interface Medicine {
     category: { id: string; name: string };
 }
 
-interface MedicinesResponse {
-    data: Medicine[];
-    pagination: {
-        total: number;
-        page: number;
-        limit: number;
-        totalPage: number;
-    };
+interface PaginationData {
+    total: number;
+    page: number;
+    limit: number;
+    totalPage: number;
 }
 
 interface ShopGridProps {
-    initialData: MedicinesResponse | null;
+    initialData: { data: Medicine[]; pagination: PaginationData } | Medicine[] | null;
     initialSearch: string;
     initialCategoryId: string;
     initialMinPrice?: number;
@@ -49,11 +46,26 @@ export function ShopGrid({ initialData, ...initialParams }: ShopGridProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const [medicinesData, setMedicinesData] = useState<MedicinesResponse | null>(initialData);
+    // Normalize initial data - handle both array and object formats
+    const getNormalizedData = (data: any) => {
+        if (!data) return { medicines: [], pagination: null };
+        if (Array.isArray(data)) {
+            return { medicines: data, pagination: null };
+        }
+        return { 
+            medicines: data.data || [], 
+            pagination: data.pagination || null 
+        };
+    };
+
+    const normalized = getNormalizedData(initialData);
+    const [medicines, setMedicines] = useState<Medicine[]>(normalized.medicines);
+    const [pagination, setPagination] = useState<PaginationData | null>(normalized.pagination);
     const [isLoading, setIsLoading] = useState(false);
 
     // Get current values from URL
     const currentPage = parseInt(searchParams.get('page') || initialParams.initialPage.toString());
+    const currentLimit = parseInt(searchParams.get('limit') || initialParams.initialLimit.toString());
 
     // Fetch medicines when URL params change
     useEffect(() => {
@@ -61,31 +73,44 @@ export function ShopGrid({ initialData, ...initialParams }: ShopGridProps) {
             setIsLoading(true);
             try {
                 const result = await getMedicines({
-                    search: searchParams.get('search') || "",
-                    categoryId: searchParams.get('categoryId') || "",
+                    search: searchParams.get('search') || undefined,
+                    categoryId: searchParams.get('categoryId') || undefined,
                     minPrice: searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined,
                     maxPrice: searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined,
-                    manufacturer: searchParams.get('manufacturer') || "",
+                    manufacturer: searchParams.get('manufacturer') || undefined,
                     requiresPrescription: searchParams.has('requiresPrescription') ? true : undefined,
                     inStock: searchParams.has('inStock'),
                     sortBy: (searchParams.get('sortBy') as any) || "createdAt",
                     sortOrder: (searchParams.get('sortOrder') as any) || "desc",
                     page: currentPage,
-                    limit: parseInt(searchParams.get('limit') || initialParams.initialLimit.toString())
+                    limit: currentLimit
                 });
 
-                if (!result.error) {
-                    setMedicinesData(result.data);
+                if (result.success) {
+                    const data = result.data;
+                    // Handle both array and object responses
+                    if (Array.isArray(data)) {
+                        setMedicines(data);
+                        setPagination(null);
+                    } else {
+                        setMedicines(data?.data || []);
+                        setPagination(data?.pagination || null);
+                    }
+                } else {
+                    setMedicines([]);
+                    setPagination(null);
                 }
             } catch (err) {
                 console.error("Failed to fetch medicines:", err);
+                setMedicines([]);
+                setPagination(null);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchMedicines();
-    }, [searchParams, currentPage]);
+    }, [searchParams, currentPage, currentLimit]);
 
     const handlePageChange = (page: number) => {
         const params = new URLSearchParams(searchParams);
@@ -93,11 +118,13 @@ export function ShopGrid({ initialData, ...initialParams }: ShopGridProps) {
         router.push(`/shop?${params.toString()}`);
     };
 
-    if (isLoading && !medicinesData) {
-        return <ShopGridSkeleton limit={initialParams.initialLimit} />;
+    // Show skeleton on initial load
+    if (isLoading && medicines.length === 0) {
+        return <ShopGridSkeleton limit={currentLimit} />;
     }
 
-    if (!medicinesData?.data?.length) {
+    // Show no results message
+    if (!medicines || medicines.length === 0) {
         return (
             <Card className="text-center py-12">
                 <CardContent>
@@ -110,8 +137,17 @@ export function ShopGrid({ initialData, ...initialParams }: ShopGridProps) {
 
     return (
         <>
+            {/* Optional: Show loading overlay when refreshing */}
+            {isLoading && (
+                <div className="relative mb-4">
+                    <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                </div>
+            )}
+            
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {medicinesData.data.map((medicine) => (
+                {medicines.map((medicine) => (
                     <MedicineCard
                         key={medicine.id}
                         medicine={medicine}
@@ -120,11 +156,12 @@ export function ShopGrid({ initialData, ...initialParams }: ShopGridProps) {
                 ))}
             </div>
 
-            {medicinesData.pagination && medicinesData.pagination.totalPage > 1 && (
+            {/* Show pagination if available */}
+            {pagination && pagination.totalPage > 1 && (
                 <div className="mt-8">
                     <Pagination
-                        currentPage={medicinesData.pagination.page}
-                        totalPages={medicinesData.pagination.totalPage}
+                        currentPage={pagination.page}
+                        totalPages={pagination.totalPage}
                         onPageChange={handlePageChange}
                     />
                 </div>

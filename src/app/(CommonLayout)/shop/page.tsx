@@ -25,15 +25,15 @@ interface PageProps {
 
 export default async function ShopPage({ searchParams }: PageProps) {
     const params = await searchParams;
-    
+
     // Parse search params
     const search = params.search || "";
     const categoryId = params.categoryId || "";
     const minPrice = params.minPrice ? parseFloat(params.minPrice) : undefined;
     const maxPrice = params.maxPrice ? parseFloat(params.maxPrice) : undefined;
     const manufacturer = params.manufacturer || "";
-    const requiresPrescription = params.requiresPrescription === "true" ? true : 
-                                 params.requiresPrescription === "false" ? false : undefined;
+    const requiresPrescription = params.requiresPrescription === "true" ? true :
+        params.requiresPrescription === "false" ? false : undefined;
     const inStock = params.inStock === "true";
     const sortBy = (params.sortBy as "price" | "name" | "createdAt") || "createdAt";
     const sortOrder = (params.sortOrder as "asc" | "desc") || "desc";
@@ -42,7 +42,7 @@ export default async function ShopPage({ searchParams }: PageProps) {
 
     // Fetch categories for sidebar
     const categoriesResult = await getCategories();
-    const categories = categoriesResult.error ? [] : categoriesResult?.data?.data?.categories;
+    const categories = !categoriesResult.success ? [] : categoriesResult?.data?.categories;
 
     // Fetch medicines
     const medicinesResult = await getMedicines({
@@ -58,17 +58,17 @@ export default async function ShopPage({ searchParams }: PageProps) {
         page,
         limit
     });
-
-    const medicinesData = medicinesResult.error ? null : medicinesResult.data;
+    const medicinesData = !medicinesResult.success ? null : medicinesResult?.data;
+    
     return (
         <div className="min-h-screen bg-background">
             <ShopHero />
-            
+
             <div className="container mx-auto px-4 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar - Server Component */}
                     <aside className="lg:w-80 shrink-0">
-                        <ShopSidebar 
+                        <ShopSidebar
                             categories={categories}
                             initialCategoryId={categoryId}
                             initialMinPrice={minPrice}
@@ -81,15 +81,15 @@ export default async function ShopPage({ searchParams }: PageProps) {
 
                     {/* Main Content */}
                     <main className="flex-1">
-                        <ShopHeader 
+                        <ShopHeader
                             totalResults={medicinesData?.pagination?.total || 0}
                             initialSortBy={sortBy}
                             initialSortOrder={sortOrder}
                             initialLimit={limit}
                         />
-                        
+
                         <Suspense fallback={<ShopGridSkeleton limit={limit} />}>
-                            <ShopGrid 
+                            <ShopGrid
                                 initialData={medicinesData}
                                 initialSearch={search}
                                 initialCategoryId={categoryId}
