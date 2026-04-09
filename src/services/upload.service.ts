@@ -19,15 +19,19 @@ export const uploadService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || `Failed to upload to ${endpoint}` } 
+                    success: false,
+                    message: data.message || `Failed to upload to ${endpoint}`
                 };
             }
             
-            return { data: data.data, error: null };
+            // Backend returns { success: true, data: {...} }
+            return data;
         } catch (error) {
             console.error(`Upload to ${endpoint} error:`, error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 };

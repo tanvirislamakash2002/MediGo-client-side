@@ -22,15 +22,19 @@ export const dashboardService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || "Failed to fetch dashboard stats" } 
+                    success: false,
+                    message: data.message || "Failed to fetch dashboard stats"
                 };
             }
             
-            return { data: data.data, error: null };
+            // Backend returns { success: true, data: {...} }
+            return data;
         } catch (error) {
             console.error("Get dashboard stats error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -52,15 +56,19 @@ export const dashboardService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || "Failed to fetch seller dashboard stats" } 
+                    success: false,
+                    message: data.message || "Failed to fetch seller dashboard stats"
                 };
             }
             
-            return { data: data.data, error: null };
+            // Backend returns { success: true, data: {...} }
+            return data;
         } catch (error) {
             console.error("Get seller dashboard stats error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 };

@@ -18,13 +18,22 @@ export const userService = {
             const session = await res.json();
             
             if (session === null) {
-                return { data: null, error: { message: "Session is missing." } };
+                return { 
+                    success: false, 
+                    message: "Session is missing." 
+                };
             }
             
-            return { data: session, error: null };
+            return { 
+                success: true, 
+                data: session 
+            };
         } catch (error) {
             console.error("Get session error:", error);
-            return { data: null, error: { message: 'Something went wrong' } };
+            return { 
+                success: false, 
+                message: 'Something went wrong' 
+            };
         }
     },
 
@@ -56,15 +65,21 @@ export const userService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || "Failed to fetch users" } 
+                    success: false,
+                    message: data.message || "Failed to fetch users"
                 };
             }
             
-            return { data: data.data, error: null };
+            return { 
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Get all users error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -80,15 +95,21 @@ export const userService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || "Failed to ban user" } 
+                    success: false,
+                    message: data.message || "Failed to ban user"
                 };
             }
             
-            return { data: data.data, error: null };
+            return { 
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Ban user error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -104,15 +125,21 @@ export const userService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || "Failed to unban user" } 
+                    success: false,
+                    message: data.message || "Failed to unban user"
                 };
             }
             
-            return { data: data.data, error: null };
+            return { 
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Unban user error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -132,15 +159,21 @@ export const userService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || "Failed to change role" } 
+                    success: false,
+                    message: data.message || "Failed to change role"
                 };
             }
             
-            return { data: data.data, error: null };
+            return { 
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Change user role error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 };

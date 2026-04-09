@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShoppingCart, Heart, Truck, Shield, Clock, FileText } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import { getSession } from "@/actions/auth.action";
 
 interface Medicine {
     id: string;
@@ -134,13 +135,13 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
                     <ShoppingCart className="h-5 w-5 mr-2" />
                     {isAdding ? "Adding..." : "Add to Cart"}
                 </Button>
-                <Button
+                {/* <Button
                     size="lg"
                     variant="outline"
                     onClick={() => alert("Add to wishlist")}
                 >
                     <Heart className="h-5 w-5" />
-                </Button>
+                </Button> */}
             </div>
 
             {/* Delivery & Trust Badges */}

@@ -6,7 +6,7 @@ import { updateTag } from "next/cache";
 // Upload avatar image
 export const uploadAvatar = async (formData: FormData) => {
     const result = await uploadService.upload(formData, "avatar");
-    if (!result.error) {
+    if (result.success) {
         updateTag("profile");
         updateTag("customer-profile");
         updateTag("seller-profile");
@@ -18,7 +18,7 @@ export const uploadAvatar = async (formData: FormData) => {
 // Upload store logo (seller)
 export const uploadStoreLogo = async (formData: FormData) => {
     const result = await uploadService.upload(formData, "store-logo");
-    if (!result.error) {
+    if (result.success) {
         updateTag("seller-profile");
         updateTag("seller-settings");
     }
@@ -28,7 +28,7 @@ export const uploadStoreLogo = async (formData: FormData) => {
 // Upload document (seller verification)
 export const uploadDocument = async (formData: FormData) => {
     const result = await uploadService.upload(formData, "document");
-    if (!result.error) {
+    if (result.success) {
         updateTag("seller-documents");
     }
     return result;
@@ -37,7 +37,7 @@ export const uploadDocument = async (formData: FormData) => {
 // Upload product image (seller)
 export const uploadProductImage = async (formData: FormData) => {
     const result = await uploadService.upload(formData, "product-image");
-    if (!result.error) {
+    if (result.success) {
         updateTag("medicine");
     }
     return result;

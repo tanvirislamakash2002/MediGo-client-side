@@ -38,19 +38,25 @@ export const medicineService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || 'Failed to fetch medicines' }
+                    success: false,
+                    message: data.message || 'Failed to fetch medicines'
                 };
             }
 
-            return { data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error('Get medicines error:', error);
-            return { data: null, error: { message: 'Something went wrong' } };
+            return {
+                success: false,
+                message: 'Something went wrong'
+            };
         }
     },
 
-     getSellerMedicines: async (params?: {
+    getSellerMedicines: async (params?: {
         page?: number;
         limit?: number;
         search?: string;
@@ -80,15 +86,21 @@ export const medicineService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || 'Failed to fetch seller medicines' }
+                    success: false,
+                    message: data.message || 'Failed to fetch seller medicines'
                 };
             }
 
-            return { data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error('Get seller medicines error:', error);
-            return { data: null, error: { message: 'Something went wrong' } };
+            return {
+                success: false,
+                message: 'Something went wrong'
+            };
         }
     },
     
@@ -98,9 +110,15 @@ export const medicineService = {
                 next: { tags: ["medicine"] }
             });
             const data = await res.json();
-            return { data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
-            return { data: null, error: { message: 'Failed to fetch price range' } };
+            return {
+                success: false,
+                message: 'Failed to fetch price range'
+            };
         }
     },
 
@@ -110,25 +128,50 @@ export const medicineService = {
                 next: { tags: ["medicine"] }
             });
             const data = await res.json();
-            return { data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
-            return { data: null, error: { message: 'Failed to fetch manufacturers' } };
+            return {
+                success: false,
+                message: 'Failed to fetch manufacturers'
+            };
         }
     },
+
+    // ✅ Updated to return consistent response with success flag
     getMedicineById: async (id: string) => {
         try {
-            const res = await fetch(`${API_URL}/medicine/${id}`)
-            const data = await res.json()
-            return { data, error: null }
-
+            const res = await fetch(`${API_URL}/medicine/${id}`);
+            const data = await res.json();
+            
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || 'Medicine not found'
+                };
+            }
+            
+            // Handle both response formats
+            const medicineData = data.data || data;
+            
+            return {
+                success: true,
+                data: medicineData
+            };
         } catch (error) {
-            return { data: null, error: { message: 'Something went wrong' } }
-
+            console.error('Get medicine by ID error:', error);
+            return {
+                success: false,
+                message: 'Something went wrong'
+            };
         }
     },
+
     addMedicine: async (medicineData: MedicineData) => {
         try {
-            const cookieStore = await cookies()
+            const cookieStore = await cookies();
             const res = await fetch(`${API_URL}/medicine`, {
                 method: "POST",
                 headers: {
@@ -136,22 +179,30 @@ export const medicineService = {
                     Cookie: cookieStore.toString()
                 },
                 body: JSON.stringify(medicineData)
-            })
-            const data = await res.json()
-            if (data.error) {
+            });
+            const data = await res.json();
+            
+            if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: "Error:Medicine Is not Added" }
-                }
+                    success: false,
+                    message: data.message || "Failed to add medicine"
+                };
             }
-            return { data, error: null }
-
-
+            
+            return {
+                success: true,
+                data: data.data || data,
+                message: "Medicine added successfully"
+            };
         } catch (error) {
-            return { data: null, error: { message: 'Something went wrong' } }
-
+            console.error('Add medicine error:', error);
+            return {
+                success: false,
+                message: 'Something went wrong'
+            };
         }
     },
+
     updateMedicine: async (id: string, medicineData: MedicineData) => {
         try {
             const cookieStore = await cookies();
@@ -164,41 +215,56 @@ export const medicineService = {
                 body: JSON.stringify(medicineData)
             });
             const data = await res.json();
-            if (data.error) {
+            
+            if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: "Error: Medicine could not be updated" }
+                    success: false,
+                    message: data.message || "Failed to update medicine"
                 };
             }
-            return { data, error: null };
+            
+            return {
+                success: true,
+                data: data.data || data,
+                message: "Medicine updated successfully"
+            };
         } catch (error) {
-            return { data: null, error: { message: 'Something went wrong' } };
+            console.error('Update medicine error:', error);
+            return {
+                success: false,
+                message: 'Something went wrong'
+            };
         }
     },
+
     deleteMedicine: async (id: string) => {
         try {
             const cookieStore = await cookies();
             const res = await fetch(`${API_URL}/medicine/${id}`, {
                 method: "DELETE",
                 headers: {
-                    "Content-Type": "application/json",
-                    Cookie: cookieStore.toString()
+                    "Cookie": cookieStore.toString()
                 }
             });
-
             const data = await res.json();
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Error: Medicine could not be deleted" }
+                    success: false,
+                    message: data.message || "Failed to delete medicine"
                 };
             }
 
-            return { data, error: null };
+            return {
+                success: true,
+                message: "Medicine deleted successfully"
+            };
         } catch (error) {
-            console.error("Delete error:", error);
-            return { data: null, error: { message: 'Something went wrong' } };
+            console.error("Delete medicine error:", error);
+            return {
+                success: false,
+                message: 'Something went wrong'
+            };
         }
     },
-}
+};

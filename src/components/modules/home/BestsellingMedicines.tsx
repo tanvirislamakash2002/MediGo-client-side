@@ -102,7 +102,6 @@ function ProductCard({ product }: { product: Medicine }) {
         e.stopPropagation();
         toast.success("Added to wishlist");
     };
-
     return (
         <Card
             className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"

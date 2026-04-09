@@ -1,220 +1,80 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { adminProfileService } from "@/services/profile/admin.service";
 import { updateTag } from "next/cache";
 
-const API_URL = process.env.API_URL || "http://localhost:5000/api/v1";
-
+// Get admin profile
 export const getAdminProfile = async () => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/profile`, {
-            headers: { Cookie: cookieStore.toString() },
-            next: { tags: ["admin-profile"] }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to fetch profile" } };
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await adminProfileService.getAdminProfile();
 };
 
+// Update admin profile
 export const updateAdminProfile = async (data: { name: string; email: string; phone?: string }) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/profile`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify(data)
-        });
-        const result = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: result.message || "Failed to update profile" } };
+    const result = await adminProfileService.updateAdminProfile(data);
+    if (result.success) {
         updateTag("admin-profile");
-        return { data: result.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
     }
+    return result;
 };
 
+// Change password
 export const adminChangePassword = async (data: { currentPassword: string; newPassword: string }) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/profile/change-password`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify(data)
-        });
-        const result = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: result.message || "Failed to change password" } };
-        return { data: result.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await adminProfileService.adminChangePassword(data);
 };
 
+// Get active sessions
 export const getAdminActiveSessions = async () => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/sessions`, {
-            headers: { Cookie: cookieStore.toString() },
-            next: { tags: ["admin-sessions"] }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to fetch sessions" } };
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await adminProfileService.getAdminActiveSessions();
 };
 
+// Terminate session
 export const adminTerminateSession = async (sessionId: string) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/sessions/${sessionId}`, {
-            method: "DELETE",
-            headers: { Cookie: cookieStore.toString() }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to terminate session" } };
+    const result = await adminProfileService.adminTerminateSession(sessionId);
+    if (result.success) {
         updateTag("admin-sessions");
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
     }
+    return result;
 };
 
+// Logout other sessions
 export const adminLogoutOtherSessions = async () => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/sessions/logout-all`, {
-            method: "POST",
-            headers: { Cookie: cookieStore.toString() }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to logout other devices" } };
+    const result = await adminProfileService.adminLogoutOtherSessions();
+    if (result.success) {
         updateTag("admin-sessions");
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
     }
+    return result;
 };
 
+// Get activity logs
 export const getAdminActivityLogs = async () => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/activity-logs`, {
-            headers: { Cookie: cookieStore.toString() },
-            next: { tags: ["admin-logs"] }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to fetch logs" } };
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await adminProfileService.getAdminActivityLogs();
 };
 
+// Update preferences
 export const adminUpdatePreferences = async (data: { notifications: any; theme: string }) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/preferences`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify(data)
-        });
-        const result = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: result.message || "Failed to update preferences" } };
-        return { data: result.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await adminProfileService.adminUpdatePreferences(data);
 };
 
+// Export activity logs
 export const adminExportActivityLogs = async () => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/activity-logs/export`, {
-            headers: { Cookie: cookieStore.toString() }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to export logs" } };
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await adminProfileService.adminExportActivityLogs();
 };
 
+// Export account data
 export const adminExportAccountData = async () => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/account/export`, {
-            headers: { Cookie: cookieStore.toString() }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to export data" } };
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await adminProfileService.adminExportAccountData();
 };
 
+// Delete account
 export const adminDeleteAccount = async (reason?: string) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/admin/account`, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify({ reason })
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to delete account" } };
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
-    }
+    return await adminProfileService.adminDeleteAccount(reason);
 };
 
-export const adminUploadAvatar = async (formData: FormData | null) => {
-    try {
-        const cookieStore = await cookies();
-        
-        const res = await fetch(`${API_URL}/admin/profile/avatar`, {
-            method: "POST",
-            headers: {
-                Cookie: cookieStore.toString()
-            },
-            body: formData
-        });
-        const data = await res.json();
-        
-        if (!res.ok) return { data: null, error: { message: data.message || "Failed to upload avatar" } };
+// Upload avatar
+export const adminUploadAvatar = async (formData: FormData) => {
+    const result = await adminProfileService.adminUploadAvatar(formData);
+    if (result.success) {
         updateTag("admin-profile");
-        return { data: data.data, error: null };
-    } catch (error) {
-        return { data: null, error: { message: "Something went wrong" } };
     }
+    return result;
 };

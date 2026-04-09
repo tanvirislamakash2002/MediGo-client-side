@@ -20,15 +20,19 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to place order" }
+                    success: false,
+                    message: data.message || "Failed to place order"
                 };
             }
 
-            return { data: data.data, error: null };
+            // Backend returns { success: true, data: {...} }
+            return data;
         } catch (error) {
             console.error("Place order error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -36,7 +40,10 @@ export const orderService = {
     getSelectedCartItems: async (itemIds: string[]) => {
         try {
             if (!itemIds || itemIds.length === 0) {
-                return { data: null, error: { message: "No items selected" } };
+                return {
+                    success: false,
+                    message: "No items selected"
+                };
             }
 
             const cookieStore = await cookies();
@@ -52,15 +59,21 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to fetch cart" }
+                    success: false,
+                    message: data.message || "Failed to fetch cart"
                 };
             }
 
-            return { data: data.data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Get selected cart items error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -155,15 +168,21 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to fetch orders" }
+                    success: false,
+                    message: data.message || "Failed to fetch orders"
                 };
             }
 
-            return { data: data.data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Get orders error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -179,15 +198,21 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to fetch order" }
+                    success: false,
+                    message: data.message || "Failed to fetch order"
                 };
             }
 
-            return { data: data.data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Get order error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -206,15 +231,21 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to cancel order" }
+                    success: false,
+                    message: data.message || "Failed to cancel order"
                 };
             }
 
-            return { data: data.data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Cancel order error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -258,15 +289,21 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to fetch orders" }
+                    success: false,
+                    message: data.message || "Failed to fetch orders"
                 };
             }
 
-            return { data: data.data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Get seller orders error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -286,15 +323,21 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to update order status" }
+                    success: false,
+                    message: data.message || "Failed to update order status"
                 };
             }
 
-            return { data: data.data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Update order status error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -338,15 +381,21 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to fetch orders" }
+                    success: false,
+                    message: data.message || "Failed to fetch orders"
                 };
             }
 
-            return { data: data.data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Get all orders error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -366,15 +415,21 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to update order status" }
+                    success: false,
+                    message: data.message || "Failed to update order status"
                 };
             }
 
-            return { data: data.data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Admin update order status error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -394,15 +449,21 @@ export const orderService = {
 
             if (!res.ok) {
                 return {
-                    data: null,
-                    error: { message: data.message || "Failed to cancel order" }
+                    success: false,
+                    message: data.message || "Failed to cancel order"
                 };
             }
 
-            return { data: data.data, error: null };
+            return {
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Admin cancel order error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 };

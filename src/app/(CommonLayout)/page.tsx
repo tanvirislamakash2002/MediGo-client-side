@@ -10,14 +10,13 @@ import { TrustIndicators } from "@/components/modules/home/TrustIndicators";
 export default async function Home() {
   
 const {data} =  await getMedicines()
-
   return (
     <main>
       <HeroSection />
       <TrustIndicators />
       <HowItWorks />
       <FeaturedCategories />
-      <BestsellingMedicines medicineData = {data.data} />
+      <BestsellingMedicines medicineData = {data} />
       <SpecialOffers />
       <HealthTips />
     </main>

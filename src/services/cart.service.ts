@@ -18,37 +18,45 @@ export const cartService = {
     // Get cart items - automatically gets session from cookies
     getCartItems: async (sessionToken?: string) => {
         try {
-            // If user is logged in, fetch from database
             if (sessionToken) {
                 const cookieStore = await cookies();
                 const res = await fetch(`${API_URL}/cart`, {
-                    headers: {
-                        Cookie: cookieStore.toString()
-                    },
+                    headers: { Cookie: cookieStore.toString() },
                     next: { tags: ["cart"] }
                 });
                 const data = await res.json();
 
                 if (!res.ok) {
-                    return { data: null, error: { message: data.message || "Failed to fetch cart" } };
+                    return { 
+                        success: false, 
+                        message: data.message || "Failed to fetch cart" 
+                    };
                 }
 
-                return { data: data.data || data, error: null };
+                return { 
+                    success: true, 
+                    data: data.data || data 
+                };
             }
             // For guest users, return empty
             else {
-                return { data: { items: [], totalItems: 0, totalPrice: 0 }, error: null };
+                return { 
+                    success: true, 
+                    data: { items: [], totalItems: 0, totalPrice: 0 } 
+                };
             }
         } catch (error) {
             console.error("Get cart error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false, 
+                message: "Something went wrong" 
+            };
         }
     },
 
     // Add item to cart
     addToCart: async (medicineId: string, quantity: number, sessionToken?: string) => {
         try {
-            // If sessionToken provided, user is logged in
             if (sessionToken) {
                 const cookieStore = await cookies();
                 const res = await fetch(`${API_URL}/cart`, {
@@ -60,11 +68,18 @@ export const cartService = {
                     body: JSON.stringify({ medicineId, quantity })
                 });
                 const data = await res.json();
+                
                 if (!res.ok) {
-                    return { data: null, error: { message: data.message || "Failed to add to cart" } };
+                    return { 
+                        success: false, 
+                        message: data.message || "Failed to add to cart" 
+                    };
                 }
 
-                return { data: data.data || data, error: null };
+                return { 
+                    success: true, 
+                    data: data.data || data 
+                };
             }
             // Guest user flow
             else {
@@ -72,7 +87,10 @@ export const cartService = {
                 const medicine = await medicineRes.json();
 
                 if (!medicineRes.ok) {
-                    return { data: null, error: { message: "Medicine not found" } };
+                    return { 
+                        success: false, 
+                        message: "Medicine not found" 
+                    };
                 }
 
                 const cartItem: GuestCartItem = {
@@ -86,13 +104,20 @@ export const cartService = {
                     stock: medicine.stock
                 };
 
-                return { data: cartItem, error: null };
+                return { 
+                    success: true, 
+                    data: cartItem 
+                };
             }
         } catch (error) {
             console.error("Add to cart error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false, 
+                message: "Something went wrong" 
+            };
         }
     },
+
     // Update cart item quantity
     updateCartItem: async (itemId: string, quantity: number) => {
         try {
@@ -100,7 +125,10 @@ export const cartService = {
             const sessionToken = cookieStore.get("session-token")?.value;
 
             if (!sessionToken) {
-                return { data: null, error: { message: "Please login to update cart" } };
+                return { 
+                    success: false, 
+                    message: "Please login to update cart" 
+                };
             }
 
             const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
@@ -114,13 +142,22 @@ export const cartService = {
             const data = await res.json();
 
             if (!res.ok) {
-                return { data: null, error: { message: data.message || "Failed to update cart" } };
+                return { 
+                    success: false, 
+                    message: data.message || "Failed to update cart" 
+                };
             }
 
-            return { data: data.data || data, error: null };
+            return { 
+                success: true, 
+                data: data.data || data 
+            };
         } catch (error) {
             console.error("Update cart error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false, 
+                message: "Something went wrong" 
+            };
         }
     },
 
@@ -130,19 +167,27 @@ export const cartService = {
             const cookieStore = await cookies();
             const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
                 method: "DELETE",
-                headers: {
-                    Cookie: cookieStore.toString()
-                }
+                headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
+            
             if (!res.ok) {
-                return { data: null, error: { message: data.message || "Failed to remove item" } };
+                return { 
+                    success: false, 
+                    message: data.message || "Failed to remove item" 
+                };
             }
 
-            return { data: data.data || data, error: null };
+            return { 
+                success: true, 
+                data: data.data || data 
+            };
         } catch (error) {
             console.error("Remove cart error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false, 
+                message: "Something went wrong" 
+            };
         }
     },
 
@@ -153,25 +198,35 @@ export const cartService = {
             const sessionToken = cookieStore.get("session-token")?.value;
 
             if (!sessionToken) {
-                return { data: null, error: { message: "Please login to clear cart" } };
+                return { 
+                    success: false, 
+                    message: "Please login to clear cart" 
+                };
             }
 
             const res = await fetch(`${API_URL}/cart`, {
                 method: "DELETE",
-                headers: {
-                    Cookie: cookieStore.toString()
-                }
+                headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
 
             if (!res.ok) {
-                return { data: null, error: { message: data.message || "Failed to clear cart" } };
+                return { 
+                    success: false, 
+                    message: data.message || "Failed to clear cart" 
+                };
             }
 
-            return { data: data.data || data, error: null };
+            return { 
+                success: true, 
+                data: data.data || data 
+            };
         } catch (error) {
             console.error("Clear cart error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false, 
+                message: "Something went wrong" 
+            };
         }
     },
 
@@ -182,7 +237,10 @@ export const cartService = {
             const sessionToken = cookieStore.get("session-token")?.value;
 
             if (!sessionToken) {
-                return { data: null, error: { message: "Please login to merge cart" } };
+                return { 
+                    success: false, 
+                    message: "Please login to merge cart" 
+                };
             }
 
             const res = await fetch(`${API_URL}/cart/merge`, {
@@ -196,13 +254,22 @@ export const cartService = {
             const data = await res.json();
 
             if (!res.ok) {
-                return { data: null, error: { message: data.message || "Failed to merge cart" } };
+                return { 
+                    success: false, 
+                    message: data.message || "Failed to merge cart" 
+                };
             }
 
-            return { data: data.data || data, error: null };
+            return { 
+                success: true, 
+                data: data.data || data 
+            };
         } catch (error) {
             console.error("Merge cart error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false, 
+                message: "Something went wrong" 
+            };
         }
     },
 
@@ -214,31 +281,45 @@ export const cartService = {
 
             if (sessionToken) {
                 const res = await fetch(`${API_URL}/cart/count`, {
-                    headers: {
-                        Cookie: cookieStore.toString()
-                    },
+                    headers: { Cookie: cookieStore.toString() },
                     next: { tags: ["cart-count"] }
                 });
                 const data = await res.json();
 
                 if (!res.ok) {
-                    return { data: 0, error: null };
+                    return { 
+                        success: true, 
+                        data: 0 
+                    };
                 }
 
-                return { data: data.data || data.count || 0, error: null };
+                return { 
+                    success: true, 
+                    data: data.data || data.count || 0 
+                };
             }
 
-            return { data: 0, error: null };
+            return { 
+                success: true, 
+                data: 0 
+            };
         } catch (error) {
             console.error("Get cart count error:", error);
-            return { data: 0, error: null };
+            return { 
+                success: true, 
+                data: 0 
+            };
         }
     },
+
     // Get selected cart items by IDs
     getSelectedCartItems: async (sessionToken: string, selectedItemIds: string[]) => {
         try {
             if (!sessionToken) {
-                return { data: null, error: { message: "Please login to view cart" } };
+                return { 
+                    success: false, 
+                    message: "Please login to view cart" 
+                };
             }
 
             const cookieStore = await cookies();
@@ -253,14 +334,22 @@ export const cartService = {
             const data = await res.json();
 
             if (!res.ok) {
-                return { data: null, error: { message: data.message || "Failed to fetch selected items" } };
+                return { 
+                    success: false, 
+                    message: data.message || "Failed to fetch selected items" 
+                };
             }
 
-            return { data: data.data || data, error: null };
+            return { 
+                success: true, 
+                data: data.data || data 
+            };
         } catch (error) {
             console.error("Get selected cart items error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false, 
+                message: "Something went wrong" 
+            };
         }
     }
-
 };

@@ -6,7 +6,7 @@ import { updateTag } from "next/cache";
 // Place a new order
 export const placeOrder = async (orderData: any) => {
     const result = await orderService.placeOrder(orderData);
-    if (!result.error) {
+    if (result.success) {
         updateTag("cart");
     }
     return result;
@@ -41,7 +41,7 @@ export const getOrderById = async (orderId: string) => {
 // Cancel order
 export const cancelOrder = async (orderId: string) => {
     const result = await orderService.cancelOrder(orderId);
-    if (!result.error) {
+    if (result.success) {
         updateTag("orders");
     }
     return result;
@@ -62,7 +62,7 @@ export const getSellerOrders = async (params?: {
 // Update order status 
 export const updateOrderStatus = async (orderId: string, status: string) => {
     const result = await orderService.updateOrderStatus(orderId, status);
-    if (!result.error) {
+    if (result.success) {
         updateTag("orders");
         updateTag("seller-orders");
     }
@@ -84,7 +84,7 @@ export const getAllOrders = async (params?: {
 // Update order status 
 export const adminUpdateOrderStatus = async (orderId: string, status: string, reason?: string) => {
     const result = await orderService.adminUpdateOrderStatus(orderId, status, reason);
-    if (!result.error) {
+    if (result.success) {
         updateTag("orders");
         updateTag("seller-orders");
         updateTag("admin-orders");
@@ -95,7 +95,7 @@ export const adminUpdateOrderStatus = async (orderId: string, status: string, re
 // Cancel order 
 export const adminCancelOrder = async (orderId: string, reason?: string) => {
     const result = await orderService.adminCancelOrder(orderId, reason);
-    if (!result.error) {
+    if (result.success) {
         updateTag("orders");
         updateTag("seller-orders");
         updateTag("admin-orders");

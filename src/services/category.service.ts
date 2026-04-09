@@ -33,18 +33,25 @@ export const categoryService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || "Failed to fetch categories" } 
+                    success: false,
+                    message: data.message || "Failed to fetch categories"
                 };
             }
-            return { data, error: null };
+            
+            return { 
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Get categories error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
-    // Get all categories 
+    // Get all categories (simple list)
     getCategories: async () => {
         try {
             const res = await fetch(`${API_URL}/category`, {
@@ -54,15 +61,21 @@ export const categoryService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || "Failed to fetch categories" } 
+                    success: false,
+                    message: data.message || "Failed to fetch categories"
                 };
             }
             
-            return { data, error: null };
+            return { 
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
             console.error("Get categories error:", error);
-            return { data: null, error: { message: "Something went wrong" } };
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -75,14 +88,21 @@ export const categoryService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: data.message || "Category not found" } 
+                    success: false,
+                    message: data.message || "Category not found"
                 };
             }
             
-            return { data, error: null };
+            return { 
+                success: true,
+                data: data.data || data
+            };
         } catch (error) {
-            return { data: null, error: { message: "Something went wrong" } };
+            console.error("Get category by ID error:", error);
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -101,14 +121,22 @@ export const categoryService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: result.message || "Failed to create category" } 
+                    success: false,
+                    message: result.message || "Failed to create category"
                 };
             }
             
-            return { data: result, error: null };
+            return { 
+                success: true,
+                data: result.data || result,
+                message: "Category created successfully"
+            };
         } catch (error) {
-            return { data: null, error: { message: "Something went wrong" } };
+            console.error("Create category error:", error);
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -127,14 +155,22 @@ export const categoryService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: result.message || "Failed to update category" } 
+                    success: false,
+                    message: result.message || "Failed to update category"
                 };
             }
             
-            return { data: result, error: null };
+            return { 
+                success: true,
+                data: result.data || result,
+                message: "Category updated successfully"
+            };
         } catch (error) {
-            return { data: null, error: { message: "Something went wrong" } };
+            console.error("Update category error:", error);
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     },
 
@@ -151,14 +187,21 @@ export const categoryService = {
             
             if (!res.ok) {
                 return { 
-                    data: null, 
-                    error: { message: result.message || "Failed to delete category" } 
+                    success: false,
+                    message: result.message || "Failed to delete category"
                 };
             }
             
-            return { data: result, error: null };
+            return { 
+                success: true,
+                message: "Category deleted successfully"
+            };
         } catch (error) {
-            return { data: null, error: { message: "Something went wrong" } };
+            console.error("Delete category error:", error);
+            return { 
+                success: false,
+                message: "Something went wrong"
+            };
         }
     }
 };
