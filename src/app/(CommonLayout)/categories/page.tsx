@@ -13,19 +13,18 @@ export const metadata = {
 
 export default async function CategoriesPage() {
     const result = await getAllCategories({ limit: 100 });
-    
-    if (result.error) {
+
+    if (!result?.success || !result?.data) {
         return (
             <div className="container mx-auto px-4 py-16 text-center">
                 <h1 className="text-2xl font-bold text-red-500 mb-4">Error</h1>
-                <p className="text-muted-foreground">{result.error.message}</p>
+                <p className="text-muted-foreground">{result.message}</p>
             </div>
         );
     }
 
-    const categories = result.data?.data?.categories || [];
-    const pagination = result.data?.data?.pagination;
-
+    const categories = result?.data?.categories || [];
+    const pagination = result?.data?.pagination;
     return (
         <main className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">

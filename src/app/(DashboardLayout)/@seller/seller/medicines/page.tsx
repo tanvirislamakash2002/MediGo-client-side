@@ -27,7 +27,7 @@ export default async function MedicinesPage({ searchParams }: PageProps) {
         limit 
     });
 
-    const initialData = result.error ? null : result.data;
+    const initialData = !result.success ? null : result?.data;
 
     return (
         <div className="container mx-auto py-6 space-y-6">

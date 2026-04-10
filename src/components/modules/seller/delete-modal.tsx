@@ -10,6 +10,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { TriangleAlert } from "lucide-react";
 
 interface Medicine {
     id: string;
@@ -36,19 +37,21 @@ export function DeleteConfirmationModal({
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the medicine
-                        {medicine && (
-                            <div className="mt-2 p-3 bg-destructive/10 rounded-md">
-                                <p className="font-semibold text-destructive">{medicine.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                    Price: ${medicine.price.toFixed(2)} | Stock: {medicine.stock}
-                                </p>
-                            </div>
-                        )}
-                        <p className="mt-2">
-                            ⚠️ All order history associated with this medicine will be affected.
-                        </p>
+                    <AlertDialogDescription asChild>
+                        <div>
+                            This action cannot be undone. This will permanently delete the medicine
+                            {medicine && (
+                                <div className="mt-2 p-3 bg-destructive/10 rounded-md">
+                                    <p className="font-semibold text-destructive">{medicine.name}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Price: ${medicine.price.toFixed(2)} | Stock: {medicine.stock}
+                                    </p>
+                                </div>
+                            )}
+                            <p className="mt-2 flex justify-center items-start gap-2">
+                                <TriangleAlert className="text-yellow-600"/> All order history associated with this medicine will be affected.
+                            </p>
+                        </div>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

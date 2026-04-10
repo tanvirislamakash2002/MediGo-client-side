@@ -2,6 +2,7 @@
 
 import { getCategories } from "@/actions/category.action";
 import { addMedicine } from "@/actions/medicine.action";
+import { uploadProductImage } from "@/actions/upload.action";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Category } from "@/types/category.type";
 import { useForm } from "@tanstack/react-form";
+import { Loader2, Upload, X } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -29,19 +32,22 @@ const formSchema = z.object({
 
 export default function CreateMedicineForm() {
     const router = useRouter();
-    const [categories, setCategories] = useState<Category[]>([]); // Change to array
+    const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     useEffect(() => {
         const fetchCategory = async () => {
             setIsLoading(true);
             try {
                 const result = await getCategories();
-                if (result.error) {
-                    setError(result.error.message);
+                if (!result?.success) {
+                    setError(result?.message);
                 } else {
-                    // Access the categories array from result.data.categories
                     setCategories(result.data?.categories || []);
                 }
             } catch (err) {
@@ -54,6 +60,80 @@ export default function CreateMedicineForm() {
         fetchCategory();
     }, []);
 
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+        if (!allowedTypes.includes(file.type)) {
+            toast.error("Only image files (JPEG, PNG, GIF, WEBP) are allowed");
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error("File size must be less than 2MB");
+            return;
+        }
+
+        setImageFile(file);
+        const previewUrl = URL.createObjectURL(file);
+        setImagePreview(previewUrl);
+        setUploadProgress(0);
+    };
+
+    const removeImage = () => {
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        setImageFile(null);
+        setImagePreview(null);
+        setUploadProgress(0);
+    };
+
+    const uploadImage = async (medicineId: string): Promise<boolean> => {
+        if (!imageFile) return true;
+
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        const formData = new FormData();
+        formData.append("file", imageFile);
+
+        const progressInterval = setInterval(() => {
+            setUploadProgress(prev => {
+                if (prev >= 90) {
+                    clearInterval(progressInterval);
+                    return 90;
+                }
+                return prev + 10;
+            });
+        }, 200);
+
+        try {
+            const result = await uploadProductImage(medicineId, formData);
+            clearInterval(progressInterval);
+
+            // Change from result.data?.url to result.data?.imageUrl
+            if (result.success && result.data?.imageUrl) {
+                setUploadProgress(100);
+                return true;
+            } else {
+                toast.error(result.message || "Failed to upload image");
+                setUploadProgress(0);
+                return false;
+            }
+        } catch (error) {
+            clearInterval(progressInterval);
+            toast.error("Failed to upload image");
+            setUploadProgress(0);
+            return false;
+        } finally {
+            setTimeout(() => {
+                setIsUploading(false);
+                setUploadProgress(0);
+            }, 500);
+        }
+    };
 
     const form = useForm({
         defaultValues: {
@@ -72,14 +152,30 @@ export default function CreateMedicineForm() {
         onSubmit: async ({ value }) => {
             const toastId = toast.loading("Adding medicine...");
 
-            const res = await addMedicine(value);
+            // First create the medicine without image
+            const res = await addMedicine({
+                ...value,
+                imageUrl: "", // Empty initially
+            });
 
-            if (res.error) {
-                toast.error(res.error.message, { id: toastId });
+            if (!res?.success) {
+                toast.error(res?.message, { id: toastId });
                 return;
             }
-            
-            toast.success('Medicine created successfully', { id: toastId });
+
+            // If image exists, upload it using the created medicine ID
+            if (imageFile && res.data?.id) {
+                const uploadSuccess = await uploadImage(res.data.id);
+                console.log('uploadSuccess------------', uploadSuccess);
+                if (!uploadSuccess) {
+                    toast.warning("Medicine created but image upload failed. You can update it later.", { id: toastId });
+                } else {
+                    toast.success('Medicine created successfully with image', { id: toastId });
+                }
+            } else {
+                toast.success('Medicine created successfully', { id: toastId });
+            }
+
             router.push("/seller/medicines");
         },
     });
@@ -89,6 +185,7 @@ export default function CreateMedicineForm() {
             <div className="container mx-auto py-6 max-w-2xl">
                 <Card>
                     <CardContent className="py-12 text-center">
+                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
                         <p>Loading categories...</p>
                     </CardContent>
                 </Card>
@@ -130,6 +227,63 @@ export default function CreateMedicineForm() {
                         className="space-y-4"
                     >
                         <FieldGroup>
+                            {/* Image Upload Section */}
+                            <div className="space-y-2">
+                                <FieldLabel>Medicine Image (Optional)</FieldLabel>
+                                {!imagePreview ? (
+                                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                            <p className="text-sm text-muted-foreground">
+                                                Click to upload image
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                JPEG, PNG, GIF, WEBP (max 2MB)
+                                            </p>
+                                        </div>
+                                        <Input
+                                            type="file"
+                                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                            className="hidden"
+                                            onChange={handleImageSelect}
+                                        />
+                                    </label>
+                                ) : (
+                                    <div className="relative group">
+                                        <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
+                                            <Image
+                                                src={imagePreview}
+                                                alt="Medicine preview"
+                                                fill
+                                                className="object-cover"
+                                            />
+                                            {isUploading && (
+                                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
+                                                    <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
+                                                    <div className="w-3/4 bg-gray-700 rounded-full h-2">
+                                                        <div
+                                                            className="bg-primary h-2 rounded-full transition-all duration-300"
+                                                            style={{ width: `${uploadProgress}%` }}
+                                                        />
+                                                    </div>
+                                                    <p className="text-white text-sm mt-2">
+                                                        Uploading: {uploadProgress}%
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={removeImage}
+                                            disabled={isUploading}
+                                            className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
                             <form.Field
                                 name="name"
                                 children={(field) => {
@@ -270,27 +424,6 @@ export default function CreateMedicineForm() {
                             />
 
                             <form.Field
-                                name="imageUrl"
-                                children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Image URL (Optional)</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                name={field.name}
-                                                value={field.state.value}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                onBlur={field.handleBlur}
-                                                placeholder="https://example.com/image.jpg"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    );
-                                }}
-                            />
-
-                            <form.Field
                                 name="requiresPrescription"
                                 children={(field) => {
                                     return (
@@ -315,14 +448,23 @@ export default function CreateMedicineForm() {
                         form="add-medicine-form"
                         type="submit"
                         className="flex-1"
+                        disabled={isUploading}
                     >
-                        Add Medicine
+                        {isUploading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Uploading... {uploadProgress}%
+                            </>
+                        ) : (
+                            "Add Medicine"
+                        )}
                     </Button>
                     <Button
                         type="button"
                         variant="outline"
                         className="flex-1"
                         onClick={() => router.back()}
+                        disabled={isUploading}
                     >
                         Cancel
                     </Button>

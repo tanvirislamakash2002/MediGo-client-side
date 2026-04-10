@@ -84,7 +84,7 @@ export function CategoryGrid({ categories, pagination }: CategoryGridProps) {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
     const handleCategoryClick = (category: Category) => {
-        router.push(`/shop?categoryName=${encodeURIComponent(category.name)}`);
+        router.push(`/shop?categoryId=${encodeURIComponent(category.id)}`);
     };
 
     // Featured categories (first 3)

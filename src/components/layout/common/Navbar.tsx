@@ -12,9 +12,7 @@ import {
   User,
   LogOut,
   Package,
-  Settings,
   Search,
-  ChevronDown,
   LayoutDashboard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -147,7 +145,7 @@ export function Navbar() {
               <ThemeToggle />
 
               {/* Cart */}
-              <Button
+              {user?.role === Roles.customer && <Button
                 variant="ghost"
                 size="icon"
                 className="relative"
@@ -159,7 +157,7 @@ export function Navbar() {
                     {cartCount > 99 ? "99+" : cartCount}
                   </span>
                 )}
-              </Button>
+              </Button>}
 
               {/* User Menu */}
               {user ? (

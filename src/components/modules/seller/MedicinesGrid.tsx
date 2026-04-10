@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { MedicineCard } from "@/components/modules/seller/medicine-card";
 import { DeleteConfirmationModal } from "@/components/modules/seller/delete-modal";
 import { Pagination } from "@/components/ui/pagination";
-import { getMedicines, deleteMedicine } from "@/actions/medicine.action";
+import { getSellerMedicines, deleteMedicine } from "@/actions/medicine.action";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -27,12 +27,12 @@ interface Medicine {
 }
 
 interface MedicinesResponse {
-    data: Medicine[];
+    items: Medicine[];
     pagination: {
         total: number;
         page: number;
         limit: number;
-        totalPage: number;
+        totalPages: number;
     };
 }
 
@@ -43,16 +43,16 @@ interface MedicinesGridProps {
     initialLimit: number;
 }
 
-export function MedicinesGrid({ 
-    initialData, 
-    initialSearch, 
-    initialPage, 
-    initialLimit 
+export function MedicinesGrid({
+    initialData,
+    initialSearch,
+    initialPage,
+    initialLimit
 }: MedicinesGridProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
-    
+
     const [medicinesData, setMedicinesData] = useState<MedicinesResponse | null>(initialData);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
@@ -68,15 +68,15 @@ export function MedicinesGrid({
         const fetchMedicines = async () => {
             setIsLoading(true);
             try {
-                const result = await getMedicines({ 
-                    search: currentSearch, 
+                const result = await getSellerMedicines({
+                    search: currentSearch,
                     page: currentPage,
                     limit: currentLimit
                 });
-                if (result.error) {
-                    toast.error(result.error.message);
+                if (!result.success) {
+                    toast.error(result?.message);
                 } else {
-                    setMedicinesData(result.data);
+                    setMedicinesData(result?.data);
                 }
             } catch (err) {
                 toast.error("Failed to fetch medicines");
@@ -84,10 +84,9 @@ export function MedicinesGrid({
                 setIsLoading(false);
             }
         };
-
         // Only fetch if initial data is not for current params
-        if (currentSearch !== initialSearch || 
-            currentPage !== initialPage || 
+        if (currentSearch !== initialSearch ||
+            currentPage !== initialPage ||
             currentLimit !== initialLimit) {
             fetchMedicines();
         }
@@ -100,30 +99,30 @@ export function MedicinesGrid({
 
     const confirmDelete = async () => {
         if (!selectedMedicine) return;
-        
+
         const toastId = toast.loading("Deleting medicine...");
-        
+
         try {
             // Use the server action instead of direct fetch
             const result = await deleteMedicine(selectedMedicine.id);
-            
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+
+            if (!result?.success) {
+                toast.error(result?.message, { id: toastId });
                 return;
             }
-            
+
             toast.success("Medicine deleted successfully", { id: toastId });
             setShowDeleteModal(false);
             setSelectedMedicine(null);
-            
+
             // Refetch current page using startTransition for better UX
             startTransition(async () => {
-                const fetchResult = await getMedicines({ 
-                    search: currentSearch, 
+                const fetchResult = await getSellerMedicines({
+                    search: currentSearch,
                     page: currentPage,
                     limit: currentLimit
                 });
-                if (!fetchResult.error) {
+                if (fetchResult.success) {
                     setMedicinesData(fetchResult.data);
                 }
             });
@@ -155,8 +154,7 @@ export function MedicinesGrid({
             </div>
         );
     }
-
-    if (!medicinesData?.data?.length) {
+    if (!medicinesData?.items?.length) {
         return (
             <Card>
                 <CardContent className="py-12 text-center">
@@ -172,7 +170,7 @@ export function MedicinesGrid({
     return (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {medicinesData.data.map((medicine: Medicine) => (
+                {medicinesData?.items.map((medicine: Medicine) => (
                     <MedicineCard
                         key={medicine.id}
                         medicine={medicine}
@@ -194,7 +192,7 @@ export function MedicinesGrid({
                     </p>
                     <Pagination
                         currentPage={medicinesData.pagination.page}
-                        totalPages={medicinesData.pagination.totalPage}
+                        totalPages={medicinesData.pagination.totalPages}
                         onPageChange={handlePageChange}
                     />
                 </div>

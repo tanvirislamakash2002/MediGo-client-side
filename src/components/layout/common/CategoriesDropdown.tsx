@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { getAllCategories } from "@/actions/category.action";
 import { ChevronRight, Eye } from "lucide-react";
 
@@ -22,16 +20,16 @@ export function CategoriesDropdown() {
     useEffect(() => {
         const fetchCategories = async () => {
             const result = await getAllCategories();
-            if (!result.error && result.data?.data) {
-                setCategories(result.data.data.categories.slice(0, 5));
+            if (result.success && result?.data) {
+                setCategories(result?.data?.categories.slice(0, 5));
             }
             setIsLoading(false);
         };
         fetchCategories();
     }, []);
 
-    const handleCategoryClick = (categoryName: string) => {
-        router.push(`/shop?categoryName=${encodeURIComponent(categoryName)}`);
+    const handleCategoryClick = (categoryId: string) => {
+        router.push(`/shop?categoryId=${encodeURIComponent(categoryId)}`);
         setIsOpen(false);
     };
 
@@ -71,7 +69,7 @@ export function CategoriesDropdown() {
                                 {categories.map((category) => (
                                     <button
                                         key={category.id}
-                                        onClick={() => handleCategoryClick(category.name)}
+                                        onClick={() => handleCategoryClick(category.id)}
                                         className="w-full text-left px-2 py-1.5 text-sm rounded-md hover:bg-muted transition-colors"
                                     >
                                         {category.name}

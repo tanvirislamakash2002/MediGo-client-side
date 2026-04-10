@@ -39,9 +39,9 @@ export function RelatedMedicines({ categoryId, currentMedicineId }: RelatedMedic
                     limit: 4,
                     page: 1
                 });
-                if (!result.error && result.data) {
+                if (result.success && result.data) {
                     // Filter out current medicine
-                    const filtered = result.data.data.filter(
+                    const filtered = result?.data.filter(
                         (med: Medicine) => med.id !== currentMedicineId
                     );
                     setMedicines(filtered.slice(0, 4));

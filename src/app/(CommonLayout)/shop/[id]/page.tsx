@@ -15,7 +15,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
     const { id } = await params;
     const result = await getMedicineById(id);
-    const medicine = result?.data?.success ? result?.data?.data : null;
+    const medicine = result?.success ? result?.data : null;
     if (!medicine) {
         return {
             title: "Medicine Not Found | MediStore",
@@ -41,12 +41,11 @@ export async function generateMetadata({ params }: PageProps) {
 export default async function MedicineDetailsPage({ params }: PageProps) {
     const { id } = await params;
     const result = await getMedicineById(id);
-    const medicine = result?.data?.success ? result?.data?.data : null;
+    const medicine = result?.success ? result?.data : null;
 
     if (!medicine) {
         notFound();
     }
-    console.log(result);
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-6">

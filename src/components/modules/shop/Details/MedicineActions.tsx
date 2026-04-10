@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShoppingCart, Heart, Truck, Shield, Clock, FileText } from "lucide-react";
+import { ShoppingCart, Heart, Truck, Shield, Clock, FileText, TriangleAlert } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { getSession } from "@/actions/auth.action";
 
@@ -163,8 +163,8 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
             {/* Prescription Notice */}
             {medicine.requiresPrescription && (
                 <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                    <p className="text-sm text-yellow-800 dark:text-yellow-300">
-                        ⚠️ This medicine requires a valid prescription. Please upload your prescription during checkout.
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300  flex justify-center items-start gap-2">
+                        <TriangleAlert className="text-yellow-600" /> This medicine requires a valid prescription. Please upload your prescription during checkout.
                     </p>
                 </div>
             )}

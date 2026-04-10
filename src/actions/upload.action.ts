@@ -35,8 +35,8 @@ export const uploadDocument = async (formData: FormData) => {
 };
 
 // Upload product image (seller)
-export const uploadProductImage = async (formData: FormData) => {
-    const result = await uploadService.upload(formData, "product-image");
+export const uploadProductImage = async (medicineId: string, formData: FormData) => {
+    const result = await uploadService.upload(formData, `product-image/${medicineId}`);
     if (result.success) {
         updateTag("medicine");
     }
