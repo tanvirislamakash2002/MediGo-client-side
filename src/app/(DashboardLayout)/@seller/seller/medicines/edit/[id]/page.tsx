@@ -8,6 +8,7 @@ const EditMedicinePage = async ({ params }: {
 
     return (
         <>
+        {/* <div className="bg-amber-400 h-169">r</div> */}
             <EditMedicineForm id={id}></EditMedicineForm>
         </>
     );

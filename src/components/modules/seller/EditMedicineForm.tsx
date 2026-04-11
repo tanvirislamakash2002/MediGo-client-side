@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,13 +65,13 @@ const EditMedicineForm = ({ id }: { id: string }) => {
     const [isLoadingCategories, setIsLoadingCategories] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    
+
     // Image upload states
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    
+
     // Fetch medicine data
     useEffect(() => {
         const fetchMedicine = async () => {
@@ -83,7 +82,6 @@ const EditMedicineForm = ({ id }: { id: string }) => {
                     setError(result?.message);
                 } else {
                     setMedicineData(result.data);
-                    // Set initial image preview from existing URL
                     if (result.data?.imageUrl) {
                         setImagePreview(result.data.imageUrl);
                     }
@@ -154,7 +152,7 @@ const EditMedicineForm = ({ id }: { id: string }) => {
 
         setIsUploading(true);
         setUploadProgress(0);
-        
+
         const formData = new FormData();
         formData.append("file", imageFile);
 
@@ -171,7 +169,7 @@ const EditMedicineForm = ({ id }: { id: string }) => {
         try {
             const result = await uploadProductImage(medicineId, formData);
             clearInterval(progressInterval);
-            
+
             if (result.success && result.data?.imageUrl) {
                 setUploadProgress(100);
                 return true;
@@ -199,7 +197,6 @@ const EditMedicineForm = ({ id }: { id: string }) => {
         const toastId = toast.loading("Updating medicine...");
 
         try {
-            // First update the medicine basic info
             const updateResult = await updateMedicine(medicineId, values);
 
             if (!updateResult.success) {
@@ -208,7 +205,6 @@ const EditMedicineForm = ({ id }: { id: string }) => {
                 return;
             }
 
-            // If there's a new image to upload, upload it
             if (imageFile) {
                 const uploadSuccess = await uploadImage(medicineId);
                 if (!uploadSuccess) {
@@ -219,7 +215,7 @@ const EditMedicineForm = ({ id }: { id: string }) => {
             } else {
                 toast.success("Medicine updated successfully", { id: toastId });
             }
-            
+
             router.push("/seller/medicines");
         } catch (error) {
             toast.error("Failed to update medicine", { id: toastId });
@@ -268,7 +264,7 @@ const EditMedicineForm = ({ id }: { id: string }) => {
     // Loading state
     if (isLoadingMedicine || isLoadingCategories) {
         return (
-            <div className="container mx-auto py-6 max-w-2xl">
+            <div className="max-w-2xl mx-auto">
                 <Card>
                     <CardContent className="py-12 text-center">
                         <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
@@ -282,7 +278,7 @@ const EditMedicineForm = ({ id }: { id: string }) => {
     // Error state
     if (error) {
         return (
-            <div className="container mx-auto py-6 max-w-2xl">
+            <div className="max-w-2xl mx-auto">
                 <Card>
                     <CardContent className="py-12 text-center">
                         <p className="text-red-500 mb-4">Error: {error}</p>
@@ -294,7 +290,7 @@ const EditMedicineForm = ({ id }: { id: string }) => {
     }
 
     return (
-        <div className="container mx-auto py-6 max-w-2xl">
+        <div className="max-w-2xl mx-auto">
             <Card>
                 <CardHeader>
                     <CardTitle>Edit Medicine</CardTitle>
@@ -311,203 +307,235 @@ const EditMedicineForm = ({ id }: { id: string }) => {
                         }}
                         className="space-y-4"
                     >
-                        <FieldGroup>
-                            {/* Image Upload Section */}
-                            <div className="space-y-2">
-                                <FieldLabel>Medicine Image</FieldLabel>
-                                {!imagePreview ? (
-                                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                                            <p className="text-sm text-muted-foreground">
-                                                Click to upload new image
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                JPEG, PNG, GIF, WEBP (max 2MB)
-                                            </p>
-                                        </div>
-                                        <Input
-                                            type="file"
-                                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                                            className="hidden"
-                                            onChange={handleImageSelect}
+                        {/* Image Upload Section */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Medicine Image</label>
+                            {!imagePreview ? (
+                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                        <p className="text-sm text-muted-foreground">
+                                            Click to upload new image
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            JPEG, PNG, GIF, WEBP (max 2MB)
+                                        </p>
+                                    </div>
+                                    <Input
+                                        type="file"
+                                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                        className="hidden"
+                                        onChange={handleImageSelect}
+                                    />
+                                </label>
+                            ) : (
+                                <div className="relative group">
+                                    <div className="relative w-full h-48 overflow-hidden rounded-lg border bg-muted">
+                                        <Image
+                                            src={imagePreview}
+                                            alt="Medicine preview"
+                                            fill
+                                            className="object-cover"
                                         />
-                                    </label>
-                                ) : (
-                                    <div className="relative group">
-                                        <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
-                                            <Image
-                                                src={imagePreview}
-                                                alt="Medicine preview"
-                                                fill
-                                                className="object-cover"
-                                            />
-                                            {isUploading && (
-                                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
-                                                    <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
-                                                    <div className="w-3/4 bg-gray-700 rounded-full h-2">
-                                                        <div 
-                                                            className="bg-primary h-2 rounded-full transition-all duration-300"
-                                                            style={{ width: `${uploadProgress}%` }}
-                                                        />
-                                                    </div>
-                                                    <p className="text-white text-sm mt-2">
-                                                        Uploading: {uploadProgress}%
-                                                    </p>
+                                        {isUploading && (
+                                            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
+                                                <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
+                                                <div className="w-3/4 bg-gray-700 rounded-full h-2">
+                                                    <div
+                                                        className="bg-primary h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${uploadProgress}%` }}
+                                                    />
                                                 </div>
+                                                <p className="text-white text-sm mt-2">
+                                                    Uploading: {uploadProgress}%
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={removeImage}
+                                        disabled={isUploading}
+                                        className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Name Field */}
+                        <form.Field
+                            name="name"
+                            children={(field) => {
+                                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                                return (
+                                    <div className="space-y-2">
+                                        <label htmlFor={field.name} className="text-sm font-medium">
+                                            Medicine Name
+                                        </label>
+                                        <Input
+                                            id={field.name}
+                                            name={field.name}
+                                            value={field.state.value}
+                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            onBlur={field.handleBlur}
+                                            placeholder="e.g., Paracetamol 500mg"
+                                            className={isInvalid ? "border-red-500" : ""}
+                                        />
+                                        {isInvalid && (
+                                            <p className="text-sm text-red-500">
+                                                {field.state.meta.errors.join(", ")}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            }}
+                        />
+
+                        {/* Description Field */}
+                        <form.Field
+                            name="description"
+                            children={(field) => {
+                                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                                return (
+                                    <div className="space-y-2">
+                                        <label htmlFor={field.name} className="text-sm font-medium">
+                                            Description
+                                        </label>
+                                        <Textarea
+                                            id={field.name}
+                                            name={field.name}
+                                            value={field.state.value}
+                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            onBlur={field.handleBlur}
+                                            placeholder="Describe the medicine, its uses, dosage, etc."
+                                            rows={4}
+                                            className={isInvalid ? "border-red-500" : ""}
+                                        />
+                                        {isInvalid && (
+                                            <p className="text-sm text-red-500">
+                                                {field.state.meta.errors.join(", ")}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            }}
+                        />
+
+                        {/* Price and Stock */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <form.Field
+                                name="price"
+                                children={(field) => {
+                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                                    return (
+                                        <div className="space-y-2">
+                                            <label htmlFor={field.name} className="text-sm font-medium">
+                                                Price ($)
+                                            </label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                id={field.name}
+                                                name={field.name}
+                                                value={field.state.value}
+                                                onChange={(e) => field.handleChange(parseFloat(e.target.value))}
+                                                onBlur={field.handleBlur}
+                                                placeholder="0.00"
+                                                className={isInvalid ? "border-red-500" : ""}
+                                            />
+                                            {isInvalid && (
+                                                <p className="text-sm text-red-500">
+                                                    {field.state.meta.errors.join(", ")}
+                                                </p>
                                             )}
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={removeImage}
-                                            disabled={isUploading}
-                                            className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
+                                    );
+                                }}
+                            />
+
+                            <form.Field
+                                name="stock"
+                                children={(field) => {
+                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                                    return (
+                                        <div className="space-y-2">
+                                            <label htmlFor={field.name} className="text-sm font-medium">
+                                                Stock Quantity
+                                            </label>
+                                            <Input
+                                                type="number"
+                                                id={field.name}
+                                                name={field.name}
+                                                value={field.state.value}
+                                                onChange={(e) => field.handleChange(parseInt(e.target.value))}
+                                                onBlur={field.handleBlur}
+                                                placeholder="0"
+                                                className={isInvalid ? "border-red-500" : ""}
+                                            />
+                                            {isInvalid && (
+                                                <p className="text-sm text-red-500">
+                                                    {field.state.meta.errors.join(", ")}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                }}
+                            />
+                        </div>
+
+                        {/* Manufacturer Field */}
+                        <form.Field
+                            name="manufacturer"
+                            children={(field) => {
+                                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                                return (
+                                    <div className="space-y-2">
+                                        <label htmlFor={field.name} className="text-sm font-medium">
+                                            Manufacturer
+                                        </label>
+                                        <Input
+                                            id={field.name}
+                                            name={field.name}
+                                            value={field.state.value}
+                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            onBlur={field.handleBlur}
+                                            placeholder="e.g., ABC Pharma"
+                                            className={isInvalid ? "border-red-500" : ""}
+                                        />
+                                        {isInvalid && (
+                                            <p className="text-sm text-red-500">
+                                                {field.state.meta.errors.join(", ")}
+                                            </p>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                );
+                            }}
+                        />
 
-                            <form.Field
-                                name="name"
-                                children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Medicine Name</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                name={field.name}
-                                                value={field.state.value}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                onBlur={field.handleBlur}
-                                                placeholder="e.g., Paracetamol 500mg"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    );
-                                }}
-                            />
+                        {/* Category Field - Using separate state */}
+                        <div className="space-y-2 relative">
+                            <label className="text-sm font-medium">Category</label>
+                            <Select
+                                value={form.getFieldValue("categoryId")}
+                                onValueChange={(value) => form.setFieldValue("categoryId", value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent position="popper" className="z-50">
+                                    {categoryData?.map((category: Category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                            <form.Field
-                                name="description"
-                                children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Description</FieldLabel>
-                                            <Textarea
-                                                id={field.name}
-                                                name={field.name}
-                                                value={field.state.value}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                onBlur={field.handleBlur}
-                                                placeholder="Describe the medicine, its uses, dosage, etc."
-                                                rows={4}
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    );
-                                }}
-                            />
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <form.Field
-                                    name="price"
-                                    children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Price ($)</FieldLabel>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    id={field.name}
-                                                    name={field.name}
-                                                    value={field.state.value}
-                                                    onChange={(e) => field.handleChange(parseFloat(e.target.value))}
-                                                    onBlur={field.handleBlur}
-                                                    placeholder="0.00"
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        );
-                                    }}
-                                />
-
-                                <form.Field
-                                    name="stock"
-                                    children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Stock Quantity</FieldLabel>
-                                                <Input
-                                                    type="number"
-                                                    id={field.name}
-                                                    name={field.name}
-                                                    value={field.state.value}
-                                                    onChange={(e) => field.handleChange(parseInt(e.target.value))}
-                                                    onBlur={field.handleBlur}
-                                                    placeholder="0"
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        );
-                                    }}
-                                />
-                            </div>
-
-                            <form.Field
-                                name="manufacturer"
-                                children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Manufacturer</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                name={field.name}
-                                                value={field.state.value}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                onBlur={field.handleBlur}
-                                                placeholder="e.g., ABC Pharma"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    );
-                                }}
-                            />
-
-                            <form.Field
-                                name="categoryId"
-                                children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Category</FieldLabel>
-                                            <Select
-                                                value={field.state.value}
-                                                onValueChange={(value) => field.handleChange(value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select a category" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {categoryData?.map((category: Category) => (
-                                                        <SelectItem key={category.id} value={category.id}>
-                                                            {category.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    );
-                                }}
-                            />
-
+                        {/* Prescription Checkbox - Keep as is but add relative positioning */}
+                        <div className="relative">
                             <form.Field
                                 name="requiresPrescription"
                                 children={(field) => {
@@ -518,14 +546,14 @@ const EditMedicineForm = ({ id }: { id: string }) => {
                                                 checked={field.state.value}
                                                 onCheckedChange={(checked) => field.handleChange(checked as boolean)}
                                             />
-                                            <FieldLabel htmlFor={field.name} className="cursor-pointer">
+                                            <label htmlFor={field.name} className="text-sm font-medium cursor-pointer">
                                                 Requires Prescription
-                                            </FieldLabel>
+                                            </label>
                                         </div>
                                     );
                                 }}
                             />
-                        </FieldGroup>
+                        </div>
                     </form>
                 </CardContent>
                 <div className="p-6 pt-0 flex gap-3">
@@ -557,6 +585,6 @@ const EditMedicineForm = ({ id }: { id: string }) => {
             </Card>
         </div>
     );
-}
+};
 
 export default EditMedicineForm;

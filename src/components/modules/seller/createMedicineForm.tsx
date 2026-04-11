@@ -6,12 +6,10 @@ import { uploadProductImage } from "@/actions/upload.action";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Category } from "@/types/category.type";
-import { useForm } from "@tanstack/react-form";
 import { Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -39,6 +37,19 @@ export default function CreateMedicineForm() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Form state
+    const [name, setName] = useState("");
+    const [description, setDescription] = useState("");
+    const [price, setPrice] = useState(0);
+    const [stock, setStock] = useState(0);
+    const [manufacturer, setManufacturer] = useState("");
+    const [categoryId, setCategoryId] = useState("");
+    const [requiresPrescription, setRequiresPrescription] = useState(false);
+    
+    // Validation errors
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         const fetchCategory = async () => {
@@ -113,7 +124,6 @@ export default function CreateMedicineForm() {
             const result = await uploadProductImage(medicineId, formData);
             clearInterval(progressInterval);
 
-            // Change from result.data?.url to result.data?.imageUrl
             if (result.success && result.data?.imageUrl) {
                 setUploadProgress(100);
                 return true;
@@ -135,50 +145,73 @@ export default function CreateMedicineForm() {
         }
     };
 
-    const form = useForm({
-        defaultValues: {
-            name: "",
-            description: "",
-            price: 0,
-            stock: 0,
-            manufacturer: "",
-            categoryId: "",
-            imageUrl: "",
-            requiresPrescription: false,
-        },
-        validators: {
-            onSubmit: formSchema
-        },
-        onSubmit: async ({ value }) => {
-            const toastId = toast.loading("Adding medicine...");
-
-            // First create the medicine without image
-            const res = await addMedicine({
-                ...value,
-                imageUrl: "", // Empty initially
+    const validateForm = (): boolean => {
+        try {
+            formSchema.parse({
+                name,
+                description,
+                price,
+                stock,
+                manufacturer,
+                categoryId,
+                imageUrl: "",
+                requiresPrescription,
             });
-
-            if (!res?.success) {
-                toast.error(res?.message, { id: toastId });
-                return;
+            setErrors({});
+            return true;
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const newErrors: Record<string, string> = {};
+                error.issues.forEach((issue) => {
+                    const path = issue.path[0] as string;
+                    newErrors[path] = issue.message;
+                });
+                setErrors(newErrors);
+                toast.error("Please fix the form errors");
             }
+            return false;
+        }
+    };
 
-            // If image exists, upload it using the created medicine ID
-            if (imageFile && res.data?.id) {
-                const uploadSuccess = await uploadImage(res.data.id);
-                console.log('uploadSuccess------------', uploadSuccess);
-                if (!uploadSuccess) {
-                    toast.warning("Medicine created but image upload failed. You can update it later.", { id: toastId });
-                } else {
-                    toast.success('Medicine created successfully with image', { id: toastId });
-                }
+    const handleSubmit = async () => {
+        if (!validateForm()) {
+            return;
+        }
+        
+        setIsSubmitting(true);
+        const toastId = toast.loading("Adding medicine...");
+
+        const res = await addMedicine({
+            name,
+            description,
+            price,
+            stock,
+            manufacturer,
+            categoryId,
+            imageUrl: "",
+            requiresPrescription,
+        });
+
+        if (!res?.success) {
+            toast.error(res?.message, { id: toastId });
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (imageFile && res.data?.id) {
+            const uploadSuccess = await uploadImage(res.data.id);
+            if (!uploadSuccess) {
+                toast.warning("Medicine created but image upload failed. You can update it later.", { id: toastId });
             } else {
-                toast.success('Medicine created successfully', { id: toastId });
+                toast.success('Medicine created successfully with image', { id: toastId });
             }
+        } else {
+            toast.success('Medicine created successfully', { id: toastId });
+        }
 
-            router.push("/seller/medicines");
-        },
-    });
+        setIsSubmitting(false);
+        router.push("/seller/medicines");
+    };
 
     if (isLoading) {
         return (
@@ -218,242 +251,169 @@ export default function CreateMedicineForm() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form
-                        id="add-medicine-form"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            form.handleSubmit();
-                        }}
-                        className="space-y-4"
-                    >
-                        <FieldGroup>
-                            {/* Image Upload Section */}
-                            <div className="space-y-2">
-                                <FieldLabel>Medicine Image (Optional)</FieldLabel>
-                                {!imagePreview ? (
-                                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                                            <p className="text-sm text-muted-foreground">
-                                                Click to upload image
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                JPEG, PNG, GIF, WEBP (max 2MB)
-                                            </p>
-                                        </div>
-                                        <Input
-                                            type="file"
-                                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                                            className="hidden"
-                                            onChange={handleImageSelect}
-                                        />
-                                    </label>
-                                ) : (
-                                    <div className="relative group">
-                                        <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
-                                            <Image
-                                                src={imagePreview}
-                                                alt="Medicine preview"
-                                                fill
-                                                className="object-cover"
-                                            />
-                                            {isUploading && (
-                                                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
-                                                    <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
-                                                    <div className="w-3/4 bg-gray-700 rounded-full h-2">
-                                                        <div
-                                                            className="bg-primary h-2 rounded-full transition-all duration-300"
-                                                            style={{ width: `${uploadProgress}%` }}
-                                                        />
-                                                    </div>
-                                                    <p className="text-white text-sm mt-2">
-                                                        Uploading: {uploadProgress}%
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={removeImage}
-                                            disabled={isUploading}
-                                            className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
+                    <div className="space-y-4">
+                        {/* Image Upload Section */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Medicine Image (Optional)</label>
+                            {!imagePreview ? (
+                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted transition-colors">
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                        <p className="text-sm text-muted-foreground">Click to upload image</p>
+                                        <p className="text-xs text-muted-foreground">JPEG, PNG, GIF, WEBP (max 2MB)</p>
                                     </div>
-                                )}
+                                    <Input
+                                        type="file"
+                                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                        className="hidden"
+                                        onChange={handleImageSelect}
+                                    />
+                                </label>
+                            ) : (
+                                <div className="relative group">
+                                    <div className="relative w-full h-48 overflow-hidden rounded-lg border bg-muted">
+                                        <Image
+                                            src={imagePreview}
+                                            alt="Medicine preview"
+                                            fill
+                                            className="object-cover"
+                                        />
+                                        {isUploading && (
+                                            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
+                                                <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
+                                                <div className="w-3/4 bg-gray-700 rounded-full h-2">
+                                                    <div
+                                                        className="bg-primary h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${uploadProgress}%` }}
+                                                    />
+                                                </div>
+                                                <p className="text-white text-sm mt-2">Uploading: {uploadProgress}%</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={removeImage}
+                                        disabled={isUploading}
+                                        className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Name Field */}
+                        <div className="space-y-2">
+                            <label htmlFor="name" className="text-sm font-medium">Medicine Name *</label>
+                            <Input
+                                id="name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="e.g., Paracetamol 500mg"
+                                className={errors.name ? "border-red-500" : ""}
+                            />
+                            {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                        </div>
+
+                        {/* Description Field */}
+                        <div className="space-y-2">
+                            <label htmlFor="description" className="text-sm font-medium">Description *</label>
+                            <Textarea
+                                id="description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Describe the medicine, its uses, dosage, etc."
+                                rows={4}
+                                className={errors.description ? "border-red-500" : ""}
+                            />
+                            {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+                        </div>
+
+                        {/* Price and Stock */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label htmlFor="price" className="text-sm font-medium">Price ($) *</label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    id="price"
+                                    value={price || ""}
+                                    onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+                                    placeholder="0.00"
+                                    className={errors.price ? "border-red-500" : ""}
+                                />
+                                {errors.price && <p className="text-sm text-red-500">{errors.price}</p>}
                             </div>
 
-                            <form.Field
-                                name="name"
-                                children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Medicine Name</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                name={field.name}
-                                                value={field.state.value}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                onBlur={field.handleBlur}
-                                                placeholder="e.g., Paracetamol 500mg"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    );
-                                }}
-                            />
-
-                            <form.Field
-                                name="description"
-                                children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Description</FieldLabel>
-                                            <Textarea
-                                                id={field.name}
-                                                name={field.name}
-                                                value={field.state.value}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                onBlur={field.handleBlur}
-                                                placeholder="Describe the medicine, its uses, dosage, etc."
-                                                rows={4}
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    );
-                                }}
-                            />
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <form.Field
-                                    name="price"
-                                    children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Price ($)</FieldLabel>
-                                                <Input
-                                                    type="number"
-                                                    step="0.01"
-                                                    id={field.name}
-                                                    name={field.name}
-                                                    value={field.state.value}
-                                                    onChange={(e) => field.handleChange(parseFloat(e.target.value))}
-                                                    onBlur={field.handleBlur}
-                                                    placeholder="0.00"
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        );
-                                    }}
+                            <div className="space-y-2">
+                                <label htmlFor="stock" className="text-sm font-medium">Stock Quantity *</label>
+                                <Input
+                                    type="number"
+                                    id="stock"
+                                    value={stock || ""}
+                                    onChange={(e) => setStock(parseInt(e.target.value) || 0)}
+                                    placeholder="0"
+                                    className={errors.stock ? "border-red-500" : ""}
                                 />
-
-                                <form.Field
-                                    name="stock"
-                                    children={(field) => {
-                                        const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                        return (
-                                            <Field data-invalid={isInvalid}>
-                                                <FieldLabel htmlFor={field.name}>Stock Quantity</FieldLabel>
-                                                <Input
-                                                    type="number"
-                                                    id={field.name}
-                                                    name={field.name}
-                                                    value={field.state.value}
-                                                    onChange={(e) => field.handleChange(parseInt(e.target.value))}
-                                                    onBlur={field.handleBlur}
-                                                    placeholder="0"
-                                                />
-                                                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                            </Field>
-                                        );
-                                    }}
-                                />
+                                {errors.stock && <p className="text-sm text-red-500">{errors.stock}</p>}
                             </div>
+                        </div>
 
-                            <form.Field
-                                name="manufacturer"
-                                children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Manufacturer</FieldLabel>
-                                            <Input
-                                                id={field.name}
-                                                name={field.name}
-                                                value={field.state.value}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                onBlur={field.handleBlur}
-                                                placeholder="e.g., ABC Pharma"
-                                            />
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    );
-                                }}
+                        {/* Manufacturer Field */}
+                        <div className="space-y-2">
+                            <label htmlFor="manufacturer" className="text-sm font-medium">Manufacturer *</label>
+                            <Input
+                                id="manufacturer"
+                                value={manufacturer}
+                                onChange={(e) => setManufacturer(e.target.value)}
+                                placeholder="e.g., ABC Pharma"
+                                className={errors.manufacturer ? "border-red-500" : ""}
                             />
+                            {errors.manufacturer && <p className="text-sm text-red-500">{errors.manufacturer}</p>}
+                        </div>
 
-                            <form.Field
-                                name="categoryId"
-                                children={(field) => {
-                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                                    return (
-                                        <Field data-invalid={isInvalid}>
-                                            <FieldLabel htmlFor={field.name}>Category</FieldLabel>
-                                            <Select
-                                                value={field.state.value}
-                                                onValueChange={(value) => field.handleChange(value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select a category" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {categories.map((category: Category) => (
-                                                        <SelectItem key={category.id} value={category.id}>
-                                                            {category.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                                        </Field>
-                                    );
-                                }}
-                            />
+                        {/* Category Field */}
+                        <div className="space-y-2 relative">
+                            <label className="text-sm font-medium">Category *</label>
+                            <Select value={categoryId} onValueChange={setCategoryId}>
+                                <SelectTrigger className={errors.categoryId ? "border-red-500" : ""}>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent position="popper" className="z-50">
+                                    {categories.map((category: Category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.categoryId && <p className="text-sm text-red-500">{errors.categoryId}</p>}
+                        </div>
 
-                            <form.Field
-                                name="requiresPrescription"
-                                children={(field) => {
-                                    return (
-                                        <div className="flex items-center space-x-2">
-                                            <Checkbox
-                                                id={field.name}
-                                                checked={field.state.value}
-                                                onCheckedChange={(checked) => field.handleChange(checked as boolean)}
-                                            />
-                                            <FieldLabel htmlFor={field.name} className="cursor-pointer">
-                                                Requires Prescription
-                                            </FieldLabel>
-                                        </div>
-                                    );
-                                }}
+                        {/* Prescription Checkbox */}
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="requiresPrescription"
+                                checked={requiresPrescription}
+                                onCheckedChange={(checked) => setRequiresPrescription(checked as boolean)}
                             />
-                        </FieldGroup>
-                    </form>
+                            <label htmlFor="requiresPrescription" className="text-sm font-medium cursor-pointer">
+                                Requires Prescription
+                            </label>
+                        </div>
+                    </div>
                 </CardContent>
                 <div className="p-6 pt-0 flex gap-3">
                     <Button
-                        form="add-medicine-form"
-                        type="submit"
+                        onClick={handleSubmit}
                         className="flex-1"
-                        disabled={isUploading}
+                        disabled={isUploading || isSubmitting}
                     >
-                        {isUploading ? (
+                        {isUploading || isSubmitting ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Uploading... {uploadProgress}%
+                                {isUploading ? `Uploading... ${uploadProgress}%` : "Adding Medicine..."}
                             </>
                         ) : (
                             "Add Medicine"
@@ -464,7 +424,7 @@ export default function CreateMedicineForm() {
                         variant="outline"
                         className="flex-1"
                         onClick={() => router.back()}
-                        disabled={isUploading}
+                        disabled={isUploading || isSubmitting}
                     >
                         Cancel
                     </Button>

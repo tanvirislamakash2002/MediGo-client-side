@@ -1,4 +1,3 @@
-// dashboard-layout.tsx
 import { AppSidebar } from "@/components/layout/dashboard/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { userService } from "@/services/user.service";
@@ -8,7 +7,6 @@ import { DashboardHeader } from "@/components/layout/dashboard/dashboard-header"
 
 export const dynamic = 'force-dynamic';
 
-// dashboard-layout.tsx
 export default async function DashboardLayout({
     seller,
     admin
@@ -16,18 +14,18 @@ export default async function DashboardLayout({
     seller: React.ReactNode;
     admin: React.ReactNode;
 }>) {
-    const { data, error } = await userService.getSession();
-    
-    if (error || !data?.user) {
+    const { data } = await userService.getSession();
+    console.log(data);
+    if (!data?.user) {
         redirect("/login?redirect=/dashboard");
     }
-    
+
     const userInfo = data.user;
-    
+
     if (userInfo.role !== Roles.seller && userInfo.role !== Roles.admin) {
         redirect("/shop");
     }
-    
+
     return (
         <SidebarProvider defaultOpen={true}>
             <div className="flex h-screen w-full overflow-hidden">
