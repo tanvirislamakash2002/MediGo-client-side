@@ -18,8 +18,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { authClient } from "@/lib/auth-client";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Mail, Lock, LogIn } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail, Lock, LogIn, Sparkles, Facebook } from "lucide-react";
 import * as z from "zod";
+import { Roles } from "@/constants/roles";
 
 interface User {
   id: string;
@@ -40,11 +41,18 @@ const formSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
+const DEMO_CREDENTIALS = {
+  admin: { email: "westbrook@gmail.com", password: "westbrook123", role: "ADMIN" },
+  seller: { email: "ellis@gmail.com", password: "ellis123", role: "SELLER" },
+  customer: { email: "monroe@gmail.com", password: "monroe123", role: "CUSTOMER" },
+};
+
 export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDemoLoading, setIsDemoLoading] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -82,7 +90,7 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
         const userData = response.data?.user as User;
         const userRole = userData?.role;
         const isEmailVerified = userData?.emailVerified;
-        
+
         if (!isEmailVerified) {
           toast.info("Please verify your email to get full access to all features", {
             duration: 5000,
@@ -123,6 +131,34 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
     } catch (error) {
       toast.error("Failed to login with Google");
       setIsLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async (role: "admin" | "seller" | "customer") => {
+    const credentials = DEMO_CREDENTIALS[role];
+    setIsDemoLoading(role);
+    setError(null);
+    const toastId = toast.loading(`Logging in as ${role.toUpperCase()}...`);
+
+    try {
+      const response = await authClient.signIn.email({
+        email: credentials.email,
+        password: credentials.password,
+      });
+
+      if (response.error) {
+        toast.error(response.error.message || "Failed to login", { id: toastId });
+        setError(response.error.message || "Demo login failed");
+        return;
+      }
+
+      toast.success(`Logged in as ${role.toUpperCase()}!`, { id: toastId });
+      router.push("/");
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.", { id: toastId });
+      setError("Demo login failed. Please try again.");
+    } finally {
+      setIsDemoLoading(null);
     }
   };
 
@@ -294,6 +330,51 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
             Create an account
           </Link>
         </p>
+        {/* Demo Login Buttons */}
+        <div className="space-y-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:border-indigo-300"
+            onClick={() => handleDemoLogin("admin")}
+            disabled={isLoading || isDemoLoading !== null}
+          >
+            {isDemoLoading === Roles.admin ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Sparkles className="h-4 w-4 mr-2 text-amber-500" />
+            )}
+            Admin Demo
+          </Button>
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleDemoLogin("seller")}
+              disabled={isLoading || isDemoLoading !== null}
+              className="border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+            >
+              {isDemoLoading === Roles.seller ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                "Seller Demo"
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleDemoLogin("customer")}
+              disabled={isLoading || isDemoLoading !== null}
+              className="border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/30"
+            >
+              {isDemoLoading === Roles.customer ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                "Customer Demo"
+              )}
+            </Button>
+          </div>
+        </div>
       </CardFooter>
     </Card>
   );
