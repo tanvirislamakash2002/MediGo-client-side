@@ -17,13 +17,13 @@ import { DangerZone } from "@/components/modules/seller/profile/DangerZone";
 import { ProfileSkeleton } from "@/components/modules/seller/profile/ProfileSkeleton";
 
 export default async function SellerProfilePage() {
-    const { data: session, error: sessionError } = await getSession();
+    const { data: session, success } = await getSession();
         
     const profileResult = await sellerProfile.getSellerProfile();
     const settingsResult = await sellerProfile.getSellerStoreSettings();
     
-    const profile = profileResult.error ? null : profileResult.data;
-    const settings = settingsResult.error ? null : settingsResult.data;
+    const profile = !profileResult.success ? null : profileResult.data;
+    const settings = !settingsResult.success ? null : settingsResult.data;
     
     // Add default values for missing data
     const settingsWithDefaults = settings ? {

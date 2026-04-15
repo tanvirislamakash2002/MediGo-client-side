@@ -68,8 +68,8 @@ export function EditCategoryModal({ isOpen, category, onClose, onSuccess }: Edit
             
             try {
                 const result = await updateCategory(category.id, value);
-                if (result.error) {
-                    toast.error(result.error.message, { id: toastId });
+                if (!result.success) {
+                    toast.error(result.message, { id: toastId });
                 } else {
                     toast.success("Category updated successfully", { id: toastId });
                     router.refresh();

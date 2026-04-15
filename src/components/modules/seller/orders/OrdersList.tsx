@@ -81,7 +81,7 @@ export function OrdersList({
             const toDate = searchParams.get("toDate") || undefined;
 
             const result = await getSellerOrders({ status, search, sort, page, fromDate, toDate });
-            if (!result.error) {
+            if (result.success) {
                 setOrders(result.data?.orders || []);
                 setPagination(result.data?.pagination);
             }

@@ -7,7 +7,7 @@ import { CartItem } from "@/types/cart.type";
 
 export default async function CartPage() {
     const result = await getCartItems();
-    const cartItems = result.error ? null : result.data?.items || [];
+    const cartItems = !result.success ? null : result.data?.items || [];
     const cartTotal = cartItems?.reduce((total: number, item: CartItem) => total + (item.price * item.quantity), 0) || 0;
 
     if (!cartItems || cartItems.length === 0) {

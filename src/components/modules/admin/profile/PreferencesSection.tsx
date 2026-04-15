@@ -42,8 +42,8 @@ export function PreferencesSection() {
         
         try {
             const result = await adminProfile.adminUpdatePreferences({ notifications, theme: theme || "light" });
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Preferences saved successfully", { id: toastId });
             }

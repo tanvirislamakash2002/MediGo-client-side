@@ -70,7 +70,7 @@ export function OrdersList({
             const page = parseInt(searchParams.get("page") || "1");
             
             const result = await getMyOrders({ status, search, sort, page });
-            if (!result.error) {
+            if (result.success) {
                 setOrders(result.data?.orders || []);
                 setPagination(result.data?.pagination);
             }
@@ -101,8 +101,8 @@ export function OrdersList({
         try {
             const result = await cancelOrder(order.id);
             
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
                 return;
             }
             
@@ -115,7 +115,7 @@ export function OrdersList({
             const page = parseInt(searchParams.get("page") || "1");
             
             const refreshResult = await getMyOrders({ status, search, sort, page });
-            if (!refreshResult.error) {
+            if (refreshResult.success) {
                 setOrders(refreshResult.data?.orders || []);
                 setPagination(refreshResult.data?.pagination);
             }

@@ -84,8 +84,8 @@ export function PersonalInfo({ profile }: PersonalInfoProps) {
         
         try {
             const result = await sellerProfile.updatePersonalInfo(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Personal information updated", { id: toastId });
                 setIsEditing(false);

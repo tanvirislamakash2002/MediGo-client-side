@@ -28,6 +28,7 @@ import { Roles } from "@/constants/roles";
 import { adminRoutes, sellerRoutes } from "@/routes";
 import { getProfileRoute, isActiveRoute } from "@/constants/routes";
 import { User as UserType } from "@/types";
+import { useLogout } from "@/hooks/useLogout";
 
 
 
@@ -37,16 +38,11 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
     const pathname = usePathname();
-
+    const { logout } = useLogout();
     const profileRoute = getProfileRoute(user.role)
 
     // Select routes based on user role
     const routes = user.role === Roles.admin ? adminRoutes : sellerRoutes;
-
-    const handleLogout = async () => {
-        await logout();
-        redirect('/')
-    };
 
     const initials = user.name
         .split(" ")
@@ -136,7 +132,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                     <Button
                         variant="ghost"
                         className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
-                        onClick={handleLogout}
+                        onClick={logout}
                     >
                         <LogOut className="h-4 w-4 mr-2 flex-shrink-0" />
                         <span className="group-data-[collapsible=icon]:hidden truncate">Logout</span>

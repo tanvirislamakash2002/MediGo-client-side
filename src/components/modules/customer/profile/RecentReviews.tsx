@@ -45,8 +45,8 @@ export function RecentReviews({ reviews }: RecentReviewsProps) {
 
         try {
             const result = await customerProfile.deleteCustomerReview(deleteId);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Review deleted", { id: toastId });
                 router.refresh();

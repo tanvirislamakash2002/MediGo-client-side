@@ -20,9 +20,9 @@ interface PageProps {
 }
 
 export default async function SellerOrdersPage({ searchParams }: PageProps) {
-    const { data: session, error: sessionError } = await getSession();
+    const { data: session, success } = await getSession();
     
-    if (sessionError || !session || session.user.role !== "SELLER") {
+    if (!success || !session || session.user.role !== "SELLER") {
         redirect("/login?redirect=/seller/orders");
     }
     
@@ -43,7 +43,7 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
         page 
     });
     
-    const orders = result.error ? [] : result.data?.orders || [];
+    const orders = !result.success ? [] : result.data?.orders || [];
     const stats = result.data?.stats || {
         total: 0,
         pending: 0,

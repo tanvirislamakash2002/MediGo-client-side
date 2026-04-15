@@ -74,8 +74,8 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
         setUpdatingId(itemId);
         try {
             const result = await updateCartItem(itemId, newQuantity);
-            if (result.error) {
-                toast.error(result.error.message);
+            if (!result.success) {
+                toast.error(result.message);
             } else {
                 setItems(prev => prev.map(item =>
                     item.id === itemId ? { ...item, quantity: newQuantity } : item
@@ -92,8 +92,8 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
     const handleRemoveItem = async (itemId: string, itemName: string) => {
         try {
             const result = await removeCartItem(itemId);
-            if (result.error) {
-                toast.error(result.error.message);
+            if (!result.success) {
+                toast.error(result.message);
             } else {
                 setItems(prev => prev.filter(item => item.id !== itemId));
                 // Remove from selected items

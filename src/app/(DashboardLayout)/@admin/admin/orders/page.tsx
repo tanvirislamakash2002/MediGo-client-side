@@ -20,9 +20,9 @@ interface PageProps {
 }
 
 export default async function AdminOrdersPage({ searchParams }: PageProps) {
-    const { data: session, error: sessionError } = await getSession();
+    const { data: session, success } = await getSession();
     
-    if (sessionError || !session || session.user.role !== "ADMIN") {
+    if (!success || !session || session.user.role !== "ADMIN") {
         redirect("/login?redirect=/admin/orders");
     }
     
@@ -43,7 +43,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
         page 
     });
     
-    const orders = result.error ? [] : result.data?.orders || [];
+    const orders = !result.success ? [] : result.data?.orders || [];
     const stats = result.data?.stats || {
         total: 0,
         placed: 0,

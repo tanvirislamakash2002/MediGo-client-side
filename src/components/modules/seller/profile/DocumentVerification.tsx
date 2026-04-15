@@ -78,8 +78,8 @@ export function DocumentVerification({ documents = [] }: DocumentVerificationPro
             formData.append("documentType", "business_license"); // Use documentType, not type
 
             const result = await sellerProfile.uploadDocument(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Document uploaded for verification", { id: toastId });
                 router.refresh();
@@ -98,8 +98,8 @@ export function DocumentVerification({ documents = [] }: DocumentVerificationPro
     const handleDelete = async (documentId: string) => {
         const toastId = toast.loading("Deleting document...");
         const result = await sellerProfile.deleteDocument(documentId);
-        if (result.error) {
-            toast.error(result.error.message, { id: toastId });
+        if (!result.success) {
+            toast.error(result.message, { id: toastId });
         } else {
             toast.success("Document deleted", { id: toastId });
             router.refresh();

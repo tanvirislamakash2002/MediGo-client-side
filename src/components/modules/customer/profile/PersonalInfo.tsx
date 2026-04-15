@@ -55,8 +55,8 @@ export function PersonalInfo({ profile }: PersonalInfoProps) {
         
         try {
             const result = await customerProfile.updateCustomerProfile(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Personal information updated", { id: toastId });
                 setIsEditing(false);
@@ -90,8 +90,8 @@ export function PersonalInfo({ profile }: PersonalInfoProps) {
             const formData = new FormData();
             formData.append("avatar", file);
             const result = await customerProfile.customerUploadAvatar(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Avatar uploaded", { id: toastId });
                 setAvatarUrl(result.data.url);

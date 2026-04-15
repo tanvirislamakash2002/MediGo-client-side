@@ -49,8 +49,8 @@ export function useCart() {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const { data, error } = await getSession();
-                setIsAuthenticated(!!data && !error);
+                const { data, success } = await getSession();
+                setIsAuthenticated(!!data && !success);
             } catch (error) {
                 console.error("Auth check failed:", error);
                 setIsAuthenticated(false);
@@ -71,9 +71,9 @@ export function useCart() {
         if (!isAuthenticated) return;
         
         try {
-            const { data, error } = await getCartItems();
-            if (error) {
-                console.error("Failed to fetch cart:", error);
+            const { data, success,message } = await getCartItems();
+            if (!success) {
+                console.error("Failed to fetch cart:", message);
                 return;
             }
             
@@ -130,8 +130,8 @@ export function useCart() {
         try {
             const result = await addToCartAction(medicineId, quantity);
             
-            if (result.error) {
-                toast.error(result.error.message);
+            if (!result.success) {
+                toast.error(result.message);
                 return false;
             }
             
@@ -176,10 +176,10 @@ export function useCart() {
         
         setIsUpdating(true);
         try {
-            const { error } = await updateCartItemAction(itemId, quantity);
+            const { message } = await updateCartItemAction(itemId, quantity);
             
-            if (error) {
-                toast.error(error.message);
+            if (message) {
+                toast.error(message);
                 return;
             }
             
@@ -197,10 +197,10 @@ export function useCart() {
         if (!isAuthenticated) return;
         
         try {
-            const { error } = await removeCartItemAction(itemId);
+            const { message } = await removeCartItemAction(itemId);
             
-            if (error) {
-                toast.error(error.message);
+            if (message) {
+                toast.error(message);
                 return;
             }
             
@@ -216,10 +216,10 @@ export function useCart() {
         if (!isAuthenticated) return;
         
         try {
-            const { error } = await clearCartAction();
+            const { message } = await clearCartAction();
             
-            if (error) {
-                toast.error(error.message);
+            if (message) {
+                toast.error(message);
                 return;
             }
             

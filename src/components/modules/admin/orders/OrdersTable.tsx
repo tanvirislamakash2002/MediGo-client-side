@@ -120,7 +120,7 @@ export function OrdersTable({
             const toDate = searchParams.get("toDate") || undefined;
             
             const result = await getAllOrders({ status, search, sort, page, fromDate, toDate });
-            if (!result.error) {
+            if (result.success) {
                 setOrders(result.data?.orders || []);
                 setPagination(result.data?.pagination);
             }

@@ -64,8 +64,8 @@ export function OrderActions({ order }: OrderActionsProps) {
 
         try {
             const result = await cancelOrder(order.id);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Order cancelled successfully", { id: toastId });
                 router.refresh();

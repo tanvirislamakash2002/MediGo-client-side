@@ -115,8 +115,8 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
         
         try {
             const result = await updateOrderStatus(order.id, selectedStatus);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success(`Order status updated to ${selectedStatus}`, { id: toastId });
                 // Refresh the page to show updated status

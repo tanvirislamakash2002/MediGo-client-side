@@ -20,9 +20,9 @@ interface PageProps {
 }
 
 export default async function UsersPage({ searchParams }: PageProps) {
-    const { data: session, error: sessionError } = await getSession();
+    const { data: session, success } = await getSession();
     
-    if (sessionError || !session || session.user.role !== "ADMIN") {
+    if (!success || !session || session.user.role !== "ADMIN") {
         redirect("/login?redirect=/admin/users");
     }
     
@@ -35,8 +35,8 @@ export default async function UsersPage({ searchParams }: PageProps) {
     const page = params.page ? parseInt(params.page) : 1;
     
     const result = await getAllUsers({ role, status, verified, search, sort, page });
-    const users = result.error ? [] : result.data?.users || [];
-    const stats = result.data?.stats || {
+    const users = !result.success ? [] : result?.users || [];
+    const stats = result?.stats || {
         total: 0,
         customers: 0,
         sellers: 0,
@@ -46,7 +46,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
         verified: 0,
         unverified: 0
     };
-    const pagination = result.data?.pagination;
+    const pagination = result?.pagination;
     
     return (
         <div className="space-y-6">

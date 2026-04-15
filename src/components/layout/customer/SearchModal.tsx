@@ -27,7 +27,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             if (searchTerm.length > 2) {
                 setIsLoading(true);
                 const result = await getMedicines({ search: searchTerm, limit: 5 });
-                setResults(result.error ? [] : result.data?.data || []);
+                setResults(!result.success ? [] : result.data?.data || []);
                 setIsLoading(false);
             } else {
                 setResults([]);

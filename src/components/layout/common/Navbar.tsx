@@ -37,6 +37,9 @@ import { Roles } from "@/constants/roles";
 import { getDashboardRoute, getProfileRoute } from "@/constants/routes";
 import { User as UserType } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
+import { useLogout } from "@/hooks/useLogout";
 
 
 
@@ -49,6 +52,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { cartCount } = useCart();
+  const { logout } = useLogout();
   const [user, setUser] = useState<UserType | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -71,9 +75,6 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,7 +203,7 @@ export function Navbar() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                    <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" />
                       Logout
                     </DropdownMenuItem>
@@ -352,7 +353,7 @@ export function Navbar() {
                   <Button
                     variant="destructive"
                     className="w-full"
-                    onClick={handleLogout}
+                    onClick={logout}
                   >
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout

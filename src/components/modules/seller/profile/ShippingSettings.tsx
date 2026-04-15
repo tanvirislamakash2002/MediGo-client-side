@@ -48,8 +48,8 @@ export function ShippingSettings({ shipping = {} }: ShippingSettingsProps) {
         
         try {
             const result = await sellerProfile.updateShippingSettings(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Shipping settings updated", { id: toastId });
                 setIsEditing(false);

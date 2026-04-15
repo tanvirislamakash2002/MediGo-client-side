@@ -35,8 +35,8 @@ export function DangerZone() {
         
         try {
             const result = await sellerProfile.pauseStore(reason);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Store paused successfully", { id: toastId });
                 router.refresh();
@@ -56,8 +56,8 @@ export function DangerZone() {
         
         try {
             const result = await sellerProfile.closeStore(reason);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Store closed successfully", { id: toastId });
                 router.push("/seller");
@@ -82,8 +82,8 @@ export function DangerZone() {
         
         try {
             const result = await sellerProfile.sellerDeleteAccount(reason);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Account deleted successfully", { id: toastId });
                 router.push("/logout");

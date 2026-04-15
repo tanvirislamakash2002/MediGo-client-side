@@ -91,7 +91,7 @@ export function CategoriesTable({
                 sort: sortValue,
                 page
             });
-            if (!result.error) {
+            if (result.success) {
                 setCategories(result.data?.data?.categories || []);
                 setPagination(result.data?.data?.pagination);
             }
@@ -154,8 +154,8 @@ export function CategoriesTable({
         if (!selectedCategory) return;
 
         const result = await deleteCategory(selectedCategory.id);
-        if (result.error) {
-            toast.error(result.error.message);
+        if (!result.success) {
+            toast.error(result.message);
         } else {
             toast.success("Category deleted successfully");
             router.refresh();

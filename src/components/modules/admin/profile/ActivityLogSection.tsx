@@ -42,8 +42,8 @@ export function ActivityLogSection({ logs }: ActivityLogSectionProps) {
         const toastId = toast.loading("Exporting logs...");
         try {
             const result = await adminProfile.adminExportActivityLogs();
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Logs exported successfully", { id: toastId });
                 // Trigger download

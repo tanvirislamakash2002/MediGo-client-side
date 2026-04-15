@@ -129,8 +129,8 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         // Use the server action
         const result = await uploadAvatar(uploadFormData);
 
-        if (result.error) {
-            toast.error(result.error.message, { id: toastId });
+        if (!result.success) {
+            toast.error(result.message, { id: toastId });
             return;
         }
 

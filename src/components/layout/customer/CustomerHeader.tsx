@@ -36,6 +36,7 @@ import { CartDrawer } from "./CartDrawer";
 import { env } from "@/env";
 import { logout } from "@/actions/auth.action";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useLogout } from "@/hooks/useLogout";
 
 interface User {
     id: string;
@@ -60,6 +61,7 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
     const pathname = usePathname();
     const router = useRouter();
     const { cartCount } = useCart();
+    const { logout } = useLogout();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -73,13 +75,6 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
-
-    const handleLogout = async () => {
-        await logout()
-        redirect('/')
-
-    };
-
 
     const isActive = (href: string) => {
         if (href === "/shop") return pathname === "/shop" || pathname.startsWith("/shop/");
@@ -175,7 +170,7 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+                                        <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer">
                                             <LogOut className="mr-2 h-4 w-4" />
                                             Logout
                                         </DropdownMenuItem>
@@ -268,7 +263,7 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
                                     </Link>
                                     <button
                                         onClick={() => {
-                                            handleLogout();
+                                            logout();
                                             setIsMobileMenuOpen(false);
                                         }}
                                         className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 w-full"

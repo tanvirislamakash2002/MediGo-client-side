@@ -29,14 +29,14 @@ export default async function OrderDetailsPage({ params }: PageProps) {
     const { orderId } = await params;
     
     // Check authentication
-    const { data: session, error: sessionError } = await getSession();
-    if (sessionError || !session) {
+    const { data: session, success } = await getSession();
+    if (!success || !session) {
         redirect(`/login?redirect=/order/${orderId}`);
     }
     
     // Fetch order details
     const result = await getOrderById(orderId);
-    if (result.error || !result.data) {
+    if (!result.success || !result.data) {
         notFound();
     }
     const order = result.data;

@@ -80,8 +80,8 @@ export function BusinessHours({ hours }: BusinessHoursProps) {
         try {
             const backendData = formatForBackend(formData);
             const result = await sellerProfile.updateBusinessHours(backendData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Business hours updated", { id: toastId });
                 setIsEditing(false);

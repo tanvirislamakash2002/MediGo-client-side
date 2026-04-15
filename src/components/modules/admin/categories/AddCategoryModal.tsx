@@ -58,8 +58,8 @@ export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
             
             try {
                 const result = await createCategory(value);
-                if (result.error) {
-                    toast.error(result.error.message, { id: toastId });
+                if (!result.success) {
+                    toast.error(result.message, { id: toastId });
                 } else {
                     toast.success("Category created successfully", { id: toastId });
                     router.refresh();

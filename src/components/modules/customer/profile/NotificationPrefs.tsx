@@ -25,8 +25,8 @@ export function NotificationPrefs() {
         
         try {
             const result = await customerProfile.updateNotificationPreferences(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Preferences updated", { id: toastId });
                 setIsEditing(false);

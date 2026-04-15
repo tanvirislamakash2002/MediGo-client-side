@@ -44,8 +44,8 @@ export function OrderActions({ order }: OrderActionsProps) {
         
         try {
             const result = await updateOrderStatus(order.id, nextStatus.value);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success(`Order updated to ${nextStatus.label}`, { id: toastId });
                 router.refresh();

@@ -35,6 +35,7 @@ import {
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { logout } from "@/actions/auth.action";
 import Link from "next/link";
+import { useLogout } from "@/hooks/useLogout";
 
 interface User {
     id: string;
@@ -69,6 +70,7 @@ const getBreadcrumbs = (pathname: string) => {
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
     const pathname = usePathname();
+    const { logout } = useLogout();
     const [isScrolled, setIsScrolled] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const breadcrumbs = getBreadcrumbs(pathname);
@@ -84,11 +86,6 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
-
-    const handleLogout = async () => {
-        await logout();
-        redirect('/')
-    };
     
     return (
         <header className={`sticky top-0 z-40 w-full transition-all duration-300 ${isScrolled
@@ -229,7 +226,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                             </DropdownMenuItem> */}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                                onClick={handleLogout}
+                                onClick={logout}
                                 className="text-red-600 cursor-pointer"
                             >
                                 <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />

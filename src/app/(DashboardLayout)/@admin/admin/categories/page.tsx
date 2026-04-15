@@ -15,10 +15,10 @@ interface PageProps {
 }
 
 export default async function CategoriesPage({ searchParams }: PageProps) {
-    const { data: session, error: sessionError } = await getSession();
+    const { data: session, success } = await getSession();
     
     // Only admin can access
-    if (sessionError || !session || session.user.role !== "ADMIN") {
+    if (!success || !session || session.user.role !== "ADMIN") {
         redirect("/login?redirect=/admin/categories");
     }
     
@@ -28,7 +28,7 @@ export default async function CategoriesPage({ searchParams }: PageProps) {
     const page = params.page ? parseInt(params.page) : 1;
     
     const result = await getAllCategories({ search, sort, page });
-    const categories = result.error ? [] : result.data?.categories || [];
+    const categories = !result.success ? [] : result.data?.categories || [];
     const pagination = result.data?.pagination;
     
     return (

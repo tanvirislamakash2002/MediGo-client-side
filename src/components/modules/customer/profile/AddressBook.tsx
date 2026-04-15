@@ -65,8 +65,8 @@ export function AddressBook({ addresses }: AddressBookProps) {
 
         try {
             const result = await customerProfile.addCustomerAddress(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Address added successfully", { id: toastId });
                 setShowAddDialog(false);
@@ -88,8 +88,8 @@ export function AddressBook({ addresses }: AddressBookProps) {
 
         try {
             const result = await customerProfile.updateCustomerAddress(selectedAddress.id, formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Address updated successfully", { id: toastId });
                 setShowEditDialog(false);
@@ -111,8 +111,8 @@ export function AddressBook({ addresses }: AddressBookProps) {
 
         try {
             const result = await customerProfile.deleteCustomerAddress(selectedAddress.id);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Address deleted successfully", { id: toastId });
                 setShowDeleteDialog(false);
@@ -127,8 +127,8 @@ export function AddressBook({ addresses }: AddressBookProps) {
 
     const handleSetDefault = async (addressId: string) => {
         const result = await customerProfile.setDefaultAddress(addressId);
-        if (result.error) {
-            toast.error(result.error.message);
+        if (!result.success) {
+            toast.error(result.message);
         } else {
             toast.success("Default address updated");
             router.refresh();

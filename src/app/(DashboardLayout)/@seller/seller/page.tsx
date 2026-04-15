@@ -24,54 +24,54 @@ interface PageProps {
 }
 
 export default async function SellerDashboardPage({ searchParams }: PageProps) {
-    const { data: session, error: sessionError } = await getSession();
-    
-    if (sessionError || !session || session.user.role !== "SELLER") {
+    const { data: session, success } = await getSession();
+
+    if (!success || !session || session.user.role !== "SELLER") {
         redirect("/login?redirect=/seller/dashboard");
     }
-    
+
     const params = await searchParams;
     const range = params.range || "week";
-    
+
     const result = await getSellerDashboardStats({ range });
-    const stats = result.error ? null : result.data;
-    
+    const stats = !result.success ? null : result.data;
+
     return (
         <div className="space-y-6">
-            <DashboardHeader 
+            <DashboardHeader
                 sellerName={session.user.name}
                 storeName={session.user.storeName || "My Store"}
             />
-            
+
             <Suspense fallback={<DashboardSkeleton />}>
                 {stats && (
                     <>
                         <MetricsCards stats={stats.metrics} />
                         <QuickActions />
-                        
+
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <SalesChart 
+                            <SalesChart
                                 salesData={stats.salesData}
                                 range={range}
                             />
-                            <SalesByCategory 
+                            <SalesByCategory
                                 categoryData={stats.categorySales}
                             />
                         </div>
-                        
+
                         <RecentOrders orders={stats.recentOrders} />
                         <LowStockAlerts products={stats.lowStockProducts} />
-                        
+
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <TopProducts products={stats.topProducts} />
                             <RecentReviews reviews={stats.recentReviews} />
                         </div>
-                        
+
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <InventorySummary summary={stats.inventorySummary} />
                             <StorePerformance performance={stats.storePerformance} />
                         </div>
-                        
+
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <ActivityFeed activities={stats.recentActivities} />
                             <TipsRecommendations tips={stats.recommendations} />

@@ -38,8 +38,8 @@ export function DangerZone() {
 
         try {
             const result = await customerProfile.customerDeleteAccount(reason);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Account deleted successfully", { id: toastId });
                 router.push("/");

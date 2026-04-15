@@ -11,17 +11,17 @@ import { ProfileSkeleton } from "@/components/modules/admin/profile/ProfileSkele
 import { adminProfile } from "@/actions/profile";
 
 export default async function AdminProfilePage() {
-    const { data: session, error: sessionError } = await getSession();
+    const { data: session, success } = await getSession();
     
-    if (sessionError || !session || session.user.role !== "ADMIN") {
+    if (!success || !session || session.user.role !== "ADMIN") {
         redirect("/login?redirect=/admin/profile");
     }
     
     const profileResult = await adminProfile.getAdminProfile();
     const logsResult = await adminProfile.getAdminActivityLogs();
     
-    const profile = profileResult.error ? null : profileResult.data;
-    const activityLogs = logsResult.error ? [] : logsResult.data;
+    const profile = !profileResult.success ? null : profileResult.data;
+    const activityLogs = !logsResult.success ? [] : logsResult.data;
     
     return (
         <div className="space-y-6">

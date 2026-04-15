@@ -64,8 +64,8 @@ export function ProfileInfo({ profile }: ProfileInfoProps) {
         
         try {
             const result = await adminProfile.updateAdminProfile(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Profile updated successfully", { id: toastId });
                 setIsEditing(false);
@@ -102,8 +102,8 @@ export function ProfileInfo({ profile }: ProfileInfoProps) {
             formData.append("avatar", file);
 
             const result = await adminProfile.adminUploadAvatar(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Avatar updated successfully", { id: toastId });
                 setAvatarUrl(result.data.url);
@@ -121,8 +121,8 @@ export function ProfileInfo({ profile }: ProfileInfoProps) {
         
         try {
             const result = await adminProfile.adminUploadAvatar(null); // Pass null to remove
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Avatar removed successfully", { id: toastId });
                 setAvatarUrl(null);

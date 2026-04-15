@@ -86,8 +86,8 @@ export function SecuritySection() {
                 newPassword: passwordData.newPassword,
             });
 
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Password changed successfully", { id: toastId });
                 setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -105,7 +105,7 @@ export function SecuritySection() {
         try {
             // Use adminProfile.getAdminActiveSessions directly
             const result = await adminProfile.getAdminActiveSessions();
-            if (!result.error) {
+            if (result.success) {
                 setSessions(result.data);
                 setShowSessionsModal(true);
             } else {
@@ -121,7 +121,7 @@ export function SecuritySection() {
     const handleTerminateSession = async (sessionId: string) => {
         // Use adminProfile.adminTerminateSession directly
         const result = await adminProfile.adminTerminateSession(sessionId);
-        if (result.error) {
+        if (!result.success) {
             toast.error("Failed to terminate session");
         } else {
             toast.success("Session terminated");
@@ -132,7 +132,7 @@ export function SecuritySection() {
     const handleLogoutAll = async () => {
         // Use adminProfile.adminLogoutOtherSessions directly
         const result = await adminProfile.adminLogoutOtherSessions();
-        if (result.error) {
+        if (!result.success) {
             toast.error("Failed to logout other devices");
         } else {
             toast.success("Logged out from all other devices");

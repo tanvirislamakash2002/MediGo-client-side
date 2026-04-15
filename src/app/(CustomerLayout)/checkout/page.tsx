@@ -17,7 +17,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
     // Get selected cart items using the IDs from URL
     const result = await getSelectedCartItems(selectedIds);
-    const cartItems = result.error ? [] : result.data?.items || [];
+    const cartItems = !result.success ? [] : result.data?.items || [];
     const cartTotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
 
     return (

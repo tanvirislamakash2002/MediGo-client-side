@@ -121,8 +121,8 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
 
         try {
             const result = await adminUpdateOrderStatus(order.id, selectedStatus);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success(`Order status updated to ${selectedStatus}`, { id: toastId });
                 onRefresh();
@@ -141,8 +141,8 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
 
         try {
             const result = await adminCancelOrder(order.id);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Order cancelled successfully", { id: toastId });
                 onRefresh();

@@ -23,7 +23,7 @@ interface PageProps {
 }
 
 export default async function AdminDashboardPage({ searchParams }: PageProps) {
-    const { data: session, error: sessionError } = await getSession();
+    const { data: session, success } = await getSession();
     
     // if (sessionError || !session || session.user.role !== "ADMIN") {
     //     redirect("/login?redirect=/admin/dashboard");
@@ -33,7 +33,7 @@ export default async function AdminDashboardPage({ searchParams }: PageProps) {
     const range = params.range || "week";
     
     const result = await getDashboardStats({ range });
-    const stats = result.error ? null : result.data;
+    const stats = !result.success ? null : result.data;
     
     return (
         <div className="space-y-6">

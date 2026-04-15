@@ -59,8 +59,8 @@ export function PayoutInfo({ payout = null }: PayoutInfoProps) {
         
         try {
             const result = await sellerProfile.updatePayoutInfo(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Payout information updated", { id: toastId });
                 setIsEditing(false);

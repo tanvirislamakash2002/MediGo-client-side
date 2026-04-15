@@ -38,8 +38,8 @@ export function DangerZone() {
         
         try {
             const result = await adminProfile.adminDeleteAccount(reason);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Account deleted successfully", { id: toastId });
                 router.push("/logout");
@@ -55,8 +55,8 @@ export function DangerZone() {
         const toastId = toast.loading("Exporting data...");
         try {
             const result = await adminProfile.adminExportAccountData();
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Data exported successfully", { id: toastId });
                 window.location.href = result.data.url;

@@ -17,9 +17,9 @@ interface PageProps {
 }
 
 export default async function OrdersPage({ searchParams }: PageProps) {
-    const { data: session, error: sessionError } = await getSession();
+    const { data: session, success } = await getSession();
     
-    if (sessionError || !session) {
+    if (!success || !session) {
         redirect("/login?redirect=/orders");
     }
     
@@ -30,7 +30,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
     const page = params.page ? parseInt(params.page) : 1;
     
     const result = await getMyOrders({ status, search, sort, page });
-    const orders = result.error ? [] : result.data?.orders || [];
+    const orders = !result.success ? [] : result.data?.orders || [];
     const pagination = result.data?.pagination;
     
     return (

@@ -14,9 +14,9 @@ import { DangerZone } from "@/components/modules/customer/profile/DangerZone";
 import { ProfileSkeleton } from "@/components/modules/customer/profile/ProfileSkeleton";
 
 export default async function CustomerProfilePage() {
-    const { data: session, error: sessionError } = await getSession();
+    const { data: session, success } = await getSession();
     
-    if (sessionError || !session || session.user.role !== "CUSTOMER") {
+    if (!success || !session || session.user.role !== "CUSTOMER") {
         redirect("/login?redirect=/customer/profile");
     }
     
@@ -26,11 +26,11 @@ export default async function CustomerProfilePage() {
     const wishlistResult = await customerProfile.getCustomerWishlist();
     const reviewsResult = await customerProfile.getCustomerReviews();
     
-    const profile = profileResult.error ? null : profileResult.data;
-    const addresses = addressesResult.error ? [] : addressesResult.data;
-    const orders = ordersResult.error ? [] : ordersResult.data;
-    const wishlist = wishlistResult.error ? [] : wishlistResult.data;
-    const reviews = reviewsResult.error ? [] : reviewsResult.data;
+    const profile = !profileResult.success ? null : profileResult.data;
+    const addresses = !addressesResult.success ? [] : addressesResult.data;
+    const orders = !ordersResult.success ? [] : ordersResult.data;
+    const wishlist = !wishlistResult.success ? [] : wishlistResult.data;
+    const reviews = !reviewsResult.success ? [] : reviewsResult.data;
     
     const settingsWithDefaults = profile ? {
         ...profile,

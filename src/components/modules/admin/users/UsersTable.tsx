@@ -114,9 +114,9 @@ export function UsersTable({
             const page = parseInt(searchParams.get("page") || "1");
             
             const result = await getAllUsers({ role, status, verified, search, sort, page });
-            if (!result.error) {
-                setUsers(result.data?.users || []);
-                setPagination(result.data?.pagination);
+            if (result.success) {
+                setUsers(result?.users || []);
+                setPagination(result?.pagination);
             }
             setIsLoading(false);
         };
@@ -153,8 +153,8 @@ export function UsersTable({
 
     const handleBan = async (userId: string) => {
         const result = await banUser(userId);
-        if (result.error) {
-            toast.error(result.error.message);
+        if (!result.success) {
+            toast.error(result.message);
         } else {
             toast.success("User banned successfully");
             router.refresh();
@@ -163,8 +163,8 @@ export function UsersTable({
 
     const handleUnban = async (userId: string) => {
         const result = await unbanUser(userId);
-        if (result.error) {
-            toast.error(result.error.message);
+        if (!result.success) {
+            toast.error(result.message);
         } else {
             toast.success("User unbanned successfully");
             router.refresh();
@@ -173,8 +173,8 @@ export function UsersTable({
 
     const handleRoleChange = async (userId: string, newRole: string) => {
         const result = await changeUserRole(userId, newRole);
-        if (result.error) {
-            toast.error(result.error.message);
+        if (!result.success) {
+            toast.error(result.message);
         } else {
             toast.success("Role updated successfully");
             setShowRoleModal(false);

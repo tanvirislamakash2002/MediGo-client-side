@@ -73,8 +73,8 @@ export function StoreInfo({ store }: StoreInfoProps) {
                 storeName: formData.name,
                 storeDescription: formData.description
             });
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Store information updated", { id: toastId });
                 setIsEditing(false);
@@ -108,8 +108,8 @@ export function StoreInfo({ store }: StoreInfoProps) {
             const formData = new FormData();
             formData.append("logo", file);
             const result = await sellerProfile.uploadStoreLogo(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Logo uploaded", { id: toastId });
                 setLogoUrl(result.data.url);
@@ -143,8 +143,8 @@ export function StoreInfo({ store }: StoreInfoProps) {
             const formData = new FormData();
             formData.append("banner", file);
             const result = await sellerProfile.uploadStoreLogo(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Banner uploaded", { id: toastId });
                 setBannerUrl(result.data.url);

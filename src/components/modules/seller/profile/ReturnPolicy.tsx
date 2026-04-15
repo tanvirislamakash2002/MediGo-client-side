@@ -45,8 +45,8 @@ export function ReturnPolicy({ policy = {} }: ReturnPolicyProps) {
         
         try {
             const result = await sellerProfile.updateReturnPolicy(formData);
-            if (result.error) {
-                toast.error(result.error.message, { id: toastId });
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Return policy updated", { id: toastId });
                 setIsEditing(false);
