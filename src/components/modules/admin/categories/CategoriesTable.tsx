@@ -92,8 +92,8 @@ export function CategoriesTable({
                 page
             });
             if (result.success) {
-                setCategories(result.data?.data?.categories || []);
-                setPagination(result.data?.data?.pagination);
+                setCategories(result?.data?.categories || []);
+                setPagination(result?.data?.pagination);
             }
             setIsLoading(false);
         };

@@ -19,13 +19,37 @@ interface PageProps {
     }>;
 }
 
+interface UsersResponse {
+    success: boolean;
+    data?: {
+        users: any[];
+        stats: {
+            total: number;
+            customers: number;
+            sellers: number;
+            admins: number;
+            active: number;
+            banned: number;
+            verified: number;
+            unverified: number;
+        };
+        pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    };
+    message?: string;
+}
+
 export default async function UsersPage({ searchParams }: PageProps) {
     const { data: session, success } = await getSession();
-    
+
     if (!success || !session || session.user.role !== "ADMIN") {
         redirect("/login?redirect=/admin/users");
     }
-    
+
     const params = await searchParams;
     const role = params.role;
     const status = params.status;
@@ -33,10 +57,10 @@ export default async function UsersPage({ searchParams }: PageProps) {
     const search = params.search;
     const sort = params.sort || "newest";
     const page = params.page ? parseInt(params.page) : 1;
-    
-    const result = await getAllUsers({ role, status, verified, search, sort, page });
-    const users = !result.success ? [] : result?.users || [];
-    const stats = result?.stats || {
+
+    const result = await getAllUsers({ role, status, verified, search, sort, page }) as UsersResponse;
+
+    const defaultStats = {
         total: 0,
         customers: 0,
         sellers: 0,
@@ -46,24 +70,27 @@ export default async function UsersPage({ searchParams }: PageProps) {
         verified: 0,
         unverified: 0
     };
-    const pagination = result?.pagination;
-    
+
+    const users = result.success && result.data ? result.data.users : [];
+    const stats = result.success && result.data ? result.data.stats : defaultStats;
+    const pagination = result.success && result.data ? result.data.pagination : undefined;
+
     return (
         <div className="space-y-6">
             <UsersHeader />
-            
+
             <UsersStats stats={stats} />
-            
-            <UsersFilters 
+
+            <UsersFilters
                 initialRole={role}
                 initialStatus={status}
                 initialVerified={verified}
                 initialSearch={search}
                 initialSort={sort}
             />
-            
+
             <Suspense fallback={<UsersSkeleton />}>
-                <UsersTable 
+                <UsersTable
                     initialUsers={users}
                     initialPage={page}
                     initialRole={role}

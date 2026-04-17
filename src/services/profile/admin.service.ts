@@ -13,14 +13,14 @@ export const adminProfileService = {
                 next: { tags: ["admin-profile"] }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to fetch profile"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data
@@ -47,14 +47,14 @@ export const adminProfileService = {
                 body: JSON.stringify(data)
             });
             const result = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: result.message || "Failed to update profile"
                 };
             }
-            
+
             return {
                 success: true,
                 data: result.data
@@ -81,14 +81,14 @@ export const adminProfileService = {
                 body: JSON.stringify(data)
             });
             const result = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: result.message || "Failed to change password"
                 };
             }
-            
+
             return {
                 success: true,
                 data: result.data
@@ -111,14 +111,14 @@ export const adminProfileService = {
                 next: { tags: ["admin-sessions"] }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to fetch sessions"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data
@@ -141,14 +141,14 @@ export const adminProfileService = {
                 headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to terminate session"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data
@@ -171,14 +171,14 @@ export const adminProfileService = {
                 headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to logout other devices"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data
@@ -201,14 +201,14 @@ export const adminProfileService = {
                 next: { tags: ["admin-logs"] }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to fetch logs"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data
@@ -235,14 +235,14 @@ export const adminProfileService = {
                 body: JSON.stringify(data)
             });
             const result = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: result.message || "Failed to update preferences"
                 };
             }
-            
+
             return {
                 success: true,
                 data: result.data
@@ -264,14 +264,14 @@ export const adminProfileService = {
                 headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to export logs"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data
@@ -293,14 +293,14 @@ export const adminProfileService = {
                 headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to export data"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data
@@ -327,14 +327,14 @@ export const adminProfileService = {
                 body: JSON.stringify({ reason })
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to delete account"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data
@@ -360,20 +360,51 @@ export const adminProfileService = {
                 body: formData
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to upload avatar"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data
             };
         } catch (error) {
             console.error("Upload avatar error:", error);
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
+        }
+    },
+    // /Remove avatar
+    adminRemoveAvatar: async () => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/admin/profile/avatar`, {
+                method: "DELETE",
+                headers: {
+                    Cookie: cookieStore.toString()
+                }
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || "Failed to remove avatar"
+                };
+            }
+
+            return {
+                success: true,
+                data: data.data
+            };
+        } catch (error) {
+            console.error("Remove avatar error:", error);
             return {
                 success: false,
                 message: "Something went wrong"

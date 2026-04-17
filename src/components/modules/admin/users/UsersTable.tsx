@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableHeader, 
-    TableRow 
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,15 +80,15 @@ const getInitials = (name: string) => {
         .slice(0, 2);
 };
 
-export function UsersTable({ 
-    initialUsers, 
+export function UsersTable({
+    initialUsers,
     initialPage,
     initialRole,
     initialStatus,
     initialVerified,
     initialSearch,
     initialSort,
-    pagination: initialPagination 
+    pagination: initialPagination
 }: UsersTableProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -112,11 +112,15 @@ export function UsersTable({
             const search = searchParams.get("search") || initialSearch;
             const sort = searchParams.get("sort") || initialSort;
             const page = parseInt(searchParams.get("page") || "1");
-            
+
             const result = await getAllUsers({ role, status, verified, search, sort, page });
-            if (result.success) {
-                setUsers(result?.users || []);
-                setPagination(result?.pagination);
+            if (result.success && 'data' in result && result.data) {
+                const data = result.data as { users: User[]; pagination: any };
+                setUsers(data.users || []);
+                setPagination(data.pagination);
+            } else {
+                setUsers([]);
+                setPagination(undefined);
             }
             setIsLoading(false);
         };
@@ -190,7 +194,7 @@ export function UsersTable({
         <>
             {/* Bulk Actions Bar */}
             {selectedUsers.size > 0 && (
-                <BulkActionsBar 
+                <BulkActionsBar
                     selectedCount={selectedUsers.size}
                     selectedIds={Array.from(selectedUsers)}
                     onClear={() => {
@@ -202,7 +206,7 @@ export function UsersTable({
                     onUnban={handleUnban}
                 />
             )}
-            
+
             {/* Users Table */}
             <div className="border rounded-lg overflow-hidden">
                 <Table>
@@ -237,7 +241,7 @@ export function UsersTable({
                             users.map((user) => {
                                 const role = getRoleBadge(user.role);
                                 const RoleIcon = role.icon;
-                                
+
                                 return (
                                     <TableRow key={user.id}>
                                         <TableCell>
@@ -328,7 +332,7 @@ export function UsersTable({
                     </TableBody>
                 </Table>
             </div>
-            
+
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
                 <div className="flex justify-between items-center">
@@ -343,7 +347,7 @@ export function UsersTable({
                     />
                 </div>
             )}
-            
+
             {/* User Details Modal */}
             <UserDetailsModal
                 isOpen={showDetailsModal}
@@ -353,7 +357,7 @@ export function UsersTable({
                 onUnban={() => selectedUser && handleUnban(selectedUser.id)}
                 onRoleChange={() => setShowRoleModal(true)}
             />
-            
+
             {/* Change Role Modal */}
             <ChangeRoleModal
                 isOpen={showRoleModal}

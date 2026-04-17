@@ -120,7 +120,7 @@ export function ProfileInfo({ profile }: ProfileInfoProps) {
         const toastId = toast.loading("Removing avatar...");
         
         try {
-            const result = await adminProfile.adminUploadAvatar(null); // Pass null to remove
+            const result = await adminProfile.adminRemoveAvatar(); // Pass null to remove
             if (!result.success) {
                 toast.error(result.message, { id: toastId });
             } else {

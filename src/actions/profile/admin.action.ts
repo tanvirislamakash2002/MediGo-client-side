@@ -78,3 +78,12 @@ export const adminUploadAvatar = async (formData: FormData) => {
     }
     return result;
 };
+
+// Remove avatar
+export const adminRemoveAvatar = async () => {
+    const result = await adminProfileService.adminRemoveAvatar();
+    if (result.success) {
+        updateTag("admin-profile");
+    }
+    return result;
+};

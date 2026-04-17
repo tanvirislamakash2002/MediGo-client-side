@@ -133,7 +133,7 @@ export function OrdersList({
             );
 
             const results = await Promise.all(updatePromises);
-            const errors = results.filter(r => r.error);
+            const errors = results.filter(r => !r.success);
 
             if (errors.length > 0) {
                 toast.error(`${errors.length} orders failed to update`, { id: toastId });
