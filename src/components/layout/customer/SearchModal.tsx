@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X, Clock, TrendingUp } from "lucide-react";
@@ -27,7 +27,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             if (searchTerm.length > 2) {
                 setIsLoading(true);
                 const result = await getMedicines({ search: searchTerm, limit: 5 });
-                setResults(!result.success ? [] : result.data?.data || []);
+                setResults(!result.success ? [] : result?.data || []);
                 setIsLoading(false);
             } else {
                 setResults([]);
@@ -59,6 +59,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-2xl p-0 gap-0">
+                <DialogHeader className="sr-only">
+                    <DialogTitle>Search Medicines</DialogTitle>
+                </DialogHeader>
                 <div className="p-4 border-b">
                     <div className="flex items-center gap-2">
                         <Search className="h-5 w-5 text-muted-foreground" />

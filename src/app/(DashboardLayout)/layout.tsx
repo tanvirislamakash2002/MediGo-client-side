@@ -15,7 +15,6 @@ export default async function DashboardLayout({
     admin: React.ReactNode;
 }>) {
     const { data } = await userService.getSession();
-    console.log(data);
     if (!data?.user) {
         redirect("/login?redirect=/dashboard");
     }

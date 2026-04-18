@@ -30,7 +30,6 @@ export default async function CategoriesPage({ searchParams }: PageProps) {
     const result = await getAllCategories({ search, sort, page });
     const categories = !result.success ? [] : result.data?.categories || [];
     const pagination = result.data?.pagination;
-    console.log(result);
     return (
         <div className="space-y-6">
             <CategoriesHeader />

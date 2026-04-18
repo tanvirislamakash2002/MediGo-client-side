@@ -10,6 +10,7 @@ import { Package } from "lucide-react";
 import { OrdersSkeleton } from "./OrdersSkeleton";
 import { OrderCard } from "./OrderCard";
 import { toast } from "sonner";
+import { addToCart } from "@/actions/cart.action";
 
 interface Order {
     id: string;
@@ -18,6 +19,7 @@ interface Order {
     totalAmount: number;
     items: {
         id: string;
+        medicineId:string;
         name: string;
         price: number;
         quantity: number;
@@ -45,19 +47,20 @@ interface OrdersListProps {
     };
 }
 
-export function OrdersList({ 
-    initialOrders, 
+export function OrdersList({
+    initialOrders,
     initialPage,
     initialStatus,
     initialSearch,
     initialSort,
-    pagination: initialPagination 
+    pagination: initialPagination
 }: OrdersListProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [orders, setOrders] = useState<Order[]>(initialOrders);
     const [pagination, setPagination] = useState(initialPagination);
     const [isLoading, setIsLoading] = useState(false);
+    const [reorderingOrderId, setReorderingOrderId] = useState<string | null>(null);
 
     const currentPage = parseInt(searchParams.get("page") || initialPage.toString());
 
@@ -68,7 +71,7 @@ export function OrdersList({
             const search = searchParams.get("search") || initialSearch;
             const sort = searchParams.get("sort") || initialSort;
             const page = parseInt(searchParams.get("page") || "1");
-            
+
             const result = await getMyOrders({ status, search, sort, page });
             if (result.success) {
                 setOrders(result.data?.orders || []);
@@ -87,7 +90,51 @@ export function OrdersList({
     };
 
     const handleReorder = async (order: Order) => {
+        // console.log(order);
+        // Prevent double clicks
+        if (reorderingOrderId === order.id) return;
 
+        // Check if order has items
+        if (!order.items || order.items.length === 0) {
+            toast.error("No items available to reorder");
+            return;
+        }
+
+        setReorderingOrderId(order.id);
+        const toastId = toast.loading(`Adding items from order #${order.id.slice(0, 8)} to cart...`);
+
+        try {
+            const itemsToAdd = order.items.filter(item => item);
+// console.log(itemsToAdd);
+            if (itemsToAdd.length === 0) {
+                toast.error("No items available to reorder", { id: toastId });
+                return;
+            }
+
+            // Add each item to cart with original quantity
+            for (const item of itemsToAdd) {
+                await addToCart(item.medicineId, item.quantity);
+            }
+
+            toast.success(`${itemsToAdd.length} item${itemsToAdd.length !== 1 ? 's' : ''} added to cart!`, { id: toastId });
+
+            // Show action buttons
+            setTimeout(() => {
+                toast.info("What would you like to do?", {
+                    action: {
+                        label: "View Cart",
+                        onClick: () => router.push("/cart")
+                    },
+                    duration: 5000
+                });
+            }, 1000);
+
+        } catch (error) {
+            console.error("Reorder error:", error);
+            toast.error("Failed to add items to cart", { id: toastId });
+        } finally {
+            setReorderingOrderId(null);
+        }
     };
 
     const handleCancelOrder = async (order: Order) => {
@@ -95,25 +142,25 @@ export function OrdersList({
             toast.error("This order cannot be cancelled as it has already been processed or shipped.");
             return;
         }
-        
+
         const toastId = toast.loading(`Cancelling order #${order.id.slice(0, 8).toUpperCase()}...`);
-        
+
         try {
             const result = await cancelOrder(order.id);
-            
+
             if (!result.success) {
                 toast.error(result.message, { id: toastId });
                 return;
             }
-            
+
             toast.success(`Order #${order.id.slice(0, 8).toUpperCase()} cancelled successfully`, { id: toastId });
-            
+
             // Refresh orders list
             const status = searchParams.get("status") || initialStatus;
             const search = searchParams.get("search") || initialSearch;
             const sort = searchParams.get("sort") || initialSort;
             const page = parseInt(searchParams.get("page") || "1");
-            
+
             const refreshResult = await getMyOrders({ status, search, sort, page });
             if (refreshResult.success) {
                 setOrders(refreshResult.data?.orders || []);
@@ -136,7 +183,7 @@ export function OrdersList({
                 </div>
                 <h3 className="text-lg font-semibold mb-2">No orders found</h3>
                 <p className="text-muted-foreground mb-4">
-                    {searchParams.get("search") 
+                    {searchParams.get("search")
                         ? "No orders match your search criteria"
                         : "You haven't placed any orders yet"}
                 </p>
@@ -160,7 +207,7 @@ export function OrdersList({
                     />
                 ))}
             </div>
-            
+
             {pagination && pagination.totalPages > 1 && (
                 <div className="mt-8">
                     <Pagination

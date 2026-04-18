@@ -67,9 +67,9 @@ export default async function OrderDetailsPage({ params }: PageProps) {
                             <div className="lg:col-span-2 space-y-8">
                                 <OrderItems order={safeOrder} />
                                 <ShippingInfo order={safeOrder} />
-                                {safeOrder.status === "DELIVERED" && (
+                                {/* {safeOrder.status === "DELIVERED" && (
                                     <ReviewSection order={safeOrder} />
-                                )}
+                                )} */}
                             </div>
                             <div className="space-y-8">
                                 <OrderSummary order={safeOrder} />

@@ -23,6 +23,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { addToCart } from "@/actions/cart.action";
 
 interface Order {
     id: string;
@@ -38,7 +39,7 @@ export function OrderActions({ order }: OrderActionsProps) {
     const router = useRouter();
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
-
+    const [isReordering, setIsReordering] = useState(false);
     // Safe checks
     if (!order) {
         return (
@@ -79,9 +80,44 @@ export function OrderActions({ order }: OrderActionsProps) {
     };
 
     const handleReorder = async () => {
-        // Add all items to cart logic here
-        toast.success("Items added to cart");
-        router.push("/cart");
+        setIsReordering(true);
+        const toastId = toast.loading("Adding items to cart...");
+
+        try {
+            // Filter out items (you may not have stock info, so just add all)
+            const itemsToAdd = items.filter(item => item.medicineId);
+
+            if (itemsToAdd.length === 0) {
+                toast.error("No items available to reorder", { id: toastId });
+                return;
+            }
+
+            // Add each item to cart with original quantity
+            for (const item of itemsToAdd) {
+                await addToCart(item.medicineId as string, item.quantity);
+            }
+
+            toast.success(`${itemsToAdd.length} items added to cart!`, { id: toastId });
+
+            // Show action buttons
+            setTimeout(() => {
+                toast.info("What would you like to do?", {
+                    action: {
+                        label: "View Cart",
+                        onClick: () => router.push("/cart")
+                    },
+                    duration: 5000
+                });
+            }, 1000);
+
+        } catch (error) {
+            console.error("Reorder error:", error);
+            toast.error("Failed to add items to cart", { id: toastId });
+        } finally {
+            setIsReordering(false);
+        }
+        // toast.success("Items added to cart");
+        // router.push("/cart");
     };
 
     const handleTrackOrder = () => {
@@ -95,7 +131,7 @@ export function OrderActions({ order }: OrderActionsProps) {
     const handleDownloadInvoice = () => {
         toast.success("Invoice downloaded");
     };
-
+    console.log(order);
     return (
         <>
             <Card>
@@ -108,9 +144,10 @@ export function OrderActions({ order }: OrderActionsProps) {
                             variant="default"
                             className="w-full"
                             onClick={handleReorder}
+                            disabled={isReordering}
                         >
                             <ShoppingCart className="h-4 w-4 mr-2" />
-                            Reorder
+                            {isReordering ? "Reordering..." : "Reorder"}
                         </Button>
                     )}
 

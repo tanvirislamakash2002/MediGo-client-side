@@ -10,11 +10,8 @@ export default async function CustomerLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { data: session, error } = await getSession();
-    
-    // Don't redirect for cart/checkout - they handle auth themselves
-    // But we still pass session info to header
-    
+    const { data: session } = await getSession();
+        
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <CartProvider>

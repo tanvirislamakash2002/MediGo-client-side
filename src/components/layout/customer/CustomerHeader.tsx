@@ -33,8 +33,6 @@ import {
 } from "@/components/ui/sheet";
 import { SearchModal } from "./SearchModal";
 import { CartDrawer } from "./CartDrawer";
-import { env } from "@/env";
-import { logout } from "@/actions/auth.action";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useLogout } from "@/hooks/useLogout";
 
@@ -50,6 +48,7 @@ interface CustomerHeaderProps {
 }
 
 const navigation = [
+    { name: "Home", href: "/" },
     { name: "Shop", href: "/shop" },
     { name: "Categories", href: "/shop?view=categories" },
     // { name: "Offers", href: "/offers" },
