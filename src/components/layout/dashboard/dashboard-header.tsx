@@ -33,7 +33,6 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { logout } from "@/actions/auth.action";
 import Link from "next/link";
 import { useLogout } from "@/hooks/useLogout";
 

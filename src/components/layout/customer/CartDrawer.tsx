@@ -45,7 +45,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         try { new URL(url); return true; }
         catch { return false; }
     };
-
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
             <SheetContent className="w-full sm:w-[450px] flex flex-col">

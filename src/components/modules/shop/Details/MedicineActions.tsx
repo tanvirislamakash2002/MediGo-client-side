@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShoppingCart, Heart, Truck, Shield, Clock, FileText, TriangleAlert } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
-import { getSession } from "@/actions/auth.action";
 
 interface Medicine {
     id: string;
@@ -34,7 +33,7 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
     };
 
     const handleAddToCart = async () => {
-        await addToCart(medicine.id, quantity, medicine);
+        await addToCart(medicine.id, quantity);
     };
 
     return (

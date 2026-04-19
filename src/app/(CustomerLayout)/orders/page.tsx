@@ -6,6 +6,7 @@ import { OrdersHeader } from "@/components/modules/orders/OrdersHeader";
 import { OrdersFilters } from "@/components/modules/orders/OrdersFilters";
 import { OrdersSkeleton } from "@/components/modules/orders/OrdersSkeleton";
 import { OrdersList } from "@/components/modules/orders/OrdersList";
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
     searchParams: Promise<{

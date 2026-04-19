@@ -6,6 +6,7 @@ import { ShopSidebar } from "@/components/modules/shop/ShopSidebar";
 import { ShopHeader } from "@/components/modules/shop/ShopHeader";
 import { ShopGrid } from "@/components/modules/shop/ShopGrid";
 import { ShopGridSkeleton } from "@/components/modules/shop/ShopGridSkeleton";
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
     searchParams: Promise<{

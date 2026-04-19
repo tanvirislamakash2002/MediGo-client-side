@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { 
-    getCartItems, 
+import {
+    getCartItems,
     addToCart as addToCartAction,
     updateCartItem as updateCartItemAction,
     removeCartItem as removeCartItemAction,
@@ -10,7 +10,7 @@ import {
     getCartCount
 } from "@/actions/cart.action";
 import { getSession } from "@/actions/auth.action";
-import { cartStore } from "@/lib/cart-store";
+import { cartStore } from "@/lib/guest-cart";
 import { toast } from "sonner";
 
 interface CartItem {
@@ -50,7 +50,8 @@ export function useCart() {
         const checkAuth = async () => {
             try {
                 const { data, success } = await getSession();
-                setIsAuthenticated(!!data && !success);
+                // ✅ Fix: Check if session exists and success is true
+                setIsAuthenticated(!!data && success === true);
             } catch (error) {
                 console.error("Auth check failed:", error);
                 setIsAuthenticated(false);
@@ -61,6 +62,7 @@ export function useCart() {
         checkAuth();
     }, []);
 
+    // Calculate cart total
     useEffect(() => {
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         setCartTotal(total);
@@ -69,14 +71,13 @@ export function useCart() {
     // Fetch cart from server
     const fetchCart = useCallback(async () => {
         if (!isAuthenticated) return;
-        
+
         try {
-            const { data, success,message } = await getCartItems();
+            const { data, success, message } = await getCartItems();
             if (!success) {
                 console.error("Failed to fetch cart:", message);
                 return;
             }
-            
             if (data?.items) {
                 setCart(data.items);
                 setCartCount(data.totalItems || 0);
@@ -86,17 +87,23 @@ export function useCart() {
         }
     }, [isAuthenticated]);
 
-    // Fetch cart count
-    const fetchCartCount = useCallback(async () => {
-        if (!isAuthenticated) return;
-        
-        try {
-            const { data } = await getCartCount();
-            setCartCount(data || 0);
-        } catch (error) {
-            console.error("Failed to fetch cart count:", error);
-        }
-    }, [isAuthenticated]);
+    // Load guest cart
+    const loadGuestCart = useCallback(() => {
+        const guestCart = cartStore.getCart();
+        const formattedCart: CartItem[] = guestCart.map((item, index) => ({
+            id: `guest-${item.medicineId}`, // ✅ Better ID using medicineId
+            medicineId: item.medicineId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            stock: item.stock,
+            manufacturer: item.manufacturer,
+            imageUrl: item.imageUrl,
+            requiresPrescription: item.requiresPrescription
+        }));
+        setCart(formattedCart);
+        setCartCount(cartStore.getCartCount());
+    }, []);
 
     // Load cart when auth changes
     useEffect(() => {
@@ -105,130 +112,147 @@ export function useCart() {
         if (isAuthenticated) {
             fetchCart();
         } else {
-            // Load from localStorage for guests
-            const guestCart = cartStore.getCart();
-            const formattedCart: CartItem[] = guestCart.map((item, index) => ({
-                id: `guest-${index}`,
-                medicineId: item.medicineId,
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                stock: item.stock,
-                manufacturer: item.manufacturer,
-                imageUrl: item.imageUrl,
-                requiresPrescription: item.requiresPrescription
-            }));
-            setCart(formattedCart);
-            setCartCount(cartStore.getCartCount());
+            loadGuestCart();
         }
-    }, [isAuthenticated, isLoading, fetchCart]);
+    }, [isAuthenticated, isLoading, fetchCart, loadGuestCart]);
 
     // Add to cart
-    const addToCart = useCallback(async (medicineId: string, quantity: number = 1, medicineDetails?: any) => {
+    const addToCart = useCallback(async (medicineId: string, quantity: number = 1) => {
         setIsAdding(true);
-        
+
         try {
             const result = await addToCartAction(medicineId, quantity);
-            
+
+            // ✅ Debug log
+            console.log("Add to cart result:", JSON.stringify(result, null, 2));
+
             if (!result.success) {
                 toast.error(result.message);
                 return false;
             }
-            
+
             if (isAuthenticated) {
-                await fetchCartCount();
                 await fetchCart();
                 toast.success(`Added to cart`);
             } else {
-                // Guest user
+                // Guest user - result.data contains the medicine details
                 if (result.data) {
+                    console.log("Guest item data:", result.data); // ✅ Debug log
+
+                    // ✅ Validate data before adding
+                    if (!result.data.medicineId || !result.data.name) {
+                        console.error("Invalid guest item data:", result.data);
+                        toast.error("Failed to add item to cart");
+                        return false;
+                    }
+
                     const guestItem = result.data as GuestCartItem;
-                    const newCart = cartStore.addItem(guestItem);
-                    const formattedCart: CartItem[] = newCart.map((item, index) => ({
-                        id: `guest-${index}`,
-                        medicineId: item.medicineId,
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                        stock: item.stock,
-                        manufacturer: item.manufacturer,
-                        imageUrl: item.imageUrl,
-                        requiresPrescription: item.requiresPrescription
-                    }));
-                    setCart(formattedCart);
-                    setCartCount(cartStore.getCartCount());
+                    cartStore.addItem(guestItem);
+                    loadGuestCart();
                     toast.success(`Added ${quantity} x ${result.data.name} to cart`);
+                } else {
+                    console.error("No data in result for guest user");
+                    toast.error("Failed to add item to cart");
+                    return false;
                 }
             }
-            
+
             return true;
         } catch (error) {
+            console.error("Add to cart error:", error);
             toast.error("Failed to add to cart");
             return false;
         } finally {
             setIsAdding(false);
         }
-    }, [isAuthenticated, fetchCart, fetchCartCount]);
+    }, [isAuthenticated, fetchCart, loadGuestCart]);
 
     // Update cart item
     const updateCartItem = useCallback(async (itemId: string, quantity: number) => {
-        if (!isAuthenticated) return;
-        
-        setIsUpdating(true);
-        try {
-            const { message } = await updateCartItemAction(itemId, quantity);
-            
-            if (message) {
-                toast.error(message);
-                return;
-            }
-            
-            await fetchCart();
-            toast.success("Cart updated");
-        } catch (error) {
-            toast.error("Failed to update cart");
-        } finally {
-            setIsUpdating(false);
+        if (quantity <= 0) {
+            // If quantity is 0 or negative, remove the item
+            await removeCartItem(itemId);
+            return;
         }
-    }, [isAuthenticated, fetchCart]);
+
+        if (isAuthenticated) {
+            setIsUpdating(true);
+            try {
+                const result = await updateCartItemAction(itemId, quantity);
+                if (!result.success) {
+                    toast.error(result.message);
+                    return;
+                }
+                await fetchCart();
+                toast.success("Cart updated");
+            } catch (error) {
+                toast.error("Failed to update cart");
+            } finally {
+                setIsUpdating(false);
+            }
+        } else {
+            // ✅ Guest user - update localStorage
+            // For guest, itemId is actually medicineId (since we used medicineId as id)
+            const medicineId = itemId.replace("guest-", "");
+            cartStore.updateQuantity(medicineId, quantity);
+            loadGuestCart();
+            toast.success("Cart updated");
+        }
+    }, [isAuthenticated, fetchCart, loadGuestCart]);
 
     // Remove cart item
     const removeCartItem = useCallback(async (itemId: string) => {
-        if (!isAuthenticated) return;
-        
-        try {
-            const { message } = await removeCartItemAction(itemId);
-            
-            if (message) {
-                toast.error(message);
-                return;
+        if (isAuthenticated) {
+            try {
+                const result = await removeCartItemAction(itemId);
+                if (!result.success) {
+                    toast.error(result.message);
+                    return;
+                }
+                await fetchCart();
+                toast.success("Item removed from cart");
+            } catch (error) {
+                toast.error("Failed to remove item");
             }
-            
-            await fetchCart();
+        } else {
+            // ✅ Guest user - remove from localStorage
+            const medicineId = itemId.replace("guest-", "");
+            cartStore.removeItem(medicineId);
+            loadGuestCart();
             toast.success("Item removed from cart");
-        } catch (error) {
-            toast.error("Failed to remove item");
         }
-    }, [isAuthenticated, fetchCart]);
+    }, [isAuthenticated, fetchCart, loadGuestCart]);
 
     // Clear cart
     const clearCart = useCallback(async () => {
-        if (!isAuthenticated) return;
-        
-        try {
-            const { message } = await clearCartAction();
-            
-            if (message) {
-                toast.error(message);
-                return;
+        if (isAuthenticated) {
+            try {
+                const result = await clearCartAction();
+                if (!result.success) {
+                    toast.error(result.message);
+                    return;
+                }
+                await fetchCart();
+                toast.success("Cart cleared");
+            } catch (error) {
+                toast.error("Failed to clear cart");
             }
-            
-            await fetchCart();
+        } else {
+            // ✅ Guest user - clear localStorage
+            cartStore.clearCart();
+            loadGuestCart();
             toast.success("Cart cleared");
-        } catch (error) {
-            toast.error("Failed to clear cart");
         }
-    }, [isAuthenticated, fetchCart]);
+    }, [isAuthenticated, fetchCart, loadGuestCart]);
+
+    // Refresh cart manually
+    const refreshCart = useCallback(async () => {
+        if (isAuthenticated) {
+            await fetchCart();
+        } else {
+            loadGuestCart();
+        }
+    }, [isAuthenticated, fetchCart, loadGuestCart]);
 
     return {
         cart,
@@ -237,11 +261,11 @@ export function useCart() {
         isAdding,
         isUpdating,
         isLoading,
+        isAuthenticated,
         addToCart,
         updateCartItem,
         removeCartItem,
         clearCart,
-        isAuthenticated,
-        refreshCart: fetchCart
+        refreshCart
     };
 }

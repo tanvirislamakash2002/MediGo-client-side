@@ -28,18 +28,18 @@ export function BulkActionsBar({ selectedCount, selectedIds, onClear, onRefresh 
             toast.error("Please select a status to apply");
             return;
         }
-        
+
         setIsUpdating(true);
         const toastId = toast.loading(`Updating ${selectedCount} orders to ${selectedStatus}...`);
-        
+
         try {
             const updatePromises = selectedIds.map(orderId =>
                 adminUpdateOrderStatus(orderId, selectedStatus)
             );
-            
+
             const results = await Promise.all(updatePromises);
-            const errors = results.filter(r => r.error);
-            
+            const errors = results.filter(r => !r.success);
+
             if (errors.length > 0) {
                 toast.error(`${errors.length} orders failed to update`, { id: toastId });
             } else {
@@ -60,16 +60,16 @@ export function BulkActionsBar({ selectedCount, selectedIds, onClear, onRefresh 
                 <span className="text-sm font-medium">
                     {selectedCount} order{selectedCount !== 1 ? 's' : ''} selected
                 </span>
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
+                <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={onClear}
                     className="text-muted-foreground"
                 >
                     Clear
                 </Button>
             </div>
-            
+
             <div className="flex items-center gap-2 w-full sm:w-auto">
                 <select
                     value={selectedStatus}
@@ -83,7 +83,7 @@ export function BulkActionsBar({ selectedCount, selectedIds, onClear, onRefresh 
                         </option>
                     ))}
                 </select>
-                <Button 
+                <Button
                     onClick={handleBulkUpdate}
                     disabled={!selectedStatus || isUpdating}
                     size="sm"

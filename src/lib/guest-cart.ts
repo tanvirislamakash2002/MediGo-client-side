@@ -12,17 +12,15 @@ interface GuestCartItem {
     id?: string;
 }
 
-const CART_STORAGE_KEY = "medigo_cart";
+const GUEST_CART_KEY = "medigo_guest_cart";
 
 export const cartStore = {
-    // Get cart from localStorage
     getCart: (): GuestCartItem[] => {
         if (typeof window === "undefined") return [];
-        const cart = localStorage.getItem(CART_STORAGE_KEY);
+        const cart = localStorage.getItem(GUEST_CART_KEY);
         return cart ? JSON.parse(cart) : [];
     },
-    
-    // Add item to cart
+
     addItem: (item: GuestCartItem): GuestCartItem[] => {
         const cart = cartStore.getCart();
         const existingItem = cart.find(i => i.medicineId === item.medicineId);
@@ -38,18 +36,38 @@ export const cartStore = {
             newCart = [...cart, { ...item, id: crypto.randomUUID() }];
         }
         
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newCart));
+        localStorage.setItem(GUEST_CART_KEY, JSON.stringify(newCart));
         return newCart;
     },
-    
-    // Get cart count
+
+    // ✅ Add this method
+    updateQuantity: (medicineId: string, quantity: number): GuestCartItem[] => {
+        if (quantity <= 0) {
+            return cartStore.removeItem(medicineId);
+        }
+        
+        const cart = cartStore.getCart();
+        const newCart = cart.map(i =>
+            i.medicineId === medicineId ? { ...i, quantity } : i
+        );
+        localStorage.setItem(GUEST_CART_KEY, JSON.stringify(newCart));
+        return newCart;
+    },
+
+    // ✅ Add this method
+    removeItem: (medicineId: string): GuestCartItem[] => {
+        const cart = cartStore.getCart();
+        const newCart = cart.filter(i => i.medicineId !== medicineId);
+        localStorage.setItem(GUEST_CART_KEY, JSON.stringify(newCart));
+        return newCart;
+    },
+
     getCartCount: (): number => {
         const cart = cartStore.getCart();
         return cart.reduce((total, item) => total + item.quantity, 0);
     },
-    
-    // Clear cart
+
     clearCart: () => {
-        localStorage.removeItem(CART_STORAGE_KEY);
+        localStorage.removeItem(GUEST_CART_KEY);
     }
 };

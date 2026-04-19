@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CartHeader } from "./CartHeader";
 import { CartItems } from "./CartItems";
 import { OrderSummary } from "./OrderSummary";
 import { CartItem } from "@/types/cart.type";
+import { useCart } from "@/hooks/useCart";
+import { CartSkeleton } from "./CartSkeleton";
+import { EmptyCart } from "./EmptyCart";
 
 interface CartContentProps {
     initialItems: CartItem[];
@@ -14,8 +17,32 @@ interface CartContentProps {
 
 export function CartContent({ initialItems, initialTotal }: CartContentProps) {
     const router = useRouter();
+    const {
+        cart,
+        cartTotal,
+        isLoading,
+        isAuthenticated,
+        updateCartItem,
+        removeCartItem,
+        refreshCart
+    } = useCart();
     const [selectedItems, setSelectedItems] = useState<CartItem[]>([]);
     const [selectedTotal, setSelectedTotal] = useState(0);
+    const [isClient, setIsClient] = useState(false);
+
+    const displayItems = cart.length > 0 ? cart : initialItems;
+    const displayTotal = cartTotal > 0 ? cartTotal : initialTotal;
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    // Refresh cart when component mounts to ensure latest data
+    useEffect(() => {
+        if (isClient) {
+            refreshCart();
+        }
+    }, [isClient, refreshCart]);
 
     const handleSelectionChange = (items: CartItem[], total: number) => {
         setSelectedItems(items);
@@ -32,15 +59,22 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
         router.push(`/checkout?selected=${selectedIds.join(',')}`);
     };
 
+    if (isLoading && !isClient) {
+        return <CartSkeleton />;
+    }
+
+    if (displayItems.length === 0) {
+        return <EmptyCart />;
+    }
     return (
         <>
-            <CartHeader itemCount={initialItems.length} />
+            <CartHeader itemCount={displayItems.length} />
 
             <div className="flex flex-col lg:flex-row gap-8 mt-6">
                 {/* Left Column - Cart Items */}
                 <div className="lg:w-2/3">
                     <CartItems
-                        initialItems={initialItems}
+                        initialItems={displayItems}
                         onSelectionChange={handleSelectionChange}
                     />
                 </div>
@@ -48,10 +82,10 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
                 {/* Right Column - Order Summary */}
                 <div className="lg:w-1/3">
                     <OrderSummary
-                        subtotal={initialTotal}
-                        shippingCost={initialTotal > 50 ? 0 : 5.99}
+                        subtotal={displayTotal}
+                        shippingCost={displayTotal > 50 ? 0 : 5.99}
                         tax={0}
-                        total={initialTotal > 50 ? initialTotal : initialTotal + 5.99}
+                        total={displayTotal > 50 ? displayTotal : displayTotal + 5.99}
                         freeShippingThreshold={50}
                         selectedItems={selectedItems}
                         selectedTotal={selectedTotal}

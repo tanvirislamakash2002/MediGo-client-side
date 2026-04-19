@@ -41,7 +41,7 @@ export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
 
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        await addToCart(medicine.id, 1, medicine);
+        await addToCart(medicine.id, 1);
     };
 
     return (

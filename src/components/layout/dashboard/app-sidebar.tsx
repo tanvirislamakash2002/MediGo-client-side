@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { logout } from "@/actions/auth.action";
 import { Roles } from "@/constants/roles";
 import { adminRoutes, sellerRoutes } from "@/routes";
 import { getProfileRoute, isActiveRoute } from "@/constants/routes";

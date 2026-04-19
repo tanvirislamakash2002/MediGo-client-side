@@ -18,7 +18,7 @@ export const proxy = async (request: NextRequest) => {
         (data.user.role === Roles.admin) &&
         (
             pathName.startsWith('/seller') ||
-            pathName.startsWith('/cart') ||
+            // pathName.startsWith('/cart') ||
             pathName.startsWith('/checkout') ||
             pathName.startsWith('/orders')
         )
@@ -37,7 +37,7 @@ export const proxy = async (request: NextRequest) => {
     if (
         (data.user.role === Roles.seller) &&
         (
-            pathName.startsWith('/cart') ||
+            // pathName.startsWith('/cart') ||
             pathName.startsWith('/checkout') ||
             pathName.startsWith('/orders')
         )
@@ -56,7 +56,7 @@ export const proxy = async (request: NextRequest) => {
 
 export const config = {
     matcher: [
-        '/cart',
+        // '/cart',
         '/checkout',
         '/orders',
         '/profile',

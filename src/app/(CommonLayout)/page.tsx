@@ -6,6 +6,7 @@ import { HeroSection } from "@/components/modules/home/HeroSection";
 import { HowItWorks } from "@/components/modules/home/HowItWorks";
 import { SpecialOffers } from "@/components/modules/home/SpecialOffers";
 import { TrustIndicators } from "@/components/modules/home/TrustIndicators";
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   

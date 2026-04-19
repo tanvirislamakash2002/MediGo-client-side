@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
-import { getSession, logout } from "@/actions/auth.action";
+import { getSession } from "@/actions/auth.action";
 import {
   Menu,
   X,
@@ -37,8 +37,6 @@ import { Roles } from "@/constants/roles";
 import { getDashboardRoute, getProfileRoute } from "@/constants/routes";
 import { User as UserType } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "sonner";
-import { authClient } from "@/lib/auth-client";
 import { useLogout } from "@/hooks/useLogout";
 
 
@@ -59,19 +57,18 @@ export function Navbar() {
   const [searchTerm, setSearchTerm] = useState("");
   let profileRoute = user ? getProfileRoute(user.role) : '/'
   let dashboardRoute = user ? getDashboardRoute(user.role) : '/'
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
-
+    
     const fetchUser = async () => {
       const { data } = await getSession();
       setUser(data?.user || null);
     };
     fetchUser();
-
+    
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -88,7 +85,8 @@ export function Navbar() {
     if (href === "/") return pathname === href;
     return pathname.startsWith(href);
   };
-
+  
+  // console.log(cartCount);
   return (
     <>
       <header className={cn(
@@ -146,7 +144,7 @@ export function Navbar() {
               <ThemeToggle />
 
               {/* Cart */}
-              {user?.role === Roles.customer && <Button
+              {user?.role !== Roles.admin || user?.role !== Roles.seller ? <Button
                 variant="ghost"
                 size="icon"
                 className="relative"
@@ -158,7 +156,7 @@ export function Navbar() {
                     {cartCount > 99 ? "99+" : cartCount}
                   </span>
                 )}
-              </Button>}
+              </Button>: null}
 
               {/* User Menu */}
               {user ? (

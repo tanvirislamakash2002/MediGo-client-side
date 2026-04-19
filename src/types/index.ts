@@ -1,4 +1,4 @@
-export type { Route } from './routes.type'
-export type { User } from './user.type'
-export type { Medicine } from './medicine.type'
-export type { Category } from './category.type'
+export type * from './routes.type'
+export type * from './user.type'
+export type * from './medicine.type'
+export type * from './category.type'

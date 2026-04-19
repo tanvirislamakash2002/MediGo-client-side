@@ -39,7 +39,7 @@ export function BulkActionsBar({ selectedCount, selectedIds, onClear, onRefresh 
             );
             
             const results = await Promise.all(updatePromises);
-            const errors = results.filter(r => r.error);
+            const errors = results.filter(r => !r.success);
             
             if (errors.length > 0) {
                 toast.error(`${errors.length} users failed to update`, { id: toastId });
@@ -65,7 +65,7 @@ export function BulkActionsBar({ selectedCount, selectedIds, onClear, onRefresh 
             );
             
             const results = await Promise.all(updatePromises);
-            const errors = results.filter(r => r.error);
+            const errors = results.filter(r => !r.success);
             
             if (errors.length > 0) {
                 toast.error(`${errors.length} users failed to ban`, { id: toastId });
@@ -91,7 +91,7 @@ export function BulkActionsBar({ selectedCount, selectedIds, onClear, onRefresh 
             );
             
             const results = await Promise.all(updatePromises);
-            const errors = results.filter(r => r.error);
+            const errors = results.filter(r => !r.success);
             
             if (errors.length > 0) {
                 toast.error(`${errors.length} users failed to unban`, { id: toastId });

@@ -10,8 +10,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, AlertCircle, Plus, Minus, Pill } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { updateCartItem, removeCartItem } from "@/actions/cart.action";
+import { updateCartItem } from "@/actions/cart.action";
 import { CartItem } from "@/types/cart.type";
+import { useCart } from "@/hooks/useCart";
 
 interface CartItemsProps {
     initialItems: CartItem[];
@@ -24,7 +25,7 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [selectAll, setSelectAll] = useState(false);
-
+    const { removeCartItem } = useCart()
     const isValidUrl = (url: string | null) => {
         if (!url) return false;
         try { new URL(url); return true; }
@@ -65,6 +66,7 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
     };
 
     const handleQuantityChange = async (itemId: string, newQuantity: number, stock: number) => {
+        // console.log(itemId, newQuantity);
         if (newQuantity < 1) return;
         if (newQuantity > stock) {
             toast.error(`Only ${stock} items available`);
@@ -74,6 +76,7 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
         setUpdatingId(itemId);
         try {
             const result = await updateCartItem(itemId, newQuantity);
+            console.log(result);
             if (!result.success) {
                 toast.error(result.message);
             } else {
@@ -89,27 +92,7 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
         }
     };
 
-    const handleRemoveItem = async (itemId: string, itemName: string) => {
-        try {
-            const result = await removeCartItem(itemId);
-            if (!result.success) {
-                toast.error(result.message);
-            } else {
-                setItems(prev => prev.filter(item => item.id !== itemId));
-                // Remove from selected items
-                const newSelected = new Set(selectedItems);
-                newSelected.delete(itemId);
-                setSelectedItems(newSelected);
-                updateSelection(newSelected);
-                toast.success(`${itemName} removed from cart`);
 
-                // Refresh the page to update cart data
-                router.refresh();
-            }
-        } catch (error) {
-            toast.error("Failed to remove item");
-        }
-    };
 
     const handleRemoveSelected = async () => {
         if (selectedItems.size === 0) return;
@@ -277,7 +260,7 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
                                         variant="ghost"
                                         size="sm"
                                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                        onClick={() => handleRemoveItem(item.id, item.name)}
+                                        onClick={() => removeCartItem(item.id)}
                                         disabled={updatingId === item.id}
                                     >
                                         <Trash2 className="h-4 w-4 mr-1" />
