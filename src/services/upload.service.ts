@@ -4,6 +4,31 @@ import { cookies } from "next/headers";
 const API_URL = env.API_URL;
 
 export const uploadService = {
+    uploadPublic: async (formData: FormData, endpoint: string) => {
+        try {
+            const res = await fetch(`${API_URL}/upload/${endpoint}`, {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || `Failed to upload to ${endpoint}`
+                };
+            }
+
+            return data;
+        } catch (error) {
+            console.error(`Public upload to ${endpoint} error:`, error);
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
+        }
+    },
     upload: async (formData: FormData, endpoint: string) => {
         try {
             const cookieStore = await cookies();
@@ -14,21 +39,20 @@ export const uploadService = {
                 },
                 body: formData
             });
-            
+
             const data = await res.json();
-            
+
             if (!res.ok) {
-                return { 
+                return {
                     success: false,
                     message: data.message || `Failed to upload to ${endpoint}`
                 };
             }
-            
-            // Backend returns { success: true, data: {...} }
+
             return data;
         } catch (error) {
             console.error(`Upload to ${endpoint} error:`, error);
-            return { 
+            return {
                 success: false,
                 message: "Something went wrong"
             };

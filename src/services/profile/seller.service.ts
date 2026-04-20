@@ -69,7 +69,7 @@ export const sellerProfileService = {
     updateStoreInfo: async (data: { storeName?: string; storeDescription?: string }) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/seller/store`, {
+            const res = await fetch(`${API_URL}/seller/profile/store`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -583,7 +583,7 @@ export const sellerProfileService = {
     sellerDeleteAccount: async (reason?: string) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/seller/account`, {
+            const res = await fetch(`${API_URL}/seller/profile/account`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",

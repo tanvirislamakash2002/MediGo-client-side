@@ -106,7 +106,7 @@ export const adminProfileService = {
     getAdminActiveSessions: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/admin/sessions`, {
+            const res = await fetch(`${API_URL}/admin/profile/sessions`, {
                 headers: { Cookie: cookieStore.toString() },
                 next: { tags: ["admin-sessions"] }
             });
@@ -136,7 +136,7 @@ export const adminProfileService = {
     adminTerminateSession: async (sessionId: string) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/admin/sessions/${sessionId}`, {
+            const res = await fetch(`${API_URL}/admin/profile/sessions/${sessionId}`, {
                 method: "DELETE",
                 headers: { Cookie: cookieStore.toString() }
             });
@@ -166,7 +166,7 @@ export const adminProfileService = {
     adminLogoutOtherSessions: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/admin/sessions/logout-all`, {
+            const res = await fetch(`${API_URL}/admin/profile/sessions/logout-all`, {
                 method: "POST",
                 headers: { Cookie: cookieStore.toString() }
             });
@@ -196,7 +196,7 @@ export const adminProfileService = {
     getAdminActivityLogs: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/admin/activity-logs`, {
+            const res = await fetch(`${API_URL}/admin/profile/activity-logs`, {
                 headers: { Cookie: cookieStore.toString() },
                 next: { tags: ["admin-logs"] }
             });
@@ -226,7 +226,7 @@ export const adminProfileService = {
     adminUpdatePreferences: async (data: { notifications: any; theme: string }) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/admin/preferences`, {
+            const res = await fetch(`${API_URL}/admin/profile/preferences`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -260,7 +260,7 @@ export const adminProfileService = {
     adminExportActivityLogs: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/admin/activity-logs/export`, {
+            const res = await fetch(`${API_URL}/admin/profile/activity-logs/export`, {
                 headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
@@ -289,7 +289,7 @@ export const adminProfileService = {
     adminExportAccountData: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/admin/account/export`, {
+            const res = await fetch(`${API_URL}/admin/profile/account/export`, {
                 headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
@@ -318,7 +318,7 @@ export const adminProfileService = {
     adminDeleteAccount: async (reason?: string) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/admin/account`, {
+            const res = await fetch(`${API_URL}/admin/profile/account`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",

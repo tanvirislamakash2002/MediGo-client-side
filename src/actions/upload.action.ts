@@ -3,6 +3,12 @@
 import { uploadService } from "@/services/upload.service";
 import { updateTag } from "next/cache";
 
+// upload temp avatar 
+export const uploadTempAvatar = async (formData: FormData) => {
+    const result = await uploadService.uploadPublic(formData, "avatar/temp");
+    return result;
+};
+
 // Upload avatar image
 export const uploadAvatar = async (formData: FormData) => {
     const result = await uploadService.upload(formData, "avatar");

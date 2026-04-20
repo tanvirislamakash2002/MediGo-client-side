@@ -21,8 +21,7 @@ import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Mail, Lock, User, Store, ShoppingBag, Camera, X } from "lucide-react";
 import * as z from "zod";
-import { env } from "@/env";
-import { uploadAvatar } from "@/actions/upload.action";
+import { uploadTempAvatar } from "@/actions/upload.action";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -127,7 +126,7 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         uploadFormData.append("avatar", file);
 
         // Use the server action
-        const result = await uploadAvatar(uploadFormData);
+        const result = await uploadTempAvatar(uploadFormData);
 
         if (!result.success) {
             toast.error(result.message, { id: toastId });

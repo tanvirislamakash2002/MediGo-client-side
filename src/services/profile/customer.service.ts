@@ -105,7 +105,7 @@ export const customerProfileService = {
     customerChangePassword: async (data: { currentPassword: string; newPassword: string }) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/change-password`, {
+            const res = await fetch(`${API_URL}/customer/profile/change-password`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -138,7 +138,7 @@ export const customerProfileService = {
     getCustomerActiveSessions: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/sessions`, {
+            const res = await fetch(`${API_URL}/customer/profile/sessions`, {
                 headers: { Cookie: cookieStore.toString() },
                 next: { tags: ["customer-sessions"] }
             });
@@ -167,7 +167,7 @@ export const customerProfileService = {
     customerTerminateSession: async (sessionId: string) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/sessions/${sessionId}`, {
+            const res = await fetch(`${API_URL}/customer/profile/sessions/${sessionId}`, {
                 method: "DELETE",
                 headers: { Cookie: cookieStore.toString() }
             });
@@ -196,7 +196,7 @@ export const customerProfileService = {
     customerLogoutOtherSessions: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/sessions/logout-all`, {
+            const res = await fetch(`${API_URL}/customer/profile/sessions/logout-all`, {
                 method: "POST",
                 headers: { Cookie: cookieStore.toString() }
             });
@@ -227,7 +227,7 @@ export const customerProfileService = {
     getCustomerAddresses: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/addresses`, {
+            const res = await fetch(`${API_URL}/customer/profile/addresses`, {
                 headers: { Cookie: cookieStore.toString() },
                 next: { tags: ["customer-addresses"] }
             });
@@ -256,7 +256,7 @@ export const customerProfileService = {
     addCustomerAddress: async (data: any) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/addresses`, {
+            const res = await fetch(`${API_URL}/customer/profile/addresses`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -289,7 +289,7 @@ export const customerProfileService = {
     updateCustomerAddress: async (addressId: string, data: any) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/addresses/${addressId}`, {
+            const res = await fetch(`${API_URL}/customer/profile/addresses/${addressId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -322,7 +322,7 @@ export const customerProfileService = {
     deleteCustomerAddress: async (addressId: string) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/addresses/${addressId}`, {
+            const res = await fetch(`${API_URL}/customer/profile/addresses/${addressId}`, {
                 method: "DELETE",
                 headers: { Cookie: cookieStore.toString() }
             });
@@ -351,7 +351,7 @@ export const customerProfileService = {
     setDefaultAddress: async (addressId: string) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/addresses/${addressId}/default`, {
+            const res = await fetch(`${API_URL}/customer/profile/addresses/${addressId}/default`, {
                 method: "PATCH",
                 headers: { Cookie: cookieStore.toString() }
             });
@@ -382,7 +382,7 @@ export const customerProfileService = {
     getCustomerOrders: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/orders`, {
+            const res = await fetch(`${API_URL}/customer/profile/orders`, {
                 headers: { Cookie: cookieStore.toString() },
                 next: { tags: ["customer-orders"] }
             });
@@ -413,7 +413,7 @@ export const customerProfileService = {
     getCustomerWishlist: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/wishlist`, {
+            const res = await fetch(`${API_URL}/customer/profile/wishlist`, {
                 headers: { Cookie: cookieStore.toString() },
                 next: { tags: ["customer-wishlist"] }
             });
@@ -444,7 +444,7 @@ export const customerProfileService = {
     getCustomerReviews: async () => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/reviews`, {
+            const res = await fetch(`${API_URL}/customer/profile/reviews`, {
                 headers: { Cookie: cookieStore.toString() },
                 next: { tags: ["customer-reviews"] }
             });
@@ -473,7 +473,7 @@ export const customerProfileService = {
     deleteCustomerReview: async (reviewId: string) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/reviews/${reviewId}`, {
+            const res = await fetch(`${API_URL}/customer/profile/reviews/${reviewId}`, {
                 method: "DELETE",
                 headers: { Cookie: cookieStore.toString() }
             });
@@ -504,7 +504,7 @@ export const customerProfileService = {
     updateNotificationPreferences: async (data: any) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/notifications`, {
+            const res = await fetch(`${API_URL}/customer/profile/notifications`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -539,7 +539,7 @@ export const customerProfileService = {
     customerDeleteAccount: async (reason?: string) => {
         try {
             const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/account`, {
+            const res = await fetch(`${API_URL}/customer/profile/account`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
