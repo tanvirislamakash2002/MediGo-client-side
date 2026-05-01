@@ -86,7 +86,7 @@ export function Navbar() {
     return pathname.startsWith(href);
   };
   
-  // console.log(cartCount);
+  // console.log(user);
   return (
     <>
       <header className={cn(

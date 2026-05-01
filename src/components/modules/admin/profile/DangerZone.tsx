@@ -19,6 +19,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useLogout } from "@/hooks/useLogout";
 
 export function DangerZone() {
     const router = useRouter();
@@ -26,23 +27,24 @@ export function DangerZone() {
     const [confirmText, setConfirmText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [reason, setReason] = useState("");
+    const { logout } = useLogout();
 
     const handleDeleteAccount = async () => {
         if (confirmText !== "DELETE") {
             toast.error('Please type "DELETE" to confirm');
             return;
         }
-        
+
         setIsSubmitting(true);
         const toastId = toast.loading("Deleting account...");
-        
+
         try {
             const result = await adminProfile.adminDeleteAccount(reason);
             if (!result.success) {
                 toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Account deleted successfully", { id: toastId });
-                router.push("/logout");
+                logout()
             }
         } catch (error) {
             toast.error("Failed to delete account", { id: toastId });
@@ -110,37 +112,39 @@ export function DangerZone() {
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-destructive">Delete Account</AlertDialogTitle>
-                        <AlertDialogDescription className="space-y-4">
-                            <p>
-                                This action cannot be undone. Deleting your account will permanently remove:
-                            </p>
-                            <ul className="list-disc list-inside space-y-1 text-sm">
-                                <li>Your profile information</li>
-                                <li>Your admin access to the platform</li>
-                                <li>Your activity logs</li>
-                            </ul>
-                            <p className="font-medium text-destructive">
-                                This will not affect existing orders or products.
-                            </p>
-                            <div className="space-y-2 pt-2">
-                                <Label htmlFor="reason">Reason for deletion (optional)</Label>
-                                <Input
-                                    id="reason"
-                                    placeholder="e.g., No longer needed, Moving to another platform"
-                                    value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="confirm">
-                                    Type <span className="font-mono font-bold">DELETE</span> to confirm
-                                </Label>
-                                <Input
-                                    id="confirm"
-                                    value={confirmText}
-                                    onChange={(e) => setConfirmText(e.target.value)}
-                                    placeholder="DELETE"
-                                />
+                        <AlertDialogDescription asChild className="space-y-4">
+                            <div>
+                                <p>
+                                    This action cannot be undone. Deleting your account will permanently remove:
+                                </p>
+                                <ul className="list-disc list-inside space-y-1 text-sm">
+                                    <li>Your profile information</li>
+                                    <li>Your admin access to the platform</li>
+                                    <li>Your activity logs</li>
+                                </ul>
+                                <p className="font-medium text-destructive">
+                                    This will not affect existing orders or products.
+                                </p>
+                                <div className="space-y-2 pt-2">
+                                    <Label htmlFor="reason">Reason for deletion (optional)</Label>
+                                    <Input
+                                        id="reason"
+                                        placeholder="e.g., No longer needed, Moving to another platform"
+                                        value={reason}
+                                        onChange={(e) => setReason(e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="confirm">
+                                        Type <span className="font-mono font-bold">DELETE</span> to confirm
+                                    </Label>
+                                    <Input
+                                        id="confirm"
+                                        value={confirmText}
+                                        onChange={(e) => setConfirmText(e.target.value)}
+                                        placeholder="DELETE"
+                                    />
+                                </div>
                             </div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>

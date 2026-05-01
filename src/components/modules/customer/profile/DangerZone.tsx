@@ -19,6 +19,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useLogout } from "@/hooks/useLogout";
 
 export function DangerZone() {
     const router = useRouter();
@@ -26,6 +27,7 @@ export function DangerZone() {
     const [confirmText, setConfirmText] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [reason, setReason] = useState("");
+  const { logout } = useLogout();
 
     const handleDeleteAccount = async () => {
         if (confirmText !== "DELETE") {
@@ -42,7 +44,7 @@ export function DangerZone() {
                 toast.error(result.message, { id: toastId });
             } else {
                 toast.success("Account deleted successfully", { id: toastId });
-                router.push("/");
+                logout()
             }
         } catch (error) {
             toast.error("Failed to delete account", { id: toastId });

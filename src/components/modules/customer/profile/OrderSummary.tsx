@@ -13,13 +13,21 @@ interface Order {
 }
 
 interface OrderSummaryProps {
-    orders: Order[];
+    orders: {
+        orders: Order[];
+        pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+        };
+    };
 }
 
 export function OrderSummary({ orders }: OrderSummaryProps) {
-    const totalOrders = orders.length;
-    const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-    const recentOrders = orders.slice(0, 3);
+    const totalOrders = orders?.orders?.length;
+    const totalSpent = orders?.orders?.reduce((sum, order) => sum + order.totalAmount, 0);
+    const recentOrders = orders?.orders?.slice(0, 3);
     
     const getStatusColor = (status: string) => {
         switch (status) {

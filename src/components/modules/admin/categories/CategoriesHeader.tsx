@@ -11,7 +11,6 @@ export function CategoriesHeader() {
 
     const handleExport = () => {
         toast.success("Export started...");
-        // Export logic here
     };
 
     const handleRefresh = () => {
@@ -29,10 +28,10 @@ export function CategoriesHeader() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handleExport}>
+                    {/* <Button variant="outline" size="sm" onClick={handleExport}>
                         <Download className="h-4 w-4 mr-2" />
                         Export
-                    </Button>
+                    </Button> */}
                     <Button variant="outline" size="sm" onClick={handleRefresh}>
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Refresh

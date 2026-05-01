@@ -28,14 +28,23 @@ interface Review {
 }
 
 interface RecentReviewsProps {
-    reviews: Review[];
+    reviews: {
+        reviews: Review[];
+        pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    };
 }
 
 export function RecentReviews({ reviews }: RecentReviewsProps) {
+    const reviewsArray = reviews?.reviews || [];
     const router = useRouter();
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const recentReviews = reviews.slice(0, 2);
+    const recentReviews = reviewsArray.slice(0, 2);
 
     const handleDelete = async () => {
         if (!deleteId) return;
@@ -78,10 +87,10 @@ export function RecentReviews({ reviews }: RecentReviewsProps) {
                     </Button>
                 </CardHeader>
                 <CardContent>
-                    {reviews.length > 0 ? (
+                    {reviewsArray.length > 0 ? (
                         <div className="space-y-3">
                             <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                                <span>{reviews.length} reviews written</span>
+                                <span>{reviewsArray.length} reviews written</span>
                             </div>
                             {recentReviews.map((review) => (
                                 <div key={review.id} className="p-3 border rounded-lg">
@@ -107,9 +116,9 @@ export function RecentReviews({ reviews }: RecentReviewsProps) {
                                     </p>
                                 </div>
                             ))}
-                            {reviews.length > 2 && (
+                            {reviewsArray.length > 2 && (
                                 <p className="text-xs text-center text-muted-foreground mt-2">
-                                    +{reviews.length - 2} more reviews
+                                    +{reviewsArray.length - 2} more reviews
                                 </p>
                             )}
                         </div>
