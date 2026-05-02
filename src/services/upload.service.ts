@@ -41,7 +41,6 @@ export const uploadService = {
             });
 
             const data = await res.json();
-
             if (!res.ok) {
                 return {
                     success: false,

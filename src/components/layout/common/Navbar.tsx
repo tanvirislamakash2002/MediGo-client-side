@@ -86,7 +86,6 @@ export function Navbar() {
     return pathname.startsWith(href);
   };
   
-  // console.log(user);
   return (
     <>
       <header className={cn(
@@ -144,7 +143,7 @@ export function Navbar() {
               <ThemeToggle />
 
               {/* Cart */}
-              {user?.role !== Roles.admin || user?.role !== Roles.seller ? <Button
+              {user?.role !== Roles.admin && user?.role !== Roles.seller ? <Button
                 variant="ghost"
                 size="icon"
                 className="relative"

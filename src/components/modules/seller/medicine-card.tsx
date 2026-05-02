@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Pill, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 interface Medicine {
@@ -56,7 +56,7 @@ export function MedicineCard({
                     />
                 ) : (
                     <div className="flex items-center justify-center h-full text-4xl text-muted-foreground">
-                        💊
+                        <Pill size={45}/>
                     </div>
                 )}
                 {medicine.requiresPrescription && (
