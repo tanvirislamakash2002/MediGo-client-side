@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { Star, StarHalf } from "lucide-react";
+import { Pill, Star, StarHalf } from "lucide-react";
 
 interface Medicine {
     id: string;
@@ -28,12 +28,14 @@ export function MedicineHero({ medicine }: MedicineHeroProps) {
     };
 
     const renderRating = () => {
-        if (!medicine.averageRating) return null;
-        const fullStars = Math.floor(medicine.averageRating);
-        const hasHalfStar = medicine.averageRating % 1 >= 0.5;
+        // ✅ Return early if no rating data
+        if (!medicine.averageRating && medicine.averageRating !== 0) return null;
+        
+        const fullStars = Math.floor(medicine.averageRating || 0);
+        const hasHalfStar = (medicine.averageRating || 0) % 1 >= 0.5;
         
         return (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-2">
                 <div className="flex items-center">
                     {[...Array(5)].map((_, i) => {
                         if (i < fullStars) {
@@ -45,8 +47,10 @@ export function MedicineHero({ medicine }: MedicineHeroProps) {
                         }
                     })}
                 </div>
-                <span className="text-sm font-medium">{medicine.averageRating.toFixed(1)}</span>
-                <span className="text-sm text-muted-foreground">({medicine.totalReviews} reviews)</span>
+                <span className="text-sm font-medium">{medicine.averageRating?.toFixed(1) || "0.0"}</span>
+                <span className="text-sm text-muted-foreground">
+                    ({medicine.totalReviews || 0} {medicine.totalReviews === 1 ? "review" : "reviews"})
+                </span>
             </div>
         );
     };
@@ -75,9 +79,13 @@ export function MedicineHero({ medicine }: MedicineHeroProps) {
                     />
                 ) : (
                     <div className="flex items-center justify-center h-full text-6xl text-muted-foreground">
-                        💊
+                        <Pill size={45}/>
                     </div>
                 )}
+            </div>
+
+            <div className="block lg:hidden">
+                {renderRating()}
             </div>
 
             {/* Thumbnails - if multiple images exist */}
@@ -86,7 +94,7 @@ export function MedicineHero({ medicine }: MedicineHeroProps) {
                     {isValidUrl(medicine.imageUrl) ? (
                         <Image src={medicine.imageUrl!} alt="Thumbnail" width={64} height={64} className="object-cover rounded" />
                     ) : (
-                        <div className="flex items-center justify-center h-full text-xl">💊</div>
+                        <div className="flex items-center justify-center h-full text-xl"><Pill size={45}/></div>
                     )}
                 </div>
             </div>

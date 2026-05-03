@@ -145,7 +145,7 @@ export function CheckoutForm({ initialItems, initialTotal, user }: CheckoutFormP
                     totalAmount: finalTotal,
                 };
 
-
+console.log(orderData);
                 const resultOrder = await placeOrder(orderData);
 
                 if (resultOrder.error) {

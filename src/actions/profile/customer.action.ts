@@ -101,20 +101,6 @@ export const getCustomerWishlist = async () => {
     return await customerProfileService.getCustomerWishlist();
 };
 
-// ============ REVIEW MANAGEMENT ============
-
-export const getCustomerReviews = async () => {
-    return await customerProfileService.getCustomerReviews();
-};
-
-export const deleteCustomerReview = async (reviewId: string) => {
-    const result = await customerProfileService.deleteCustomerReview(reviewId);
-    if (result.success) {
-        updateTag("customer-reviews");
-    }
-    return result;
-};
-
 // ============ NOTIFICATION PREFERENCES ============
 
 export const updateNotificationPreferences = async (data: any) => {

@@ -12,6 +12,7 @@ import { WishlistSummary } from "@/components/modules/customer/profile/WishlistS
 import { RecentReviews } from "@/components/modules/customer/profile/RecentReviews";
 import { DangerZone } from "@/components/modules/customer/profile/DangerZone";
 import { ProfileSkeleton } from "@/components/modules/customer/profile/ProfileSkeleton";
+import { getMyReviews } from "@/actions/review.action";
 
 export default async function CustomerProfilePage() {
     const { data: session, success } = await getSession();
@@ -24,7 +25,7 @@ export default async function CustomerProfilePage() {
     const addressesResult = await customerProfile.getCustomerAddresses();
     const ordersResult = await customerProfile.getCustomerOrders();
     const wishlistResult = await customerProfile.getCustomerWishlist();
-    const reviewsResult = await customerProfile.getCustomerReviews();
+    const reviewsResult = await getMyReviews();
     
     const profile = !profileResult.success ? null : profileResult.data;
     const addresses = !addressesResult.success ? [] : addressesResult.data;

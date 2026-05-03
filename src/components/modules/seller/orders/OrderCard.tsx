@@ -9,6 +9,7 @@ import { Eye, Package, Truck, CheckCircle, XCircle, Clock, ChevronDown, ChevronU
 import Image from "next/image";
 import { updateOrderStatus } from "@/actions/order.action";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface Order {
     id: string;
@@ -96,6 +97,7 @@ const getNextStatusOptions = (currentStatus: string) => {
 };
 
 export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderCardProps) {
+    const router = useRouter();
     const [expanded, setExpanded] = useState(false);
     const [updating, setUpdating] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState("");
@@ -120,7 +122,7 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
             } else {
                 toast.success(`Order status updated to ${selectedStatus}`, { id: toastId });
                 // Refresh the page to show updated status
-                window.location.reload();
+                router.refresh();
             }
         } catch (error) {
             toast.error("Failed to update order status", { id: toastId });

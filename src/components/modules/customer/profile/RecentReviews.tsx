@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2 } from "lucide-react";
-import { customerProfile } from "@/actions/profile";
+import { Pill, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
     AlertDialog,
@@ -17,11 +16,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import Image from "next/image";
+import { deleteReview } from "@/actions/review.action";
 
 interface Review {
     id: string;
     medicineId: string;
     medicineName: string;
+    medicineImage?: string | null;
     rating: number;
     comment: string;
     createdAt: string;
@@ -39,13 +41,23 @@ interface RecentReviewsProps {
     };
 }
 
+const isValidUrl = (url: string | null | undefined) => {
+    if (!url) return false;
+    try {
+        new URL(url);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
 export function RecentReviews({ reviews }: RecentReviewsProps) {
     const reviewsArray = reviews?.reviews || [];
     const router = useRouter();
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const recentReviews = reviewsArray.slice(0, 2);
-
+    
     const handleDelete = async () => {
         if (!deleteId) return;
 
@@ -53,7 +65,7 @@ export function RecentReviews({ reviews }: RecentReviewsProps) {
         const toastId = toast.loading("Deleting review...");
 
         try {
-            const result = await customerProfile.deleteCustomerReview(deleteId);
+            const result = await deleteReview(deleteId);
             if (!result.success) {
                 toast.error(result.message, { id: toastId });
             } else {
@@ -94,26 +106,52 @@ export function RecentReviews({ reviews }: RecentReviewsProps) {
                             </div>
                             {recentReviews.map((review) => (
                                 <div key={review.id} className="p-3 border rounded-lg">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div>
-                                            <p className="font-medium text-sm">{review.medicineName}</p>
-                                            <div className="flex items-center gap-1 mt-1">
-                                                {renderStars(review.rating)}
-                                            </div>
+                                    <div className="flex gap-3">
+                                        {/* Medicine Image */}
+                                        <div className="w-12 h-12 bg-muted rounded-md overflow-hidden flex-shrink-0">
+                                            {isValidUrl(review.medicineImage) ? (
+                                                <Image
+                                                    src={review.medicineImage!}
+                                                    alt={review.medicineName}
+                                                    width={48}
+                                                    height={48}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex items-center justify-center h-full text-2xl">
+                                                    <Pill size={45}/>
+                                                </div>
+                                            )}
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => setDeleteId(review.id)}
-                                            className="text-destructive"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+
+                                        {/* Review Content */}
+                                        <div className="flex-1">
+                                            <div className="flex items-start justify-between">
+                                                <div>
+                                                    <p className="font-medium text-sm">
+                                                        {review.medicineName}
+                                                    </p>
+                                                    <div className="flex items-center gap-1 mt-1">
+                                                        {renderStars(review.rating)}
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => setDeleteId(review.id)}
+                                                    className="text-destructive h-8 w-8"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+                                                {review.comment}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground mt-2">
+                                                {new Date(review.createdAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <p className="text-sm text-muted-foreground line-clamp-2">{review.comment}</p>
-                                    <p className="text-xs text-muted-foreground mt-2">
-                                        {new Date(review.createdAt).toLocaleDateString()}
-                                    </p>
                                 </div>
                             ))}
                             {reviewsArray.length > 2 && (

@@ -439,66 +439,6 @@ export const customerProfileService = {
         }
     },
 
-    // ============ REVIEW MANAGEMENT ============
-    
-    getCustomerReviews: async () => {
-        try {
-            const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/profile/reviews`, {
-                headers: { Cookie: cookieStore.toString() },
-                next: { tags: ["customer-reviews"] }
-            });
-            const data = await res.json();
-            
-            if (!res.ok) {
-                return {
-                    success: false,
-                    message: data.message || "Failed to fetch reviews"
-                };
-            }
-            
-            return {
-                success: true,
-                data: data.data
-            };
-        } catch (error) {
-            console.error("Get reviews error:", error);
-            return {
-                success: false,
-                message: "Something went wrong"
-            };
-        }
-    },
-
-    deleteCustomerReview: async (reviewId: string) => {
-        try {
-            const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/profile/reviews/${reviewId}`, {
-                method: "DELETE",
-                headers: { Cookie: cookieStore.toString() }
-            });
-            const data = await res.json();
-            
-            if (!res.ok) {
-                return {
-                    success: false,
-                    message: data.message || "Failed to delete review"
-                };
-            }
-            
-            return {
-                success: true,
-                data: data.data
-            };
-        } catch (error) {
-            console.error("Delete review error:", error);
-            return {
-                success: false,
-                message: "Something went wrong"
-            };
-        }
-    },
-
     // ============ NOTIFICATION PREFERENCES ============
     
     updateNotificationPreferences: async (data: any) => {

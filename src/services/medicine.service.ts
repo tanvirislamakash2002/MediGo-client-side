@@ -103,7 +103,7 @@ export const medicineService = {
             };
         }
     },
-    
+
     getPriceRange: async () => {
         try {
             const res = await fetch(`${API_URL}/medicine/price-range`, {
@@ -140,22 +140,27 @@ export const medicineService = {
         }
     },
 
-    // ✅ Updated to return consistent response with success flag
+    // Updated to return consistent response with success flag
     getMedicineById: async (id: string) => {
         try {
-            const res = await fetch(`${API_URL}/medicine/${id}`);
+                    const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/medicine/${id}`, {
+                headers: {
+                    Cookie: cookieStore.toString()
+                }
+            });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || 'Medicine not found'
                 };
             }
-            
+
             // Handle both response formats
             const medicineData = data.data || data;
-            
+
             return {
                 success: true,
                 data: medicineData
@@ -181,14 +186,14 @@ export const medicineService = {
                 body: JSON.stringify(medicineData)
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to add medicine"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data || data,
@@ -215,14 +220,14 @@ export const medicineService = {
                 body: JSON.stringify(medicineData)
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
                 return {
                     success: false,
                     message: data.message || "Failed to update medicine"
                 };
             }
-            
+
             return {
                 success: true,
                 data: data.data || data,

@@ -7,6 +7,8 @@ import { MedicineHero } from "@/components/modules/shop/Details/MedicineHero";
 import { MedicineActions } from "@/components/modules/shop/Details/MedicineActions";
 import { MedicineInfoTabs } from "@/components/modules/shop/Details/MedicineInfoTabs";
 import { RelatedMedicines } from "@/components/modules/shop/Details/RelatedMedicines";
+import { ReviewsSection } from "@/components/modules/shop/Details/ReviewsSection";
+import { getSession } from "@/actions/auth.action";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -40,12 +42,18 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function MedicineDetailsPage({ params }: PageProps) {
     const { id } = await params;
-    const result = await getMedicineById(id);
-    const medicine = result?.success ? result?.data : null;
+    const [medicineResult, session] = await Promise.all([
+        getMedicineById(id),
+        getSession()
+    ]);
+
+    const medicine = medicineResult?.success ? medicineResult?.data : null;
+    const user = session.success ? session.data?.user : null;
 
     if (!medicine) {
         notFound();
     }
+
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-6">
@@ -64,6 +72,16 @@ export default async function MedicineDetailsPage({ params }: PageProps) {
                         {/* Tabs Section */}
                         <MedicineInfoTabs medicine={medicine} />
 
+                        {/* Reviews Section */}
+                        <ReviewsSection
+                            medicineId={medicine.id}
+                            initialReviews={medicine.reviews || []}
+                            averageRating={medicine.averageRating || 0}
+                            totalReviews={medicine.totalReviews || 0}
+                            isAuthenticated={!!user}
+                            hasPurchased={medicine.userHasPurchased || false}
+                            userHasReviewed={medicine.userHasReviewed || false}
+                        />
                         {/* Related Medicines */}
                         <RelatedMedicines
                             categoryId={medicine.categoryId}
