@@ -50,7 +50,6 @@ export function useCart() {
         const checkAuth = async () => {
             try {
                 const { data, success } = await getSession();
-                // ✅ Fix: Check if session exists and success is true
                 setIsAuthenticated(!!data && success === true);
             } catch (error) {
                 console.error("Auth check failed:", error);

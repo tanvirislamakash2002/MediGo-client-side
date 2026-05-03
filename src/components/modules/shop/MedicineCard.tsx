@@ -1,11 +1,14 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Eye, Pill } from "lucide-react";
+import { ShoppingCart, Eye, Heart, Loader2, Pill } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
+import { checkInWishlist } from "@/actions/wishlist.action";
 
 interface Medicine {
     id: string;
@@ -25,7 +28,21 @@ interface MedicineCardProps {
 }
 
 export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
+    const [inWishlist, setInWishlist] = useState(false);
+    const [isWishlistLoading, setIsWishlistLoading] = useState(false);
     const { addToCart, isAdding } = useCart();
+    const { toggleWishlist } = useWishlist();
+
+    // Check if item is in wishlist on mount
+    useEffect(() => {
+        const checkStatus = async () => {
+            const result = await checkInWishlist(medicine.id);
+            if (result.success) {
+                setInWishlist(result.data?.inWishlist || false);
+            }
+        };
+        checkStatus();
+    }, [medicine.id]);
 
     const isValidUrl = (url: string | null) => {
         if (!url) return false;
@@ -44,8 +61,18 @@ export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
         await addToCart(medicine.id, 1);
     };
 
+    const handleToggleWishlist = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsWishlistLoading(true);
+        const success = await toggleWishlist(medicine.id, inWishlist);
+        if (success) {
+            setInWishlist(!inWishlist);
+        }
+        setIsWishlistLoading(false);
+    };
+
     return (
-        <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+        <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={onViewDetails}>
             <div className="relative h-48 bg-muted">
                 {isValidUrl(medicine.imageUrl) ? (
                     <Image
@@ -59,11 +86,32 @@ export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
                         <Pill size={45} />
                     </div>
                 )}
+                
+                {/* Rx Badge - Top Left */}
                 {medicine.requiresPrescription && (
-                    <Badge className="absolute top-2 right-2 bg-red-500">
+                    <Badge className="absolute top-2 left-2 bg-red-500">
                         Rx Required
                     </Badge>
                 )}
+                
+                {/* Wishlist Button - Top Right */}
+                <button
+                    onClick={handleToggleWishlist}
+                    className="absolute top-2 right-2 p-2 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-md hover:scale-110 transition-transform z-10"
+                    disabled={isWishlistLoading}
+                >
+                    {isWishlistLoading ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+                    ) : (
+                        <Heart 
+                            className={`h-5 w-5 transition-colors ${
+                                inWishlist 
+                                    ? "fill-red-500 text-red-500" 
+                                    : "text-gray-600 dark:text-gray-300 hover:text-red-500"
+                            }`} 
+                        />
+                    )}
+                </button>
             </div>
 
             <CardHeader>

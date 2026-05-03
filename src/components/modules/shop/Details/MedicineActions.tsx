@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShoppingCart, Heart, Truck, Shield, Clock, FileText, TriangleAlert } from "lucide-react";
+import { ShoppingCart, Heart, Truck, Shield, Clock, FileText, TriangleAlert, Loader2 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface Medicine {
     id: string;
@@ -24,7 +25,17 @@ interface MedicineActionsProps {
 
 export function MedicineActions({ medicine }: MedicineActionsProps) {
     const [quantity, setQuantity] = useState(1);
+    const [inWishlist, setInWishlist] = useState(false);
     const { addToCart, isAdding } = useCart();
+    const { toggleWishlist, checkWishlistStatus, isWishlistLoading } = useWishlist();
+
+    useEffect(() => {
+        const checkStatus = async () => {
+            const status = await checkWishlistStatus(medicine.id);
+            setInWishlist(status);
+        };
+        checkStatus();
+    }, [medicine.id, checkWishlistStatus]);
 
     const handleQuantityChange = (value: number) => {
         if (value >= 1 && value <= medicine.stock) {
@@ -35,6 +46,15 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
     const handleAddToCart = async () => {
         await addToCart(medicine.id, quantity);
     };
+
+    const handleToggleWishlist = async () => {
+        const success = await toggleWishlist(medicine.id, inWishlist);
+        if (success) {
+            setInWishlist(!inWishlist);
+        }
+    };
+
+    const isWishlistLoadingThis = isWishlistLoading[medicine.id];
 
     return (
         <div className="space-y-6">
@@ -134,13 +154,19 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
                     <ShoppingCart className="h-5 w-5 mr-2" />
                     {isAdding ? "Adding..." : "Add to Cart"}
                 </Button>
-                {/* <Button
+                <Button
                     size="lg"
-                    variant="outline"
-                    onClick={() => alert("Add to wishlist")}
+                    variant={inWishlist ? "default" : "outline"}
+                    onClick={handleToggleWishlist}
+                    disabled={isWishlistLoadingThis}
+                    className={inWishlist ? "bg-pink-500 hover:bg-pink-600" : ""}
                 >
-                    <Heart className="h-5 w-5" />
-                </Button> */}
+                    {isWishlistLoadingThis ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                        <Heart className={`h-5 w-5 ${inWishlist ? "fill-current" : ""}`} />
+                    )}
+                </Button>
             </div>
 
             {/* Delivery & Trust Badges */}
@@ -162,7 +188,7 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
             {/* Prescription Notice */}
             {medicine.requiresPrescription && (
                 <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                    <p className="text-sm text-yellow-800 dark:text-yellow-300  flex justify-center items-start gap-2">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-300 flex justify-center items-start gap-2">
                         <TriangleAlert className="text-yellow-600" /> This medicine requires a valid prescription. Please upload your prescription during checkout.
                     </p>
                 </div>
