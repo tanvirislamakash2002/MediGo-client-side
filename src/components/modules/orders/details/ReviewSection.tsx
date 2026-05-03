@@ -93,7 +93,7 @@ export function ReviewSection({ order, existingReviews = {} }: ReviewSectionProp
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold">Your Reviews</h3>
                     <Button variant="ghost" size="sm" asChild>
-                        <Link href="/customer/reviews">
+                        <Link href="/reviews">
                             View All Reviews
                             <ExternalLink className="h-3 w-3 ml-1" />
                         </Link>

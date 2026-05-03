@@ -36,3 +36,11 @@ export const getMedicineRating = async (medicineId: string) => {
 export const getUserReviewsForOrder = async (medicineIds: string[]) => {
     return await reviewService.getUserReviewsForOrder(medicineIds);
 };
+
+export const updateReview = async (reviewId: string, rating: number, comment: string) => {
+    const result = await reviewService.updateReview(reviewId, rating, comment);
+    if (result.success) {
+        updateTag("my-reviews");
+    }
+    return result;
+};

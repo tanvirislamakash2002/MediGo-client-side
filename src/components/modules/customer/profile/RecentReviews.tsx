@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Image from "next/image";
 import { deleteReview } from "@/actions/review.action";
+import Link from "next/link";
 
 interface Review {
     id: string;
@@ -95,7 +96,7 @@ export function RecentReviews({ reviews }: RecentReviewsProps) {
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Recent Reviews</CardTitle>
                     <Button variant="ghost" size="sm" asChild>
-                        <a href="/customer/reviews">View All →</a>
+                        <Link href="/reviews">View All →</Link>
                     </Button>
                 </CardHeader>
                 <CardContent>

@@ -151,7 +151,6 @@ export const reviewService = {
                 body: JSON.stringify({ medicineIds }),
                 next: { tags: ["my-reviews"] }
             });
-            console.log(`${API_URL}/reviews/user/order`);
             const data = await res.json();
 
             if (!res.ok) {
@@ -170,4 +169,33 @@ export const reviewService = {
             };
         }
     },
+    updateReview: async (reviewId: string, rating: number, comment: string) => {
+    try {
+        const cookieStore = await cookies();
+        const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Cookie: cookieStore.toString()
+            },
+            body: JSON.stringify({ rating, comment })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            return {
+                success: false,
+                message: data.message || "Failed to update review"
+            };
+        }
+
+        return data;
+    } catch (error) {
+        console.error("Update review error:", error);
+        return {
+            success: false,
+            message: "Something went wrong"
+        };
+    }
+},
 };
