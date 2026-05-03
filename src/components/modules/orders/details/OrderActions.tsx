@@ -131,7 +131,6 @@ export function OrderActions({ order }: OrderActionsProps) {
     const handleDownloadInvoice = () => {
         toast.success("Invoice downloaded");
     };
-    console.log(order);
     return (
         <>
             <Card>
