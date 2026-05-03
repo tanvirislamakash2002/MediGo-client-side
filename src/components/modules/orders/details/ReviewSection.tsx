@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Star } from "lucide-react";
+import { Star, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { createReview } from "@/actions/review.action";
 
@@ -18,11 +19,18 @@ interface Order {
     }>;
 }
 
-interface ReviewSectionProps {
-    order: Order;
+interface ExistingReview {
+    rating: number;
+    comment: string;
+    createdAt: string;
 }
 
-export function ReviewSection({ order }: ReviewSectionProps) {
+interface ReviewSectionProps {
+    order: Order;
+    existingReviews?: Record<string, ExistingReview>;
+}
+
+export function ReviewSection({ order, existingReviews = {} }: ReviewSectionProps) {
     const router = useRouter();
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
     const [selectedMedicineId, setSelectedMedicineId] = useState<string | null>(null);
@@ -35,6 +43,9 @@ export function ReviewSection({ order }: ReviewSectionProps) {
     const handleItemSelect = (itemId: string, medicineId: string, itemName: string) => {
         setSelectedItem(itemId);
         setSelectedMedicineId(medicineId);
+        // Reset form
+        setRating(0);
+        setReview("");
     };
 
     const handleSubmitReview = async () => {
@@ -71,14 +82,60 @@ export function ReviewSection({ order }: ReviewSectionProps) {
         }
     };
 
-    const unsubmittedItems = order.items.filter(item => !submittedItems.has(item.id));
+    // Determine which items need review
+    const itemsWithReviews = order.items.filter(item => existingReviews[item.medicineId]);
+    const itemsWithoutReviews = order.items.filter(item => !existingReviews[item.medicineId] && !submittedItems.has(item.id));
+    const allReviewed = itemsWithoutReviews.length === 0;
 
-    if (unsubmittedItems.length === 0) {
+    if (allReviewed && itemsWithReviews.length > 0) {
         return (
             <Card className="p-4">
-                <h3 className="font-semibold mb-4">Reviews</h3>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold">Your Reviews</h3>
+                    <Button variant="ghost" size="sm" asChild>
+                        <Link href="/customer/reviews">
+                            View All Reviews
+                            <ExternalLink className="h-3 w-3 ml-1" />
+                        </Link>
+                    </Button>
+                </div>
+                <div className="space-y-3">
+                    {itemsWithReviews.map((item) => (
+                        <div key={item.id} className="border-b pb-3 last:border-0">
+                            <p className="font-medium text-sm">{item.name}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                                <div className="flex gap-0.5">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                            key={star}
+                                            className={`h-3 w-3 ${
+                                                star <= existingReviews[item.medicineId].rating
+                                                    ? "fill-yellow-400 text-yellow-400"
+                                                    : "text-muted-foreground"
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                    {new Date(existingReviews[item.medicineId].createdAt).toLocaleDateString()}
+                                </span>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                {existingReviews[item.medicineId].comment}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+        );
+    }
+
+    if (itemsWithoutReviews.length === 0 && itemsWithReviews.length === 0) {
+        return (
+            <Card className="p-4">
+                <h3 className="font-semibold mb-4">Write a Review</h3>
                 <p className="text-muted-foreground text-center py-4">
-                    You have reviewed all items in this order.
+                    No items to review in this order.
                 </p>
             </Card>
         );
@@ -86,7 +143,17 @@ export function ReviewSection({ order }: ReviewSectionProps) {
 
     return (
         <Card className="p-4">
-            <h3 className="font-semibold mb-4">Write a Review</h3>
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold">Write a Review</h3>
+                {itemsWithReviews.length > 0 && (
+                    <Button variant="ghost" size="sm" asChild>
+                        <Link href="/customer/reviews">
+                            View My Reviews
+                            <ExternalLink className="h-3 w-3 ml-1" />
+                        </Link>
+                    </Button>
+                )}
+            </div>
             
             <div className="space-y-4">
                 <div>
@@ -102,7 +169,7 @@ export function ReviewSection({ order }: ReviewSectionProps) {
                         className="w-full px-3 py-2 border rounded-md bg-background"
                     >
                         <option value="">Select a medicine to review</option>
-                        {unsubmittedItems.map((item) => (
+                        {itemsWithoutReviews.map((item) => (
                             <option key={item.id} value={item.id}>
                                 {item.name}
                             </option>
@@ -152,6 +219,21 @@ export function ReviewSection({ order }: ReviewSectionProps) {
                             {isSubmitting ? "Submitting..." : "Submit Review"}
                         </Button>
                     </>
+                )}
+
+                {/* Show already reviewed items */}
+                {itemsWithReviews.length > 0 && !selectedItem && (
+                    <div className="mt-4 pt-4 border-t">
+                        <p className="text-sm text-muted-foreground mb-2">Already reviewed:</p>
+                        <div className="space-y-2">
+                            {itemsWithReviews.map((item) => (
+                                <div key={item.id} className="flex items-center gap-2 text-sm">
+                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                    <span>{item.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 )}
             </div>
         </Card>

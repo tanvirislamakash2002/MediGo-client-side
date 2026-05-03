@@ -138,5 +138,36 @@ export const reviewService = {
                 message: "Something went wrong"
             };
         }
-    }
+    },
+    getUserReviewsForOrder: async (medicineIds: string[]) => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/reviews/user/order`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString()
+                },
+                body: JSON.stringify({ medicineIds }),
+                next: { tags: ["my-reviews"] }
+            });
+            console.log(`${API_URL}/reviews/user/order`);
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || "Failed to fetch reviews"
+                };
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Get user reviews for order error:", error);
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
+        }
+    },
 };

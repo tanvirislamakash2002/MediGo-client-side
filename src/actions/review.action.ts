@@ -32,3 +32,7 @@ export const getMedicineReviews = async (medicineId: string, page?: number, limi
 export const getMedicineRating = async (medicineId: string) => {
     return await reviewService.getMedicineRating(medicineId);
 };
+
+export const getUserReviewsForOrder = async (medicineIds: string[]) => {
+    return await reviewService.getUserReviewsForOrder(medicineIds);
+};

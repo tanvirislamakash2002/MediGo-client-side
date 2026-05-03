@@ -10,7 +10,7 @@ import { OrderSummary } from "@/components/modules/orders/details/OrderSummary";
 import { OrderActions } from "@/components/modules/orders/details/OrderActions";
 import { ReviewSection } from "@/components/modules/orders/details/ReviewSection";
 import { OrderSkeleton } from "@/components/modules/orders/details/OrderSkeleton";
-
+import { getUserReviewsForOrder } from "@/actions/review.action";
 
 
 interface PageProps {
@@ -27,48 +27,53 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function OrderDetailsPage({ params }: PageProps) {
     const { orderId } = await params;
-    
+
     // Check authentication
     const { data: session, success } = await getSession();
     if (!success || !session) {
         redirect(`/login?redirect=/order/${orderId}`);
     }
-    
+
     // Fetch order details
     const result = await getOrderById(orderId);
     if (!result.success || !result.data) {
         notFound();
     }
     const order = result.data;
-    
+
     // Verify this order belongs to the logged-in user
     if (order.customerId !== session.user.id) {
         redirect("/orders");
     }
-    
+    const medicineIds = order.items?.map((item: any) => item.medicineId) || [];
+    const reviewsResult = await getUserReviewsForOrder(medicineIds);
+    const existingReviews = reviewsResult.success ? reviewsResult.data : {};
     // Ensure items is always an array
     const safeOrder = {
         ...order,
         items: order.items || []
     };
-    
+
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto">
                     <Suspense fallback={<OrderSkeleton />}>
                         <OrderHeader order={safeOrder} />
-                        
+
                         <div className="mt-8">
                             <OrderTimeline order={safeOrder} />
                         </div>
-                        
+
                         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-2 space-y-8">
                                 <OrderItems order={safeOrder} />
                                 <ShippingInfo order={safeOrder} />
                                 {safeOrder.status === "DELIVERED" && (
-                                    <ReviewSection order={safeOrder} />
+                                    <ReviewSection
+                                        order={safeOrder}
+                                        existingReviews={existingReviews}
+                                    />
                                 )}
                             </div>
                             <div className="space-y-8">
