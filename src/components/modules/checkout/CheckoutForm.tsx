@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Upload, Truck, Shield, Clock, CheckCircle, Gift, Tag } from "lucide-react";
+import { AlertCircle, Upload, Truck, Shield, Clock, CheckCircle, Gift, Tag, Pill } from "lucide-react";
 import { toast } from "sonner";
 import * as z from "zod";
 import Image from "next/image";
@@ -514,7 +514,7 @@ console.log(orderData);
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <div className="flex items-center justify-center h-full text-xl">💊</div>
+                                            <div className="flex items-center justify-center h-full text-xl"><Pill size={45}/></div>
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">

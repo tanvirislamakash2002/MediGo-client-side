@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, Pill } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -81,7 +81,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                     className="w-full h-full object-cover"
                                                 />
                                             ) : (
-                                                <div className="flex items-center justify-center h-full text-2xl">💊</div>
+                                                <div className="flex items-center justify-center h-full text-2xl"><Pill size={45}/></div>
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">

@@ -44,3 +44,28 @@ export const updateReview = async (reviewId: string, rating: number, comment: st
     }
     return result;
 };
+
+export const getSellerReviews = async (params?: {
+    rating?: string;
+    productId?: string;
+    dateRange?: string;
+    responded?: string;
+    search?: string;
+    sort?: string;
+    page?: number;
+    limit?: number;
+}) => {
+    return await reviewService.getSellerReviews(params);
+};
+
+export const getSellerReviewStats = async () => {
+    return await reviewService.getSellerReviewStats();
+};
+
+export const respondToReview = async (reviewId: string, response: string) => {
+    const result = await reviewService.respondToReview(reviewId, response);
+    if (result.success) {
+        updateTag("seller-reviews");
+    }
+    return result;
+};

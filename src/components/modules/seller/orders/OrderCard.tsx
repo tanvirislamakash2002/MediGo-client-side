@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, Package, Truck, CheckCircle, XCircle, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Eye, Package, Truck, CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, Pill } from "lucide-react";
 import Image from "next/image";
 import { updateOrderStatus } from "@/actions/order.action";
 import { toast } from "sonner";
@@ -185,7 +185,7 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
                                             {isValidUrl(item.imageUrl) ? (
                                                 <Image src={item.imageUrl!} alt={item.name} width={32} height={32} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="flex items-center justify-center h-full text-sm">💊</div>
+                                                <div className="flex items-center justify-center h-full text-sm"><Pill size={45}/></div>
                                             )}
                                         </div>
                                     ))}
@@ -255,7 +255,7 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
                                                     {isValidUrl(item.imageUrl) ? (
                                                         <Image src={item.imageUrl!} alt={item.name} width={40} height={40} className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <div className="flex items-center justify-center h-full text-lg">💊</div>
+                                                        <div className="flex items-center justify-center h-full text-lg"><Pill size={45}/></div>
                                                     )}
                                                 </div>
                                                 <div className="flex-1">

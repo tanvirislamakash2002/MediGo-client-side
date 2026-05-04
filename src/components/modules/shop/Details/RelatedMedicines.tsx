@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMedicines } from "@/actions/medicine.action";
-import { ShoppingCart } from "lucide-react";
+import { Pill, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 
 interface Medicine {
@@ -106,7 +106,7 @@ export function RelatedMedicines({ categoryId, currentMedicineId }: RelatedMedic
                                 />
                             ) : (
                                 <div className="flex items-center justify-center h-full text-2xl">
-                                    💊
+                                    <Pill size={45}/>
                                 </div>
                             )}
                             {medicine.requiresPrescription && (

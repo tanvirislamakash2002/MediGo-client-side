@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Package, Truck, CheckCircle, XCircle, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Eye, Package, Truck, CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, Pill } from "lucide-react";
 import Image from "next/image";
 
 interface Order {
@@ -105,7 +105,7 @@ export function OrderCard({ order, onViewDetails, onReorder, onCancel }: OrderCa
                                     {isValidUrl(item.imageUrl) ? (
                                         <Image src={item.imageUrl!} alt={item.name} width={40} height={40} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="flex items-center justify-center h-full text-lg">💊</div>
+                                        <div className="flex items-center justify-center h-full text-lg"><Pill size={45}/></div>
                                     )}
                                 </div>
                             ))}
@@ -185,7 +185,7 @@ export function OrderCard({ order, onViewDetails, onReorder, onCancel }: OrderCa
                                             {isValidUrl(item.imageUrl) ? (
                                                 <Image src={item.imageUrl!} alt={item.name} width={48} height={48} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="flex items-center justify-center h-full text-xl">💊</div>
+                                                <div className="flex items-center justify-center h-full text-xl"><Pill size={45}/></div>
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, Clock, TrendingUp } from "lucide-react";
+import { Search, X, Clock, TrendingUp, Pill } from "lucide-react";
 import { getMedicines } from "@/actions/medicine.action";
 
 interface SearchModalProps {
@@ -100,7 +100,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                 {item.imageUrl ? (
                                                     <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="flex items-center justify-center h-full text-lg">💊</div>
+                                                    <div className="flex items-center justify-center h-full text-lg"><Pill size={45}/></div>
                                                 )}
                                             </div>
                                             <div className="flex-1 text-left">

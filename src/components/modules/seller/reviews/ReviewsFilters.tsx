@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, X } from "lucide-react";
-import { getSellerProducts } from "@/actions/medicine.action";
+import { getSellerMedicines } from "@/actions/medicine.action";
 
 interface Product {
     id: string;
@@ -38,7 +38,7 @@ export function ReviewsFilters({
 
     useEffect(() => {
         const fetchProducts = async () => {
-            const result = await getSellerProducts();
+            const result = await getSellerMedicines();
             if (result.success) {
                 setProducts(result.data?.items || []);
             }

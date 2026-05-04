@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Pill } from "lucide-react";
 
 interface OrderItem {
     id: string;
@@ -70,7 +70,7 @@ export function OrderItems({ order }: OrderItemsProps) {
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="flex items-center justify-center h-full text-3xl">💊</div>
+                                <div className="flex items-center justify-center h-full text-3xl"><Pill size={45}/></div>
                             )}
                         </div>
                         <div className="flex-1">

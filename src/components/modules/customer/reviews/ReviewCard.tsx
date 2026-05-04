@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Trash2, Edit, ExternalLink } from "lucide-react";
+import { Star, Trash2, Edit, ExternalLink, Pill } from "lucide-react";
 import { toast } from "sonner";
 import { deleteReview } from "@/actions/review.action";
 import {
@@ -97,7 +97,7 @@ export function ReviewCard({ review, onDelete, onUpdate }: ReviewCardProps) {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <div className="flex items-center justify-center h-full text-2xl">💊</div>
+                                    <div className="flex items-center justify-center h-full text-2xl"><Pill size={45}/></div>
                                 )}
                             </div>
                         </Link>

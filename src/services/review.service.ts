@@ -170,32 +170,103 @@ export const reviewService = {
         }
     },
     updateReview: async (reviewId: string, rating: number, comment: string) => {
-    try {
-        const cookieStore = await cookies();
-        const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                Cookie: cookieStore.toString()
-            },
-            body: JSON.stringify({ rating, comment })
-        });
-        const data = await res.json();
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/reviews/${reviewId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString()
+                },
+                body: JSON.stringify({ rating, comment })
+            });
+            const data = await res.json();
 
-        if (!res.ok) {
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || "Failed to update review"
+                };
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Update review error:", error);
             return {
                 success: false,
-                message: data.message || "Failed to update review"
+                message: "Something went wrong"
             };
         }
+    },
+    getSellerReviews: async (params?: any) => {
+        try {
+            const cookieStore = await cookies();
+            const url = new URL(`${API_URL}/reviews/seller`);
 
-        return data;
-    } catch (error) {
-        console.error("Update review error:", error);
-        return {
-            success: false,
-            message: "Something went wrong"
-        };
-    }
-},
+            if (params?.rating) url.searchParams.append("rating", params.rating);
+            if (params?.productId) url.searchParams.append("productId", params.productId);
+            if (params?.dateRange) url.searchParams.append("dateRange", params.dateRange);
+            if (params?.responded) url.searchParams.append("responded", params.responded);
+            if (params?.search) url.searchParams.append("search", params.search);
+            if (params?.sort) url.searchParams.append("sort", params.sort);
+            if (params?.page) url.searchParams.append("page", params.page.toString());
+            if (params?.limit) url.searchParams.append("limit", params.limit.toString());
+
+            const res = await fetch(url.toString(), {
+                headers: { Cookie: cookieStore.toString() },
+                next: { tags: ["seller-reviews"] }
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return { success: false, message: data.message || "Failed to fetch reviews" };
+            }
+            return data;
+        } catch (error) {
+            console.error("Get seller reviews error:", error);
+            return { success: false, message: "Something went wrong" };
+        }
+    },
+
+    getSellerReviewStats: async () => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/reviews/seller/stats`, {
+                headers: { Cookie: cookieStore.toString() },
+                next: { tags: ["seller-reviews"] }
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return { success: false, message: data.message || "Failed to fetch stats" };
+            }
+            return data;
+        } catch (error) {
+            console.error("Get seller review stats error:", error);
+            return { success: false, message: "Something went wrong" };
+        }
+    },
+
+    respondToReview: async (reviewId: string, response: string) => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/reviews/${reviewId}/respond`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString()
+                },
+                body: JSON.stringify({ response })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return { success: false, message: data.message || "Failed to submit response" };
+            }
+            return data;
+        } catch (error) {
+            console.error("Respond to review error:", error);
+            return { success: false, message: "Something went wrong" };
+        }
+    },
 };
