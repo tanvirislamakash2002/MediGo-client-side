@@ -408,37 +408,6 @@ export const customerProfileService = {
         }
     },
 
-    // ============ WISHLIST MANAGEMENT ============
-    
-    getCustomerWishlist: async () => {
-        try {
-            const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/customer/profile/wishlist`, {
-                headers: { Cookie: cookieStore.toString() },
-                next: { tags: ["customer-wishlist"] }
-            });
-            const data = await res.json();
-            
-            if (!res.ok) {
-                return {
-                    success: false,
-                    message: data.message || "Failed to fetch wishlist"
-                };
-            }
-            
-            return {
-                success: true,
-                data: data.data
-            };
-        } catch (error) {
-            console.error("Get wishlist error:", error);
-            return {
-                success: false,
-                message: "Something went wrong"
-            };
-        }
-    },
-
     // ============ NOTIFICATION PREFERENCES ============
     
     updateNotificationPreferences: async (data: any) => {

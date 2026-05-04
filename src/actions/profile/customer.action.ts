@@ -95,12 +95,6 @@ export const getCustomerOrders = async () => {
     return await customerProfileService.getCustomerOrders();
 };
 
-// ============ WISHLIST MANAGEMENT ============
-
-export const getCustomerWishlist = async () => {
-    return await customerProfileService.getCustomerWishlist();
-};
-
 // ============ NOTIFICATION PREFERENCES ============
 
 export const updateNotificationPreferences = async (data: any) => {

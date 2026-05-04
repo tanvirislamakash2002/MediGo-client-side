@@ -1,5 +1,5 @@
 import { RouteGroup } from "@/types/routes.type";
-import { LayoutDashboard, Package, ShoppingCart, Home, Plus } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Home, Plus, Star } from "lucide-react";
 
 export const sellerRoutes: RouteGroup[] = [
     {
@@ -29,6 +29,11 @@ export const sellerRoutes: RouteGroup[] = [
                 title: "Orders",
                 url: "/seller/orders",
                 icon: ShoppingCart,
+            },
+            {
+                title: "Reviews",
+                url: "/seller/reviews",
+                icon: Star,
             },
         ],
     },
