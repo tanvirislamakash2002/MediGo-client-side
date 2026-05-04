@@ -9,10 +9,6 @@ export default async function CartPage() {
     const result = await getCartItems();
     const cartItems = !result.success ? null : result.data?.items || [];
     const cartTotal = cartItems?.reduce((total: number, item: CartItem) => total + (item.price * item.quantity), 0) || 0;
-// console.log(result);
-//     if (!cartItems || cartItems.length === 0) {
-//         return <EmptyCart />;
-//     }
 
     return (
         <div className="min-h-screen bg-background">

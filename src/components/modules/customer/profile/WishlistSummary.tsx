@@ -9,9 +9,17 @@ import Image from "next/image";
 interface WishlistItem {
     id: string;
     medicineId: string;
-    medicineName: string;
-    price: number;
-    imageUrl?: string;
+    addedAt: string;
+    medicine: {
+        id: string;
+        name: string;
+        price: number;
+        stock: number;
+        manufacturer: string;
+        imageUrl: string | null;
+        requiresPrescription: boolean;
+        category: { id: string; name: string };
+    };
 }
 
 interface WishlistSummaryProps {
@@ -19,28 +27,35 @@ interface WishlistSummaryProps {
 }
 
 export function WishlistSummary({ wishlist }: WishlistSummaryProps) {
-    const recentItems = wishlist.slice(0, 2);
-
+    const items = Array.isArray(wishlist) ? wishlist : (wishlist as any)?.items || [];
+    const recentItems = items.slice(0, 2);
+    const totalItems = items.length;
+    
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Wishlist</CardTitle>
                 <Button variant="ghost" size="sm" asChild>
-                    <Link href="/customer/wishlist">View All →</Link>
+                    <Link href="/wishlist">View All →</Link>
                 </Button>
             </CardHeader>
             <CardContent>
-                {wishlist.length > 0 ? (
+                {totalItems > 0 ? (
                     <div className="space-y-3">
                         <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-                            <span>{wishlist.length} items saved</span>
+                            <span>{totalItems} items saved</span>
                             <Heart className="h-4 w-4 fill-red-500 text-red-500" />
                         </div>
-                        {recentItems.map((item) => (
+                        {recentItems.map((item: WishlistItem) => (
                             <div key={item.id} className="flex items-center gap-3 p-2 border rounded-lg">
                                 <div className="relative h-12 w-12 rounded-md overflow-hidden bg-muted">
-                                    {item.imageUrl ? (
-                                        <Image src={item.imageUrl} alt={item.medicineName} fill className="object-cover" />
+                                    {item.medicine?.imageUrl ? (
+                                        <Image
+                                            src={item.medicine.imageUrl}
+                                            alt={item.medicine.name}
+                                            fill
+                                            className="object-cover"
+                                        />
                                     ) : (
                                         <div className="flex items-center justify-center h-full">
                                             <Heart className="h-5 w-5 text-muted-foreground" />
@@ -48,8 +63,8 @@ export function WishlistSummary({ wishlist }: WishlistSummaryProps) {
                                     )}
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-sm font-medium line-clamp-1">{item.medicineName}</p>
-                                    <p className="text-xs text-muted-foreground">${item.price}</p>
+                                    <p className="text-sm font-medium line-clamp-1">{item.medicine?.name}</p>
+                                    <p className="text-xs text-muted-foreground">${item.medicine?.price}</p>
                                 </div>
                                 <Button variant="ghost" size="sm" asChild>
                                     <Link href={`/shop/${item.medicineId}`}>View</Link>

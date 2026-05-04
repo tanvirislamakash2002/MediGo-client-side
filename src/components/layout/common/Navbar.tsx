@@ -13,7 +13,8 @@ import {
   LogOut,
   Package,
   Search,
-  LayoutDashboard
+  LayoutDashboard,
+  Heart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,13 +63,13 @@ export function Navbar() {
       setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
-    
+
     const fetchUser = async () => {
       const { data } = await getSession();
       setUser(data?.user || null);
     };
     fetchUser();
-    
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -85,7 +86,7 @@ export function Navbar() {
     if (href === "/") return pathname === href;
     return pathname.startsWith(href);
   };
-  
+
   return (
     <>
       <header className={cn(
@@ -155,7 +156,7 @@ export function Navbar() {
                     {cartCount > 99 ? "99+" : cartCount}
                   </span>
                 )}
-              </Button>: null}
+              </Button> : null}
 
               {/* User Menu */}
               {user ? (
@@ -186,12 +187,20 @@ export function Navbar() {
                         </Link>
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem asChild>
-                        <Link href="/orders" className="cursor-pointer">
-                          <Package className="mr-2 h-4 w-4" />
-                          My Orders
-                        </Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link href="/orders" className="cursor-pointer">
+                            <Package className="mr-2 h-4 w-4" />
+                            My Orders
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/wishlist" className="cursor-pointer">
+                            <Heart className="mr-2 h-4 w-4" />
+                            Wishlist
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
                     <DropdownMenuItem asChild>
                       <Link href={profileRoute} className="cursor-pointer">
@@ -324,17 +333,30 @@ export function Navbar() {
                       </Link>
                     </Button>
                   ) : (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      asChild
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Link href="/orders">
-                        <Package className="h-4 w-4 mr-2" />
-                        My Orders
-                      </Link>
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        asChild
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Link href="/orders">
+                          <Package className="h-4 w-4 mr-2" />
+                          My Orders
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        asChild
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Link href="/wishlist">
+                          <Heart className="h-4 w-4 mr-2" />
+                          Wishlist
+                        </Link>
+                      </Button>
+                    </>
                   )}
                   <Button
                     variant="outline"

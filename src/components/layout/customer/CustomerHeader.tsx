@@ -164,8 +164,14 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
                                         </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
                                             <Link href="/profile" className="cursor-pointer">
-                                                <Settings className="mr-2 h-4 w-4" />
-                                                Profile Settings
+                                                <User className="mr-2 h-4 w-4" />
+                                                Profile
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/wishlist" className="cursor-pointer">
+                                                <Heart className="mr-2 h-4 w-4" />
+                                                Wishlist
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
@@ -257,8 +263,16 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
                                         onClick={() => setIsMobileMenuOpen(false)}
                                         className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted"
                                     >
-                                        <Settings className="h-4 w-4" />
-                                        Profile Settings
+                                        <User className="h-4 w-4" />
+                                        Profile
+                                    </Link>
+                                    <Link
+                                        href="/wishlist"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted"
+                                    >
+                                        <Heart className="h-4 w-4" />
+                                        Wishlist
                                     </Link>
                                     <button
                                         onClick={() => {

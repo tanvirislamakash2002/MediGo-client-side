@@ -13,24 +13,25 @@ import { RecentReviews } from "@/components/modules/customer/profile/RecentRevie
 import { DangerZone } from "@/components/modules/customer/profile/DangerZone";
 import { ProfileSkeleton } from "@/components/modules/customer/profile/ProfileSkeleton";
 import { getMyReviews } from "@/actions/review.action";
+import { getWishlist } from "@/actions/wishlist.action";
 
 export default async function CustomerProfilePage() {
     const { data: session, success } = await getSession();
-    
+
     if (!success || !session || session.user.role !== "CUSTOMER") {
         redirect("/login?redirect=/customer/profile");
     }
-    
+
     const profileResult = await customerProfile.getCustomerProfile();
     const addressesResult = await customerProfile.getCustomerAddresses();
     const ordersResult = await customerProfile.getCustomerOrders();
-    const wishlistResult = await customerProfile.getCustomerWishlist();
+    const wishlistResult = await getWishlist();
     const reviewsResult = await getMyReviews();
-    
+
     const profile = !profileResult.success ? null : profileResult.data;
     const addresses = !addressesResult.success ? [] : addressesResult.data;
     const orders = !ordersResult.success ? [] : ordersResult.data;
-    const wishlist = !wishlistResult.success ? [] : wishlistResult.data;
+    const wishlist = !wishlistResult.success ? [] : wishlistResult?.data?.items || [];
     const reviews = !reviewsResult.success ? [] : reviewsResult.data;
     
     const settingsWithDefaults = profile ? {
@@ -43,7 +44,7 @@ export default async function CustomerProfilePage() {
     return (
         <div className="space-y-6">
             <ProfileHeader customerName={session.user.name} />
-            
+
             <Suspense fallback={<ProfileSkeleton />}>
                 {settingsWithDefaults && (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -53,7 +54,7 @@ export default async function CustomerProfilePage() {
                             <AddressBook addresses={addresses} />
                             <OrderSummary orders={orders} />
                         </div>
-                        
+
                         {/* Right Column */}
                         <div className="lg:col-span-2 space-y-6">
                             <SecuritySection />
