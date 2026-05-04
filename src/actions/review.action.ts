@@ -69,3 +69,40 @@ export const respondToReview = async (reviewId: string, response: string) => {
     }
     return result;
 };
+
+export const getAllReviewsForAdmin = async (params?: {
+    status?: string;
+    rating?: string;
+    dateRange?: string;
+    sellerId?: string;
+    search?: string;
+    sort?: string;
+    page?: number;
+    limit?: number;
+}) => {
+    return await reviewService.getAllReviewsForAdmin(params);
+};
+
+export const getAdminReviewStats = async () => {
+    return await reviewService.getAdminReviewStats();
+};
+
+export const updateReviewStatus = async (reviewId: string, status: string, rejectionReason?: string) => {
+    const result = await reviewService.updateReviewStatus(reviewId, status, rejectionReason);
+    if (result.success) {
+        updateTag("admin-reviews");
+    }
+    return result;
+};
+
+export const bulkUpdateReviewStatus = async (reviewIds: string[], status: string, rejectionReason?: string) => {
+    const result = await reviewService.bulkUpdateReviewStatus(reviewIds, status, rejectionReason);
+    if (result.success) {
+        updateTag("admin-reviews");
+    }
+    return result;
+};
+
+export const getAllSellers = async () => {
+    return await userService.getAllSellers();
+};

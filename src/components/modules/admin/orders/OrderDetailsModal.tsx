@@ -209,10 +209,10 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
                                     <p className="text-sm text-muted-foreground break-all">{order.customer.email}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            {order?.customer?.phone && <div className="flex items-center gap-2">
                                 <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                                 <p className="text-sm break-all">{order.customer.phone}</p>
-                            </div>
+                            </div>}
                             <div className="flex items-start gap-2">
                                 <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                                 <p className="text-sm break-words whitespace-pre-wrap">{order.shippingAddress}</p>
@@ -337,12 +337,12 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
                                 <Label>Internal Note</Label>
                                 <Textarea
                                     placeholder="Add internal note about this order..."
-                                    value={note}
-                                    onChange={(e) => setNote(e.target.value)}
+                                    defaultValue={note}
+                                    // onChange={(e) => setNote(e.target.value)}
                                     rows={3}
                                     className="resize-none"
                                 />
-                                <Button variant="outline" size="sm" className="w-full">
+                                <Button variant="outline" size="sm" className="w-full" onClick={()=>toast.info("working on the feature")}>
                                     Save Note
                                 </Button>
                             </div>
@@ -433,7 +433,7 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
                             {canUpdate && (
                                 <div className="space-y-2">
                                     <select
-                                        value={selectedStatus}
+                                        defaultValue={selectedStatus}
                                         onChange={(e) => setSelectedStatus(e.target.value)}
                                         className="w-full px-3 py-2 text-sm border rounded-md bg-background"
                                     >
@@ -562,7 +562,7 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
                                     <Input
                                         id="reason"
                                         placeholder="e.g., Out of stock, Customer request"
-                                        value={cancelReason}
+                                        defaultValue={cancelReason}
                                         onChange={(e) => setCancelReason(e.target.value)}
                                     />
                                 </div>
