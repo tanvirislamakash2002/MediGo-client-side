@@ -16,23 +16,23 @@ export const userService = {
                 cache: 'no-store'
             });
             const session = await res.json();
-            
+
             if (session === null) {
-                return { 
-                    success: false, 
-                    message: "Session is missing." 
+                return {
+                    success: false,
+                    message: "Session is missing."
                 };
             }
-            
-            return { 
-                success: true, 
-                data: session 
+
+            return {
+                success: true,
+                data: session
             };
         } catch (error) {
             console.error("Get session error:", error);
-            return { 
-                success: false, 
-                message: 'Something went wrong' 
+            return {
+                success: false,
+                message: 'Something went wrong'
             };
         }
     },
@@ -49,34 +49,34 @@ export const userService = {
         try {
             const cookieStore = await cookies();
             const url = new URL(`${API_URL}/admin/users`);
-            
+
             if (params?.role && params.role !== "all") url.searchParams.append("role", params.role);
             if (params?.status && params.status !== "all") url.searchParams.append("status", params.status);
             if (params?.verified && params.verified !== "all") url.searchParams.append("verified", params.verified);
             if (params?.search) url.searchParams.append("search", params.search);
             if (params?.sort) url.searchParams.append("sort", params.sort);
             if (params?.page) url.searchParams.append("page", params.page.toString());
-            
+
             const res = await fetch(url.toString(), {
                 headers: { Cookie: cookieStore.toString() },
                 next: { tags: ["admin-users"] }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
-                return { 
+                return {
                     success: false,
                     message: data.message || "Failed to fetch users"
                 };
             }
-            
-            return { 
+
+            return {
                 success: true,
                 data: data.data || data
             };
         } catch (error) {
             console.error("Get all users error:", error);
-            return { 
+            return {
                 success: false,
                 message: "Something went wrong"
             };
@@ -92,21 +92,21 @@ export const userService = {
                 headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
-                return { 
+                return {
                     success: false,
                     message: data.message || "Failed to ban user"
                 };
             }
-            
-            return { 
+
+            return {
                 success: true,
                 data: data.data || data
             };
         } catch (error) {
             console.error("Ban user error:", error);
-            return { 
+            return {
                 success: false,
                 message: "Something went wrong"
             };
@@ -122,21 +122,21 @@ export const userService = {
                 headers: { Cookie: cookieStore.toString() }
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
-                return { 
+                return {
                     success: false,
                     message: data.message || "Failed to unban user"
                 };
             }
-            
-            return { 
+
+            return {
                 success: true,
                 data: data.data || data
             };
         } catch (error) {
             console.error("Unban user error:", error);
-            return { 
+            return {
                 success: false,
                 message: "Something went wrong"
             };
@@ -156,21 +156,57 @@ export const userService = {
                 body: JSON.stringify({ role: newRole })
             });
             const data = await res.json();
-            
+
             if (!res.ok) {
-                return { 
+                return {
                     success: false,
                     message: data.message || "Failed to change role"
                 };
             }
-            
-            return { 
+
+            return {
                 success: true,
                 data: data.data || data
             };
         } catch (error) {
             console.error("Change user role error:", error);
-            return { 
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
+        }
+    },
+    getAllSellers: async () => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/admin/users?role=SELLER`, {
+                headers: { Cookie: cookieStore.toString() },
+                next: { tags: ["admin-users"] }
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || "Failed to fetch sellers"
+                };
+            }
+
+            // Transform to extract only needed fields
+            const sellers = data.data?.users?.map((user: any) => ({
+                id: user.id,
+                storeName: user.storeName || user.name,
+            })) || [];
+
+            return {
+                success: true,
+                data: {
+                    users: sellers
+                }
+            };
+        } catch (error) {
+            console.error("Get all sellers error:", error);
+            return {
                 success: false,
                 message: "Something went wrong"
             };

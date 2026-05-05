@@ -8,7 +8,7 @@ import { getSession } from "./auth.action";
 const verifyAdmin = async () => {
     const result = await getSession();
     const session = result.success ? result.data : null;
-    
+
     if (!result.success || !session || session.user?.role !== "ADMIN") {
         return {
             success: false,
@@ -32,6 +32,19 @@ export const getAllUsers = async (params?: {
         return auth;
     }
     return await userService.getAllUsers(params);
+};
+
+// Get all sellers (for admin review filter)
+export const getAllSellers = async () => {
+    const auth = await verifyAdmin();
+    if (!auth.success) {
+        return auth;
+    }
+    const result = await userService.getAllSellers();
+    if (result.success) {
+        updateTag("admin-users");
+    }
+    return result;
 };
 
 // Ban user

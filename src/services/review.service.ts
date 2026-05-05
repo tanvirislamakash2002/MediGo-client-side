@@ -269,4 +269,156 @@ export const reviewService = {
             return { success: false, message: "Something went wrong" };
         }
     },
+
+    // Get all reviews for admin with filters
+    getAllReviewsForAdmin: async (params?: {
+        status?: string;
+        rating?: string;
+        dateRange?: string;
+        sellerId?: string;
+        search?: string;
+        sort?: string;
+        page?: number;
+        limit?: number;
+    }) => {
+        try {
+            const cookieStore = await cookies();
+            const url = new URL(`${API_URL}/reviews/admin/reviews`);
+
+            if (params?.status && params.status !== "all") {
+                url.searchParams.append("status", params.status);
+            }
+            if (params?.rating && params.rating !== "all") {
+                url.searchParams.append("rating", params.rating);
+            }
+            if (params?.dateRange && params.dateRange !== "all") {
+                url.searchParams.append("dateRange", params.dateRange);
+            }
+            if (params?.sellerId && params.sellerId !== "all") {
+                url.searchParams.append("sellerId", params.sellerId);
+            }
+            if (params?.search) {
+                url.searchParams.append("search", params.search);
+            }
+            if (params?.sort) {
+                url.searchParams.append("sort", params.sort);
+            }
+            if (params?.page) {
+                url.searchParams.append("page", params.page.toString());
+            }
+            if (params?.limit) {
+                url.searchParams.append("limit", params.limit.toString());
+            }
+
+            const res = await fetch(url.toString(), {
+                headers: { Cookie: cookieStore.toString() },
+                next: { tags: ["admin-reviews"] }
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || "Failed to fetch reviews"
+                };
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Get all reviews for admin error:", error);
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
+        }
+    },
+
+    // Get admin review statistics
+    getAdminReviewStats: async () => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/reviews/admin/stats`, {
+                headers: { Cookie: cookieStore.toString() },
+                next: { tags: ["admin-reviews"] }
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || "Failed to fetch review statistics"
+                };
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Get admin review stats error:", error);
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
+        }
+    },
+
+    // Update review status (approve/reject)
+    updateReviewStatus: async (reviewId: string, status: string, rejectionReason?: string) => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/reviews/admin/reviews/${reviewId}/status`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString()
+                },
+                body: JSON.stringify({ status, rejectionReason })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || "Failed to update review status"
+                };
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Update review status error:", error);
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
+        }
+    },
+
+    // Bulk update review status
+    bulkUpdateReviewStatus: async (reviewIds: string[], status: string, rejectionReason?: string) => {
+        try {
+            const cookieStore = await cookies();
+            const res = await fetch(`${API_URL}/reviews/admin/reviews/bulk`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString()
+                },
+                body: JSON.stringify({ reviewIds, status, rejectionReason })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                return {
+                    success: false,
+                    message: data.message || "Failed to update review statuses"
+                };
+            }
+
+            return data;
+        } catch (error) {
+            console.error("Bulk update review status error:", error);
+            return {
+                success: false,
+                message: "Something went wrong"
+            };
+        }
+    },
 };
