@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Trash2, Edit, ExternalLink, Pill } from "lucide-react";
+import { Star, Trash2, Edit, ExternalLink, Pill, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { deleteReview } from "@/actions/review.action";
 import {
@@ -21,6 +21,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EditReviewDialog } from "./EditReviewDialog";
+import { formatDistanceToNow } from "date-fns";
 
 interface Review {
     id: string;
@@ -30,6 +31,11 @@ interface Review {
     rating: number;
     comment: string;
     createdAt: string;
+    response?: {
+        id: string;
+        comment: string;
+        createdAt: string;
+    } | null;
 }
 
 interface ReviewCardProps {
@@ -97,7 +103,7 @@ export function ReviewCard({ review, onDelete, onUpdate }: ReviewCardProps) {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <div className="flex items-center justify-center h-full text-2xl"><Pill size={45}/></div>
+                                    <div className="flex items-center justify-center h-full text-2xl"><Pill size={45} /></div>
                                 )}
                             </div>
                         </Link>
@@ -106,7 +112,7 @@ export function ReviewCard({ review, onDelete, onUpdate }: ReviewCardProps) {
                         <div className="flex-1">
                             <div className="flex flex-wrap items-start justify-between gap-2">
                                 <div>
-                                    <Link 
+                                    <Link
                                         href={`/shop/${review.medicineId}`}
                                         className="font-medium hover:text-primary transition-colors"
                                     >
@@ -138,11 +144,27 @@ export function ReviewCard({ review, onDelete, onUpdate }: ReviewCardProps) {
                                     </Button>
                                 </div>
                             </div>
-                            
+
                             <p className="text-sm text-muted-foreground mt-2">
                                 {review.comment}
                             </p>
-                            
+                            {/* seller response */}
+                            {review.response && (
+                                <div className="mt-3 p-3 bg-muted/30 rounded-lg border-l-4 border-primary">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                                        <p className="text-xs font-medium text-muted-foreground">
+                                            Seller Response
+                                        </p>
+                                        <span className="text-xs text-muted-foreground">
+                                            {formatDistanceToNow(new Date(review.response.createdAt), { addSuffix: true })}
+                                        </span>
+                                    </div>
+                                    <p className="text-sm">
+                                        {review.response.comment}
+                                    </p>
+                                </div>
+                            )}
                             <div className="flex items-center justify-between mt-3">
                                 <p className="text-xs text-muted-foreground">
                                     Posted on {new Date(review.createdAt).toLocaleDateString()}

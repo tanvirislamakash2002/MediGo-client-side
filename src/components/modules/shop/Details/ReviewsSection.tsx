@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Star, StarHalf, CheckCircle } from "lucide-react";
+import { Star, StarHalf, CheckCircle, MessageSquare } from "lucide-react";
 import { ReviewForm } from "./ReviewForm";
 import { formatDistanceToNow } from "date-fns";
 
@@ -20,6 +20,11 @@ interface Review {
         name: string;
         image: string | null;
     };
+    response?: {
+        id: string;
+        comment: string;
+        createdAt: string;
+    } | null;
 }
 
 interface ReviewsSectionProps {
@@ -35,7 +40,7 @@ interface ReviewsSectionProps {
 const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-    
+
     return (
         <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => {
@@ -51,11 +56,11 @@ const renderStars = (rating: number) => {
     );
 };
 
-export function ReviewsSection({ 
-    medicineId, 
-    initialReviews, 
-    averageRating, 
-    totalReviews, 
+export function ReviewsSection({
+    medicineId,
+    initialReviews,
+    averageRating,
+    totalReviews,
     isAuthenticated,
     hasPurchased,
     userHasReviewed
@@ -88,7 +93,7 @@ export function ReviewsSection({
                         </span>
                     </div>
                 </div>
-                
+
                 {canWriteReview && (
                     <Button onClick={() => setShowReviewForm(true)}>
                         Write a Review
@@ -98,7 +103,7 @@ export function ReviewsSection({
 
             {/* Review Form */}
             {showReviewForm && (
-                <ReviewForm 
+                <ReviewForm
                     medicineId={medicineId}
                     onSuccess={handleReviewSubmitted}
                     onCancel={() => setShowReviewForm(false)}
@@ -144,6 +149,23 @@ export function ReviewsSection({
                                         <p className="mt-3 text-sm text-muted-foreground">
                                             {review.comment}
                                         </p>
+                                        {/* seller response */}
+                                        {review.response && (
+                                            <div className="mt-3 p-3 bg-muted/30 rounded-lg border-l-4 border-primary">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                                                    <p className="text-xs font-medium text-muted-foreground">
+                                                        Seller Response
+                                                    </p>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {formatDistanceToNow(new Date(review.response.createdAt), { addSuffix: true })}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm">
+                                                    {review.response.comment}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </CardContent>
