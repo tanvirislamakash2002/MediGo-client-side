@@ -32,6 +32,7 @@ export const uploadService = {
     upload: async (formData: FormData, endpoint: string) => {
         try {
             const cookieStore = await cookies();
+            console.log(`${API_URL}/upload/${endpoint}`);
             const res = await fetch(`${API_URL}/upload/${endpoint}`, {
                 method: "POST",
                 headers: {

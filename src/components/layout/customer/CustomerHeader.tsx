@@ -35,11 +35,13 @@ import { SearchModal } from "./SearchModal";
 import { CartDrawer } from "./CartDrawer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useLogout } from "@/hooks/useLogout";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface User {
     id: string;
     name: string;
     email: string;
+    image: string;
     role: string;
 }
 
@@ -140,13 +142,12 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
                             {user ? (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="rounded-full">
-                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                                <span className="text-sm font-medium text-primary">
-                                                    {user.name.charAt(0).toUpperCase()}
-                                                </span>
-                                            </div>
-                                        </Button>
+                                        <Avatar className="w-8 h-8">
+                                            <AvatarImage src={user.image} alt={user.name} />
+                                            <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                                                {user.name.charAt(0).toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-56">
                                         <div className="px-2 py-1.5">

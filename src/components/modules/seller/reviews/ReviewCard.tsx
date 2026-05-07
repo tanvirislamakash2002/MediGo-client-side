@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Star, MessageSquare, CheckCircle, Clock, X, Send, Pill } from "lucide-react";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ interface Review {
     customer: {
         id: string;
         name: string;
+        image: string;
     };
     medicine: {
         id: string;
@@ -107,7 +108,6 @@ export function ReviewCard({ review, onResponseAdded }: ReviewCardProps) {
             .toUpperCase()
             .slice(0, 2);
     };
-
     return (
         <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
@@ -124,7 +124,7 @@ export function ReviewCard({ review, onResponseAdded }: ReviewCardProps) {
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="flex items-center justify-center h-full text-2xl"><Pill size={45}/></div>
+                                <div className="flex items-center justify-center h-full text-2xl"><Pill size={45} /></div>
                             )}
                         </div>
                     </Link>
@@ -133,7 +133,7 @@ export function ReviewCard({ review, onResponseAdded }: ReviewCardProps) {
                     <div className="flex-1">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
-                                <Link 
+                                <Link
                                     href={`/seller/medicines/edit/${review.medicine.id}`}
                                     className="font-medium hover:text-primary transition-colors"
                                 >
@@ -154,13 +154,14 @@ export function ReviewCard({ review, onResponseAdded }: ReviewCardProps) {
                                     </p>
                                 </div>
                                 <Avatar className="h-8 w-8">
+                                    <AvatarImage src={review?.customer?.image || undefined} />
                                     <AvatarFallback className="bg-primary/10 text-primary text-xs">
                                         {getInitials(review.customer.name)}
                                     </AvatarFallback>
                                 </Avatar>
                             </div>
                         </div>
-                        
+
                         <p className="text-sm text-muted-foreground mt-2">
                             {review.comment}
                         </p>

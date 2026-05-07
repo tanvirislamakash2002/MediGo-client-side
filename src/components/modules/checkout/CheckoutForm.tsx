@@ -10,11 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Upload, Truck, Shield, Clock, CheckCircle, Gift, Tag, Pill } from "lucide-react";
+import { AlertCircle, Upload, Truck, Shield, Clock, CheckCircle, Gift, Tag, Pill, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import * as z from "zod";
 import Image from "next/image";
 import { placeOrder } from "@/actions/order.action";
+import { uploadPrescription } from "@/actions/upload.action";
 import { CartItem } from "@/types/cart.type";
 
 interface CheckoutFormProps {
@@ -55,9 +56,11 @@ export function CheckoutForm({ initialItems, initialTotal, user }: CheckoutFormP
     const [items, setItems] = useState<CartItem[]>(initialItems);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [prescriptionFiles, setPrescriptionFiles] = useState<File[]>([]);
+    const [uploadedPrescriptions, setUploadedPrescriptions] = useState<string[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState<Record<number, number>>({});
     const [promoCode, setPromoCode] = useState("");
     const [appliedPromo, setAppliedPromo] = useState<{ code: string; type: 'percentage' | 'fixed'; value: number; description: string } | null>(null);
-    const [discount, setDiscount] = useState(0);
     const [isApplyingPromo, setIsApplyingPromo] = useState(false);
     const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
 
@@ -66,7 +69,6 @@ export function CheckoutForm({ initialItems, initialTotal, user }: CheckoutFormP
     const shippingCost = subtotal > 50 ? 0 : 5.99;
     const tax = 0;
     
-    // Calculate final total with discount
     let finalTotal = subtotal + shippingCost + tax;
     let discountAmount = 0;
     
@@ -107,14 +109,18 @@ export function CheckoutForm({ initialItems, initialTotal, user }: CheckoutFormP
                 return;
             }
 
-            // Clear errors on successful validation
             setValidationErrors({});
+
+            // Validate prescription upload if needed
+            if (hasPrescriptionItems && uploadedPrescriptions.length === 0) {
+                toast.error("Please upload prescription for your order");
+                return;
+            }
 
             setIsSubmitting(true);
             const toastId = toast.loading("Placing your order...");
 
             try {
-                // Check if items exist
                 if (items.length === 0) {
                     toast.error("No items in cart", { id: toastId });
                     router.push("/cart");
@@ -143,13 +149,13 @@ export function CheckoutForm({ initialItems, initialTotal, user }: CheckoutFormP
                     discountAmount: discountAmount,
                     discountCode: appliedPromo?.code || null,
                     totalAmount: finalTotal,
+                    prescriptionUrls: uploadedPrescriptions, // ✅ Include uploaded prescription URLs
                 };
 
-console.log(orderData);
                 const resultOrder = await placeOrder(orderData);
 
-                if (resultOrder.error) {
-                    toast.error(resultOrder.error.message, { id: toastId });
+                if (!resultOrder.success) {
+                    toast.error(resultOrder.message, { id: toastId });
                     return;
                 }
 
@@ -165,13 +171,74 @@ console.log(orderData);
         },
     });
 
-    const handlePrescriptionUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ✅ Upload prescription file
+    const handlePrescriptionUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        setPrescriptionFiles(prev => [...prev, ...files]);
+        if (files.length === 0) return;
+
+        setIsUploading(true);
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error(`${file.name} exceeds 5MB limit`);
+                continue;
+            }
+
+            // Validate file type
+            const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "application/pdf"];
+            if (!allowedTypes.includes(file.type)) {
+                toast.error(`${file.name} is not a supported format. Please upload JPG, PNG, or PDF.`);
+                continue;
+            }
+
+            setUploadProgress(prev => ({ ...prev, [i]: 0 }));
+            
+            const progressInterval = setInterval(() => {
+                setUploadProgress(prev => {
+                    const current = prev[i] || 0;
+                    if (current >= 90) {
+                        clearInterval(progressInterval);
+                        return prev;
+                    }
+                    return { ...prev, [i]: current + 10 };
+                });
+            }, 200);
+
+            try {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                // Use the document upload endpoint for prescriptions
+                const result = await uploadPrescription(formData);
+                console.log(result);
+                clearInterval(progressInterval);
+                setUploadProgress(prev => ({ ...prev, [i]: 100 }));
+
+                if (!result.success) {
+                    toast.error(`Failed to upload ${file.name}: ${result.message}`);
+                } else {
+                    setPrescriptionFiles(prev => [...prev, file]);
+                    setUploadedPrescriptions(prev => [...prev, result.data.url]);
+                    toast.success(`${file.name} uploaded successfully`);
+                }
+            } catch (error) {
+                clearInterval(progressInterval);
+                toast.error(`Failed to upload ${file.name}`);
+                console.error("Upload error:", error);
+            }
+        }
+        
+        setIsUploading(false);
+        // Clear progress after 1 second
+        setTimeout(() => setUploadProgress({}), 1000);
     };
 
-    const removePrescriptionFile = (index: number) => {
+    const removePrescriptionFile = async (index: number) => {
         setPrescriptionFiles(prev => prev.filter((_, i) => i !== index));
+        setUploadedPrescriptions(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleApplyPromo = () => {
@@ -187,7 +254,6 @@ console.log(orderData);
             const promo = PROMO_CODES[code];
             
             if (promo) {
-                // Check if promo has minimum order requirement
                 if (code === "SAVE50" && subtotal < 200) {
                     toast.error("SAVE50 requires minimum order of $200");
                     setIsApplyingPromo(false);
@@ -201,7 +267,6 @@ console.log(orderData);
                     description: promo.description
                 });
                 
-                // Calculate discount for toast message
                 let discountMessage = "";
                 if (promo.type === 'percentage') {
                     const discountAmt = (subtotal * promo.value) / 100;
@@ -252,6 +317,7 @@ console.log(orderData);
                             }}
                             className="space-y-4"
                         >
+                            {/* Form fields remain the same */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <form.Field
                                     name="fullName"
@@ -456,16 +522,23 @@ console.log(orderData);
                                     multiple
                                     accept="image/*,.pdf"
                                     onChange={handlePrescriptionUpload}
+                                    disabled={isUploading}
                                     className="hidden"
                                 />
                                 <label
                                     htmlFor="prescription"
-                                    className="cursor-pointer flex flex-col items-center gap-2"
+                                    className={`cursor-pointer flex flex-col items-center gap-2 ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
                                 >
-                                    <Upload className="h-8 w-8 text-muted-foreground" />
-                                    <span className="text-sm font-medium">Click to upload prescription</span>
+                                    {isUploading ? (
+                                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                    ) : (
+                                        <Upload className="h-8 w-8 text-muted-foreground" />
+                                    )}
+                                    <span className="text-sm font-medium">
+                                        {isUploading ? "Uploading..." : "Click to upload prescription"}
+                                    </span>
                                     <span className="text-xs text-muted-foreground">
-                                        Supported formats: JPG, PNG, PDF (Max 5MB)
+                                        Supported formats: JPG, PNG, PDF (Max 5MB per file)
                                     </span>
                                 </label>
                             </div>
@@ -475,14 +548,28 @@ console.log(orderData);
                                     <p className="text-sm font-medium">Uploaded Files:</p>
                                     {prescriptionFiles.map((file, index) => (
                                         <div key={index} className="flex items-center justify-between bg-muted/30 rounded-lg p-2">
-                                            <span className="text-sm truncate">{file.name}</span>
+                                            <div className="flex items-center gap-2 flex-1">
+                                                <span className="text-sm truncate">{file.name}</span>
+                                                {uploadProgress[index] !== undefined && uploadProgress[index] < 100 && (
+                                                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                                                        <div 
+                                                            className="h-full bg-primary transition-all duration-300"
+                                                            style={{ width: `${uploadProgress[index]}%` }}
+                                                        />
+                                                    </div>
+                                                )}
+                                                {uploadProgress[index] === 100 && (
+                                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                                )}
+                                            </div>
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => removePrescriptionFile(index)}
-                                                className="text-destructive"
+                                                className="text-destructive h-8 w-8 p-0"
+                                                disabled={isUploading}
                                             >
-                                                Remove
+                                                <X className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     ))}
@@ -500,7 +587,7 @@ console.log(orderData);
                         <CardTitle>Order Summary</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {/* Items List */}
+                        {/* Items List - same as before */}
                         <div className="space-y-3 max-h-80 overflow-y-auto">
                             {items.map((item) => (
                                 <div key={item.id} className="flex gap-3">
@@ -625,10 +712,17 @@ console.log(orderData);
                             type="submit"
                             className="w-full"
                             size="lg"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || (hasPrescriptionItems && uploadedPrescriptions.length === 0)}
                         >
                             {isSubmitting ? "Placing Order..." : "Place Order"}
                         </Button>
+
+                        {/* Prescription Reminder */}
+                        {hasPrescriptionItems && uploadedPrescriptions.length === 0 && (
+                            <p className="text-xs text-red-500 text-center">
+                                Please upload your prescription to place the order
+                            </p>
+                        )}
 
                         {/* Trust Badges */}
                         <div className="space-y-2 pt-2">

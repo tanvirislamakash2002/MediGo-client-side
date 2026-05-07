@@ -48,3 +48,12 @@ export const uploadProductImage = async (medicineId: string, formData: FormData)
     }
     return result;
 };
+
+// upload prescription (customer)
+export const uploadPrescription = async (formData: FormData) => {
+    const result = await uploadService.upload(formData, "prescription");
+    if (result.success) {
+        updateTag("prescriptions");
+    }
+    return result;
+};

@@ -17,6 +17,7 @@ interface Review {
     customer: {
         id: string;
         name: string;
+        image: string;
     };
     medicine: {
         id: string;
@@ -48,9 +49,9 @@ interface ReviewsListProps {
     totalReviews: number;
 }
 
-export function ReviewsList({ 
-    initialReviews, 
-    initialPage, 
+export function ReviewsList({
+    initialReviews,
+    initialPage,
     initialSort,
     initialRating,
     initialProductId,
@@ -78,11 +79,11 @@ export function ReviewsList({
             const search = searchParams.get("search") || initialSearch;
             const sort = searchParams.get("sort") || initialSort;
             const page = parseInt(searchParams.get("page") || "1");
-            
-            const result = await getSellerReviews({ 
-                rating, productId, dateRange, responded, search, sort, page, limit: 10 
+
+            const result = await getSellerReviews({
+                rating, productId, dateRange, responded, search, sort, page, limit: 10
             });
-            
+
             if (result.success) {
                 setReviews(result.data?.reviews || []);
                 setPagination(result.data?.pagination);
@@ -100,10 +101,10 @@ export function ReviewsList({
     };
 
     const handleResponseAdded = (reviewId: string, responseText: string) => {
-        setReviews(reviews.map(review => 
-            review.id === reviewId 
-                ? { 
-                    ...review, 
+        setReviews(reviews.map(review =>
+            review.id === reviewId
+                ? {
+                    ...review,
                     response: {
                         id: `temp-${Date.now()}`,
                         comment: responseText,
@@ -146,7 +147,7 @@ export function ReviewsList({
                     Showing {reviews.length} of {totalReviews} reviews
                 </p>
             </div>
-            
+
             <div className="space-y-4">
                 {reviews.map((review) => (
                     <ReviewCard
@@ -156,7 +157,7 @@ export function ReviewsList({
                     />
                 ))}
             </div>
-            
+
             {pagination && pagination.totalPages > 1 && (
                 <div className="mt-8">
                     <Pagination
