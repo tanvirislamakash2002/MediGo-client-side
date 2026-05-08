@@ -172,7 +172,7 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
                             </div>
                             <div>
                                 <span className="text-muted-foreground">Contact:</span>
-                                <span className="ml-2">{order.customer.phone}</span>
+                                <span className="ml-2">{order.phone}</span>
                             </div>
                         </div>
                         

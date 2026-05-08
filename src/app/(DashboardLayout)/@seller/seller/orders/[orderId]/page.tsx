@@ -9,6 +9,7 @@ import { CustomerInfo } from "@/components/modules/seller/orders/details/Custome
 import { OrderSummary } from "@/components/modules/seller/orders/details/OrderSummary";
 import { OrderActions } from "@/components/modules/seller/orders/details/OrderActions";
 import { OrderSkeleton } from "@/components/modules/seller/orders/details/OrderSkeleton";
+import { Prescriptions } from "@/components/modules/seller/orders/details/Prescriptions";
 
 interface PageProps {
     params: Promise<{ orderId: string }>;
@@ -34,7 +35,8 @@ export default async function SellerOrderDetailsPage({ params }: PageProps) {
     // Ensure items array exists
     const safeOrder = {
         ...order,
-        items: order.orderItems || order.items || []
+        items: order.orderItems || order.items || [],
+        prescriptions: order.prescriptions || []
     };
 
     return (
@@ -52,6 +54,9 @@ export default async function SellerOrderDetailsPage({ params }: PageProps) {
                             <div className="lg:col-span-2 space-y-8">
                                 <OrderItems order={safeOrder} />
                                 <CustomerInfo order={safeOrder} />
+                                {safeOrder.prescriptions?.length > 0 && (
+                                    <Prescriptions prescriptions={safeOrder.prescriptions} />
+                                )}
                             </div>
                             <div className="space-y-8">
                                 <OrderSummary order={safeOrder} />

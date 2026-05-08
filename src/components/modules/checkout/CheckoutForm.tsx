@@ -213,7 +213,6 @@ export function CheckoutForm({ initialItems, initialTotal, user }: CheckoutFormP
 
                 // Use the document upload endpoint for prescriptions
                 const result = await uploadPrescription(formData);
-                console.log(result);
                 clearInterval(progressInterval);
                 setUploadProgress(prev => ({ ...prev, [i]: 100 }));
 
