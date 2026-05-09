@@ -13,14 +13,14 @@ import { Star, Eye } from "lucide-react";
 import { updateReviewStatus } from "@/actions/review.action";
 import { toast } from "sonner";
 import { ReviewDetailModal } from "./ReviewDetailModal";
-import { RejectReviewDialog } from "./RejectReviewDialog";
+import { SuspendReviewDialog } from "./SuspendReviewDialog";
 
 interface Review {
     id: string;
     rating: number;
     comment: string;
     status: string;
-    rejectionReason?: string | null;
+    suspendReason?: string | null;
     createdAt: string;
     customer: {
         id: string;
@@ -64,7 +64,7 @@ export function ReviewRow({ review, isSelected, onSelect, onStatusChange }: Revi
     const router = useRouter();
     const [isUpdating, setIsUpdating] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
-    const [showRejectDialog, setShowRejectDialog] = useState(false);
+    const [showSuspendDialog, setShowSuspendDialog] = useState(false);
 
     const handleApprove = async () => {
         if (review.status === "APPROVED") return;
@@ -88,24 +88,24 @@ export function ReviewRow({ review, isSelected, onSelect, onStatusChange }: Revi
         }
     };
 
-    const handleReject = async (rejectionReason: string) => {
+    const handleSuspend = async (suspendReason: string) => {
         setIsUpdating(true);
-        const toastId = toast.loading("Rejecting review...");
+        const toastId = toast.loading("Suspending review...");
         
         try {
-            const result = await updateReviewStatus(review.id, "REJECTED", rejectionReason);
+            const result = await updateReviewStatus(review.id, "SUSPENDED", suspendReason);
             if (!result.success) {
                 toast.error(result.message, { id: toastId });
             } else {
-                toast.success("Review rejected successfully", { id: toastId });
-                onStatusChange(review.id, "REJECTED");
+                toast.success("Review suspended successfully", { id: toastId });
+                onStatusChange(review.id, "SUSPENDED");
                 router.refresh();
             }
         } catch (error) {
-            toast.error("Failed to reject review", { id: toastId });
+            toast.error("Failed to suspend review", { id: toastId });
         } finally {
             setIsUpdating(false);
-            setShowRejectDialog(false);
+            setShowSuspendDialog(false);
         }
     };
 
@@ -122,7 +122,7 @@ export function ReviewRow({ review, isSelected, onSelect, onStatusChange }: Revi
         if (review.status === "APPROVED") {
             return <Badge className="bg-green-500 text-white">Approved</Badge>;
         }
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <Badge variant="destructive">Suspended</Badge>;
     };
 
     const getInitials = (name: string) => {
@@ -214,11 +214,11 @@ export function ReviewRow({ review, isSelected, onSelect, onStatusChange }: Revi
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setShowRejectDialog(true)}
+                                onClick={() => setShowSuspendDialog(true)}
                                 disabled={isUpdating}
                                 className="text-destructive hover:text-destructive"
                             >
-                                Reject
+                                Suspend
                             </Button>
                         ) : (
                             <Button
@@ -241,15 +241,15 @@ export function ReviewRow({ review, isSelected, onSelect, onStatusChange }: Revi
                 onOpenChange={setShowDetailModal}
                 review={review}
                 onApprove={handleApprove}
-                onReject={() => setShowRejectDialog(true)}
+                onSuspend={() => setShowSuspendDialog(true)}
             />
 
-            {/* Reject Review Dialog */}
-            <RejectReviewDialog
-                open={showRejectDialog}
-                onOpenChange={setShowRejectDialog}
+            {/* Suspend Review Dialog */}
+            <SuspendReviewDialog
+                open={showSuspendDialog}
+                onOpenChange={setShowSuspendDialog}
                 review={review}
-                onConfirm={handleReject}
+                onConfirm={handleSuspend}
                 isSubmitting={isUpdating}
             />
         </>

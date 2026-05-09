@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components/ui/pagination";
 import { getAllReviewsForAdmin } from "@/actions/review.action";
 import { ReviewRow } from "./ReviewRow";
-import { BulkRejectDialog } from "./BulkRejectDialog";
+import { BulkSuspendDialog } from "./BulkSuspendDialog";
 import { ReviewsSkeleton } from "./ReviewsSkeleton";
 
 interface Review {
@@ -23,7 +23,7 @@ interface Review {
     rating: number;
     comment: string;
     status: string;
-    rejectionReason?: string | null;
+    suspendReason?: string | null;
     createdAt: string;
     customer: {
         id: string;
@@ -85,7 +85,7 @@ export function ReviewsTable({
     const [pagination, setPagination] = useState(initialPagination);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedReviews, setSelectedReviews] = useState<Set<string>>(new Set());
-    const [showBulkRejectDialog, setShowBulkRejectDialog] = useState(false);
+    const [showBulkSuspendDialog, setShowBulkSuspendDialog] = useState(false);
 
     const currentPage = parseInt(searchParams.get("page") || initialPage.toString());
 
@@ -158,8 +158,8 @@ export function ReviewsTable({
         }
     };
 
-    const handleBulkReject = () => {
-        setShowBulkRejectDialog(true);
+    const handleBulkSuspend = () => {
+        setShowBulkSuspendDialog(true);
     };
 
     const clearSelection = () => {
@@ -197,9 +197,9 @@ export function ReviewsTable({
                         <Button
                             variant="destructive"
                             size="sm"
-                            onClick={handleBulkReject}
+                            onClick={handleBulkSuspend}
                         >
-                            Reject Selected
+                            Suspend Selected
                         </Button>
                     </div>
                 </div>
@@ -254,10 +254,10 @@ export function ReviewsTable({
                 </div>
             )}
 
-            {/* Bulk Reject Dialog */}
-            <BulkRejectDialog
-                open={showBulkRejectDialog}
-                onOpenChange={setShowBulkRejectDialog}
+            {/* Bulk Suspend Dialog */}
+            <BulkSuspendDialog
+                open={showBulkSuspendDialog}
+                onOpenChange={setShowBulkSuspendDialog}
                 reviewIds={Array.from(selectedReviews)}
                 reviews={reviews.filter(r => selectedReviews.has(r.id))}
                 onSuccess={() => {

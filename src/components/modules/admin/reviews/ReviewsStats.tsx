@@ -6,7 +6,7 @@ import { Star, MessageSquare, CheckCircle, XCircle } from "lucide-react";
 interface ReviewStats {
     totalReviews: number;
     approvedCount: number;
-    rejectedCount: number;
+    suspendedCount: number;
     averageRating: number;
     ratingDistribution: {
         1: number;
@@ -52,8 +52,8 @@ export function ReviewsStats({ stats }: ReviewsStatsProps) {
             iconColor: "text-green-500",
         },
         {
-            title: "Rejected",
-            value: stats.rejectedCount,
+            title: "Suspended",
+            value: stats.suspendedCount,
             icon: XCircle,
             iconColor: "text-red-500",
         },

@@ -18,7 +18,7 @@ interface Review {
     rating: number;
     comment: string;
     status: string;
-    rejectionReason?: string | null;
+    suspendReason?: string | null;
     createdAt: string;
     customer: {
         id: string;
@@ -50,7 +50,7 @@ interface ReviewDetailModalProps {
     onOpenChange: (open: boolean) => void;
     review: Review;
     onApprove: () => void;
-    onReject: () => void;
+    onSuspend: () => void;
 }
 
 const formatDate = (dateString: string) => {
@@ -72,7 +72,7 @@ const getInitials = (name: string) => {
         .slice(0, 2);
 };
 
-export function ReviewDetailModal({ open, onOpenChange, review, onApprove, onReject }: ReviewDetailModalProps) {
+export function ReviewDetailModal({ open, onOpenChange, review, onApprove, onSuspend }: ReviewDetailModalProps) {
     const renderStars = (rating: number) => {
         return Array.from({ length: 5 }, (_, i) => (
             <Star
@@ -95,12 +95,12 @@ export function ReviewDetailModal({ open, onOpenChange, review, onApprove, onRej
                         <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">Current Status:</span>
                             <Badge className={review.status === "APPROVED" ? "bg-green-500" : "bg-red-500"}>
-                                {review.status === "APPROVED" ? "Approved" : "Rejected"}
+                                {review.status === "APPROVED" ? "Approved" : "Suspended"}
                             </Badge>
                         </div>
-                        {review.rejectionReason && (
+                        {review.suspendReason && (
                             <p className="text-sm text-muted-foreground mt-2">
-                                <span className="font-medium">Rejection Reason:</span> {review.rejectionReason}
+                                <span className="font-medium">Suspendion Reason:</span> {review.suspendReason}
                             </p>
                         )}
                     </div>
@@ -204,8 +204,8 @@ export function ReviewDetailModal({ open, onOpenChange, review, onApprove, onRej
                     {/* Actions */}
                     <div className="flex gap-3 pt-4">
                         {review.status === "APPROVED" ? (
-                            <Button variant="destructive" className="flex-1" onClick={onReject}>
-                                Reject Review
+                            <Button variant="destructive" className="flex-1" onClick={onSuspend}>
+                                Suspend Review
                             </Button>
                         ) : (
                             <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={onApprove}>

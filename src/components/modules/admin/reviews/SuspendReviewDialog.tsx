@@ -26,7 +26,7 @@ interface Review {
     };
 }
 
-interface RejectReviewDialogProps {
+interface SuspendReviewDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     review: Review;
@@ -43,20 +43,20 @@ const predefinedReasons = [
     "Violates community guidelines",
 ];
 
-export function RejectReviewDialog({ open, onOpenChange, review, onConfirm, isSubmitting }: RejectReviewDialogProps) {
-    const [rejectionReason, setRejectionReason] = useState("");
+export function SuspendReviewDialog({ open, onOpenChange, review, onConfirm, isSubmitting }: SuspendReviewDialogProps) {
+    const [suspendReason, setSuspendReason] = useState("");
     const [selectedReason, setSelectedReason] = useState("");
 
     const handleReasonSelect = (reason: string) => {
         setSelectedReason(reason);
-        setRejectionReason(reason);
+        setSuspendReason(reason);
     };
 
     const handleConfirm = () => {
-        if (!rejectionReason.trim()) {
+        if (!suspendReason.trim()) {
             return;
         }
-        onConfirm(rejectionReason);
+        onConfirm(suspendReason);
     };
 
     return (
@@ -65,7 +65,7 @@ export function RejectReviewDialog({ open, onOpenChange, review, onConfirm, isSu
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-destructive">
                         <AlertTriangle className="h-5 w-5" />
-                        Reject Review
+                        Suspend Review
                     </DialogTitle>
                     <DialogDescription>
                         Review from <strong>{review.customer.name}</strong> for <strong>{review.medicine.name}</strong>
@@ -107,10 +107,10 @@ export function RejectReviewDialog({ open, onOpenChange, review, onConfirm, isSu
                         </Label>
                         <Textarea
                             id="reason"
-                            placeholder="Explain why this review is being rejected..."
-                            value={rejectionReason}
+                            placeholder="Explain why this review is being suspended..."
+                            value={suspendReason}
                             onChange={(e) => {
-                                setRejectionReason(e.target.value);
+                                setSuspendReason(e.target.value);
                                 setSelectedReason("");
                             }}
                             rows={3}
@@ -124,10 +124,10 @@ export function RejectReviewDialog({ open, onOpenChange, review, onConfirm, isSu
                     </Button>
                     <Button
                         onClick={handleConfirm}
-                        disabled={!rejectionReason.trim() || isSubmitting}
+                        disabled={!suspendReason.trim() || isSubmitting}
                         variant="destructive"
                     >
-                        {isSubmitting ? "Rejecting..." : "Reject Review"}
+                        {isSubmitting ? "Suspending..." : "Suspend Review"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

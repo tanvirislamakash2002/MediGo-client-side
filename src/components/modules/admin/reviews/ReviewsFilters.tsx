@@ -105,7 +105,7 @@ export function ReviewsFilters({
                 >
                     <option value="all">All Status</option>
                     <option value="APPROVED">Approved</option>
-                    <option value="REJECTED">Rejected</option>
+                    <option value="SUSPENDED">Suspended</option>
                 </select>
 
                 {/* Rating Filter */}

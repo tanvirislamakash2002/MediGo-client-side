@@ -360,8 +360,8 @@ export const reviewService = {
         }
     },
 
-    // Update review status (approve/reject)
-    updateReviewStatus: async (reviewId: string, status: string, rejectionReason?: string) => {
+    // Update review status (approve/suspend)
+    updateReviewStatus: async (reviewId: string, status: string, suspendReason?: string) => {
         try {
             const cookieStore = await cookies();
             const res = await fetch(`${API_URL}/reviews/admin/reviews/${reviewId}/status`, {
@@ -370,7 +370,7 @@ export const reviewService = {
                     "Content-Type": "application/json",
                     Cookie: cookieStore.toString()
                 },
-                body: JSON.stringify({ status, rejectionReason })
+                body: JSON.stringify({ status, suspendReason })
             });
             const data = await res.json();
 
@@ -392,7 +392,7 @@ export const reviewService = {
     },
 
     // Bulk update review status
-    bulkUpdateReviewStatus: async (reviewIds: string[], status: string, rejectionReason?: string) => {
+    bulkUpdateReviewStatus: async (reviewIds: string[], status: string, suspendReason?: string) => {
         try {
             const cookieStore = await cookies();
             const res = await fetch(`${API_URL}/reviews/admin/reviews/bulk`, {
@@ -401,7 +401,7 @@ export const reviewService = {
                     "Content-Type": "application/json",
                     Cookie: cookieStore.toString()
                 },
-                body: JSON.stringify({ reviewIds, status, rejectionReason })
+                body: JSON.stringify({ reviewIds, status, suspendReason })
             });
             const data = await res.json();
 

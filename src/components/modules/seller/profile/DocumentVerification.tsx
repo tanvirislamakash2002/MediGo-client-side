@@ -16,7 +16,7 @@ interface Document {
     type?: string;          // Alternative field
     uploadedAt?: string;    // Backend uses uploadedAt
     createdAt?: string;     // Alternative field
-    status?: "pending" | "verified" | "rejected";
+    status?: "pending" | "verified" | "suspended";
     documentUrl?: string;   // Backend uses documentUrl
     url?: string;           // Alternative field
 }
@@ -47,7 +47,7 @@ export function DocumentVerification({ documents = [] }: DocumentVerificationPro
     };
 
     // Helper to get document status
-    const getDocumentStatus = (doc: Document): "pending" | "verified" | "rejected" => {
+    const getDocumentStatus = (doc: Document): "pending" | "verified" | "suspended" => {
         return doc.status || "pending";
     };
 
@@ -110,8 +110,8 @@ export function DocumentVerification({ documents = [] }: DocumentVerificationPro
         switch (status) {
             case "verified":
                 return <Badge className="bg-green-500">Verified</Badge>;
-            case "rejected":
-                return <Badge variant="destructive">Rejected</Badge>;
+            case "suspended":
+                return <Badge variant="destructive">Suspended</Badge>;
             default:
                 return <Badge variant="outline">Pending</Badge>;
         }
@@ -121,7 +121,7 @@ export function DocumentVerification({ documents = [] }: DocumentVerificationPro
         switch (status) {
             case "verified":
                 return <CheckCircle className="h-4 w-4 text-green-500" />;
-            case "rejected":
+            case "suspended":
                 return <XCircle className="h-4 w-4 text-red-500" />;
             default:
                 return <FileText className="h-4 w-4 text-yellow-500" />;

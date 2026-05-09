@@ -24,7 +24,7 @@ interface Review {
     };
 }
 
-interface BulkRejectDialogProps {
+interface BulkSuspendDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     reviewIds: string[];
@@ -32,31 +32,31 @@ interface BulkRejectDialogProps {
     onSuccess: () => void;
 }
 
-export function BulkRejectDialog({ open, onOpenChange, reviewIds, reviews, onSuccess }: BulkRejectDialogProps) {
+export function BulkSuspendDialog({ open, onOpenChange, reviewIds, reviews, onSuccess }: BulkSuspendDialogProps) {
     const router = useRouter();
-    const [rejectionReason, setRejectionReason] = useState("");
+    const [suspendReason, setSuspendReason] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleConfirm = async () => {
-        if (!rejectionReason.trim()) {
-            toast.error("Please provide a rejection reason");
+        if (!suspendReason.trim()) {
+            toast.error("Please provide a suspended reason");
             return;
         }
 
         setIsSubmitting(true);
-        const toastId = toast.loading(`Rejecting ${reviewIds.length} reviews...`);
+        const toastId = toast.loading(`Suspending ${reviewIds.length} reviews...`);
 
         try {
-            const result = await bulkUpdateReviewStatus(reviewIds, "REJECTED", rejectionReason);
+            const result = await bulkUpdateReviewStatus(reviewIds, "SUSPENDED", suspendReason);
             if (!result.success) {
                 toast.error(result.message, { id: toastId });
             } else {
-                toast.success(`${result.data?.updatedCount || reviewIds.length} reviews rejected successfully`, { id: toastId });
+                toast.success(`${result.data?.updatedCount || reviewIds.length} reviews suspended successfully`, { id: toastId });
                 onSuccess();
                 router.refresh();
             }
         } catch (error) {
-            toast.error("Failed to reject reviews", { id: toastId });
+            toast.error("Failed to suspend reviews", { id: toastId });
         } finally {
             setIsSubmitting(false);
             onOpenChange(false);
@@ -69,10 +69,10 @@ export function BulkRejectDialog({ open, onOpenChange, reviewIds, reviews, onSuc
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-destructive">
                         <AlertTriangle className="h-5 w-5" />
-                        Bulk Reject Reviews
+                        Bulk Suspend Reviews
                     </DialogTitle>
                     <DialogDescription>
-                        You are about to reject {reviewIds.length} review{reviewIds.length !== 1 ? "s" : ""}
+                        You are about to suspend {reviewIds.length} review{reviewIds.length !== 1 ? "s" : ""}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -86,16 +86,16 @@ export function BulkRejectDialog({ open, onOpenChange, reviewIds, reviews, onSuc
                         ))}
                     </div>
 
-                    {/* Rejection Reason */}
+                    {/* Suspended Reason */}
                     <div>
                         <Label htmlFor="bulk-reason" className="text-sm mb-2 block">
-                            Rejection Reason <span className="text-destructive">*</span>
+                            Suspended Reason <span className="text-destructive">*</span>
                         </Label>
                         <Textarea
                             id="bulk-reason"
-                            placeholder="Explain why these reviews are being rejected..."
-                            value={rejectionReason}
-                            onChange={(e) => setRejectionReason(e.target.value)}
+                            placeholder="Explain why these reviews are being suspended..."
+                            value={suspendReason}
+                            onChange={(e) => setSuspendReason(e.target.value)}
                             rows={3}
                         />
                     </div>
@@ -107,10 +107,10 @@ export function BulkRejectDialog({ open, onOpenChange, reviewIds, reviews, onSuc
                     </Button>
                     <Button
                         onClick={handleConfirm}
-                        disabled={!rejectionReason.trim() || isSubmitting}
+                        disabled={!suspendReason.trim() || isSubmitting}
                         variant="destructive"
                     >
-                        {isSubmitting ? "Rejecting..." : `Reject ${reviewIds.length} Review${reviewIds.length !== 1 ? "s" : ""}`}
+                        {isSubmitting ? "Suspending..." : `Suspend ${reviewIds.length} Review${reviewIds.length !== 1 ? "s" : ""}`}
                     </Button>
                 </DialogFooter>
             </DialogContent>

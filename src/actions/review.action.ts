@@ -88,16 +88,16 @@ export const getAdminReviewStats = async () => {
     return await reviewService.getAdminReviewStats();
 };
 
-export const updateReviewStatus = async (reviewId: string, status: string, rejectionReason?: string) => {
-    const result = await reviewService.updateReviewStatus(reviewId, status, rejectionReason);
+export const updateReviewStatus = async (reviewId: string, status: string, suspendReason?: string) => {
+    const result = await reviewService.updateReviewStatus(reviewId, status, suspendReason);
     if (result.success) {
         updateTag("admin-reviews");
     }
     return result;
 };
 
-export const bulkUpdateReviewStatus = async (reviewIds: string[], status: string, rejectionReason?: string) => {
-    const result = await reviewService.bulkUpdateReviewStatus(reviewIds, status, rejectionReason);
+export const bulkUpdateReviewStatus = async (reviewIds: string[], status: string, suspendReason?: string) => {
+    const result = await reviewService.bulkUpdateReviewStatus(reviewIds, status, suspendReason);
     if (result.success) {
         updateTag("admin-reviews");
     }
