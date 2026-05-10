@@ -6,12 +6,17 @@ import { Copy, Printer, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+interface OrderItem {
+    id: string;
+    status: string;
+}
+
 interface Order {
     id: string;
     createdAt: string;
-    status: string;
     totalAmount: number;
     customerId: string;
+    items: OrderItem[];
 }
 
 interface OrderHeaderProps {
@@ -45,9 +50,26 @@ const formatDate = (dateString: string) => {
     });
 };
 
+// Calculate seller-specific status from items
+const getSellerOrderStatus = (items: OrderItem[]): string => {
+    if (!items.length) return "PLACED";
+    
+    const statuses = items.map(item => item.status);
+    
+    if (statuses.every(s => s === "DELIVERED")) return "DELIVERED";
+    if (statuses.every(s => s === "CANCELLED")) return "CANCELLED";
+    if (statuses.some(s => s === "DELIVERED")) return "PARTIALLY_DELIVERED";
+    if (statuses.some(s => s === "SHIPPED")) return "PARTIALLY_SHIPPED";
+    if (statuses.some(s => s === "PROCESSING")) return "PROCESSING";
+    
+    return "PLACED";
+};
+
 export function OrderHeader({ order }: OrderHeaderProps) {
     const router = useRouter();
-    const status = getStatusBadge(order.status);
+    // Use seller-specific status based on items, not the order's global status
+    const sellerStatus = getSellerOrderStatus(order.items || []);
+    const status = getStatusBadge(sellerStatus);
     const orderIdShort = order.id.slice(0, 8).toUpperCase();
 
     const handleCopyId = () => {

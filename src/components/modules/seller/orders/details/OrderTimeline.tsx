@@ -1,9 +1,17 @@
+"use client";
+
 import { CheckCircle, Package, Truck, Clock, XCircle } from "lucide-react";
+
+interface OrderItem {
+    id: string;
+    status: string;
+}
 
 interface Order {
     status: string;
     createdAt: string;
     updatedAt: string;
+    items: OrderItem[];
 }
 
 interface OrderTimelineProps {
@@ -26,9 +34,26 @@ const formatDate = (dateString: string) => {
     });
 };
 
+// Calculate seller-specific status from items
+const getSellerOrderStatus = (items: OrderItem[]): string => {
+    if (!items.length) return "PLACED";
+    
+    const statuses = items.map(item => item.status);
+    
+    if (statuses.every(s => s === "DELIVERED")) return "DELIVERED";
+    if (statuses.every(s => s === "CANCELLED")) return "CANCELLED";
+    if (statuses.some(s => s === "DELIVERED")) return "DELIVERED";
+    if (statuses.some(s => s === "SHIPPED")) return "SHIPPED";
+    if (statuses.some(s => s === "PROCESSING")) return "PROCESSING";
+    
+    return "PLACED";
+};
+
 export function OrderTimeline({ order }: OrderTimelineProps) {
+    // Use seller-specific status based on items
+    const sellerStatus = getSellerOrderStatus(order.items || []);
     const currentStatusIndex = timelineSteps.findIndex(
-        (step) => step.key === order.status
+        (step) => step.key === sellerStatus
     );
     
     const getStepStatus = (index: number) => {
@@ -37,7 +62,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
         return "pending";
     };
 
-    if (order.status === "CANCELLED") {
+    if (sellerStatus === "CANCELLED") {
         return (
             <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-6">
                 <div className="flex items-center gap-3">
@@ -82,7 +107,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                                 </div>
                                 <p className="text-sm font-medium mt-2">{step.label}</p>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    {isCompleted && order.createdAt && formatDate(order.createdAt)}
+                                    {isCompleted && "Completed"}
                                     {isCurrent && "Current"}
                                     {!isCompleted && !isCurrent && "Pending"}
                                 </p>
@@ -91,6 +116,12 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                     })}
                 </div>
             </div>
+            {/* Show note if order has items from other sellers */}
+            {order.items && order.items.length > 0 && (
+                <p className="text-xs text-muted-foreground text-center mt-4">
+                    * Timeline shows status for your items only. Other items in this order may have different statuses.
+                </p>
+            )}
         </div>
     );
 }

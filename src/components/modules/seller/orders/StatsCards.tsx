@@ -6,7 +6,7 @@ import { Package, Clock, Truck, CheckCircle, XCircle, TrendingUp } from "lucide-
 interface StatsCardsProps {
     stats: {
         total: number;
-        pending: number;
+        placed: number;
         processing: number;
         shipped: number;
         delivered: number;
@@ -25,7 +25,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
         },
         {
             title: "Pending",
-            value: stats.pending,
+            value: stats.placed,
             icon: Clock,
             color: "text-yellow-500",
             bg: "bg-yellow-50 dark:bg-yellow-950/30",
@@ -59,7 +59,6 @@ export function StatsCards({ stats }: StatsCardsProps) {
             bg: "bg-red-50 dark:bg-red-950/30",
         },
     ];
-
     return (
         <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             {cards.map((card) => (
