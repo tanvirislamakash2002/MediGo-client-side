@@ -25,7 +25,6 @@ export const orderService = {
                 };
             }
 
-            // Backend returns { success: true, data: {...} }
             return data;
         } catch (error) {
             console.error("Place order error:", error);
@@ -307,39 +306,36 @@ export const orderService = {
         }
     },
 
-    // Update order status
-    updateOrderStatus: async (orderId: string, status: string) => {
-        try {
-            const cookieStore = await cookies();
-            const res = await fetch(`${API_URL}/order/seller/orders/${orderId}/status`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Cookie: cookieStore.toString()
-                },
-                body: JSON.stringify({ status })
-            });
-            const data = await res.json();
+    // Update order item status
+    updateOrderItemStatus: async (orderItemId: string, status: string) => {
+    try {
+        const cookieStore = await cookies();
+        const res = await fetch(`${API_URL}/order/seller/order-items/${orderItemId}/status`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Cookie: cookieStore.toString()
+            },
+            body: JSON.stringify({ status })
+        });
+        const data = await res.json();
 
-            if (!res.ok) {
-                return {
-                    success: false,
-                    message: data.message || "Failed to update order status"
-                };
-            }
-
-            return {
-                success: true,
-                data: data.data || data
-            };
-        } catch (error) {
-            console.error("Update order status error:", error);
+        if (!res.ok) {
             return {
                 success: false,
-                message: "Something went wrong"
+                message: data.message || "Failed to update order item status"
             };
         }
-    },
+
+        return data;
+    } catch (error) {
+        console.error("Update order item status error:", error);
+        return {
+            success: false,
+            message: "Something went wrong"
+        };
+    }
+},
 
     // Get all orders
     getAllOrders: async (params?: {

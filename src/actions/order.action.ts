@@ -59,9 +59,9 @@ export const getSellerOrders = async (params?: {
     return await orderService.getSellerOrders(params);
 };
 
-// Update order status 
-export const updateOrderStatus = async (orderId: string, status: string) => {
-    const result = await orderService.updateOrderStatus(orderId, status);
+// Update order item status 
+export const updateOrderItemStatus = async (orderItemId: string, status: string) => {
+    const result = await orderService.updateOrderItemStatus(orderItemId, status);
     if (result.success) {
         updateTag("orders");
         updateTag("seller-orders");

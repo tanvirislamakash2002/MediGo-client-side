@@ -3,9 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Pagination } from "@/components/ui/pagination";
-import { getSellerOrders, updateOrderStatus } from "@/actions/order.action";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { getSellerOrders } from "@/actions/order.action";
 import { Package } from "lucide-react";
 import { toast } from "sonner";
 import { OrdersSkeleton } from "./OrdersSkeleton";
@@ -23,6 +21,7 @@ interface Order {
         quantity: number;
         imageUrl: string | null;
         manufacturer: string;
+        status: string;
     }[];
     customer: {
         id: string;
@@ -63,10 +62,6 @@ export function OrdersList({
     const [orders, setOrders] = useState<Order[]>(initialOrders);
     const [pagination, setPagination] = useState(initialPagination);
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
-    const [selectAll, setSelectAll] = useState(false);
-    const [bulkStatus, setBulkStatus] = useState("");
-    const [isUpdating, setIsUpdating] = useState(false);
 
     const currentPage = parseInt(searchParams.get("page") || initialPage.toString());
 
@@ -90,75 +85,6 @@ export function OrdersList({
 
         fetchOrders();
     }, [searchParams, initialStatus, initialSearch, initialSort]);
-
-    const handleSelectAll = (checked: boolean) => {
-        if (checked) {
-            const allIds = new Set(orders.map(order => order.id));
-            setSelectedOrders(allIds);
-        } else {
-            setSelectedOrders(new Set());
-        }
-        setSelectAll(checked);
-    };
-
-    const handleSelectOrder = (orderId: string, checked: boolean) => {
-        const newSelected = new Set(selectedOrders);
-        if (checked) {
-            newSelected.add(orderId);
-        } else {
-            newSelected.delete(orderId);
-        }
-        setSelectedOrders(newSelected);
-        setSelectAll(newSelected.size === orders.length);
-    };
-
-    const handleBulkStatusUpdate = async () => {
-        if (!bulkStatus) {
-            toast.error("Please select a status to apply");
-            return;
-        }
-
-        if (selectedOrders.size === 0) {
-            toast.error("No orders selected");
-            return;
-        }
-
-        setIsUpdating(true);
-        const toastId = toast.loading(`Updating ${selectedOrders.size} orders to ${bulkStatus}...`);
-
-        try {
-            // Update each selected order
-            const updatePromises = Array.from(selectedOrders).map(orderId =>
-                updateOrderStatus(orderId, bulkStatus)
-            );
-
-            const results = await Promise.all(updatePromises);
-            const errors = results.filter(r => !r.success);
-
-            if (errors.length > 0) {
-                toast.error(`${errors.length} orders failed to update`, { id: toastId });
-            } else {
-                toast.success(`${selectedOrders.size} orders updated to ${bulkStatus}`, { id: toastId });
-            }
-
-            // Clear selections and refresh
-            setSelectedOrders(new Set());
-            setSelectAll(false);
-            setBulkStatus("");
-            router.refresh();
-
-        } catch (error) {
-            toast.error("Failed to update orders", { id: toastId });
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleClearSelection = () => {
-        setSelectedOrders(new Set());
-        setSelectAll(false);
-        setBulkStatus("");
-    };
 
     const handlePageChange = (page: number) => {
         const params = new URLSearchParams(searchParams);
@@ -185,69 +111,42 @@ export function OrdersList({
             </div>
         );
     }
+
+    const handleStatusUpdate = () => {
+        // Refresh the orders list when status is updated
+        const fetchOrders = async () => {
+            const status = searchParams.get("status") || initialStatus;
+            const search = searchParams.get("search") || initialSearch;
+            const sort = searchParams.get("sort") || initialSort;
+            const page = parseInt(searchParams.get("page") || "1");
+            const fromDate = searchParams.get("fromDate") || undefined;
+            const toDate = searchParams.get("toDate") || undefined;
+
+            const result = await getSellerOrders({ status, search, sort, page, fromDate, toDate });
+            if (result.success) {
+                setOrders(result.data?.orders || []);
+                setPagination(result.data?.pagination);
+            }
+        };
+
+        fetchOrders();
+    };
+// console.log(orders);
     return (
         <>
-            {/* Bulk Actions Bar */}
-            {selectedOrders.size > 0 && (
-                <div className="bg-muted/50 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                            {selectedOrders.size} order{selectedOrders.size !== 1 ? 's' : ''} selected
-                        </span>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleClearSelection}
-                            className="text-muted-foreground"
-                        >
-                            Clear
-                        </Button>
-                    </div>
-
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <select
-                            value={bulkStatus}
-                            onChange={(e) => setBulkStatus(e.target.value)}
-                            className="px-3 py-1.5 text-sm border rounded-md bg-background flex-1 sm:flex-initial"
-                        >
-                            <option value="">Select status...</option>
-                            <option value="PROCESSING">Processing</option>
-                            <option value="SHIPPED">Shipped</option>
-                            <option value="DELIVERED">Delivered</option>
-                        </select>
-                        <Button
-                            onClick={handleBulkStatusUpdate}
-                            disabled={!bulkStatus || isUpdating}
-                            size="sm"
-                        >
-                            {isUpdating ? "Updating..." : "Apply"}
-                        </Button>
-                    </div>
-                </div>
-            )}
-
             {/* Orders List */}
             <div className="space-y-4">
-                {/* Header with Select All */}
-                <div className="flex items-center gap-4 pb-2 border-b">
-                    <Checkbox
-                        checked={selectAll}
-                        onCheckedChange={handleSelectAll}
-                    />
-                    <span className="text-sm font-medium">Select All</span>
-                </div>
-
                 {orders.map((order) => (
                     <OrderCard
                         key={order.id}
                         order={order}
-                        isSelected={selectedOrders.has(order.id)}
-                        onSelect={(checked) => handleSelectOrder(order.id, checked)}
                         onViewDetails={() => router.push(`/seller/orders/${order.id}`)}
+                        onStatusUpdate={handleStatusUpdate}
                     />
                 ))}
             </div>
 
+            {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
                 <div className="mt-8">
                     <Pagination
@@ -257,7 +156,6 @@ export function OrdersList({
                     />
                 </div>
             )}
-
         </>
     );
 }

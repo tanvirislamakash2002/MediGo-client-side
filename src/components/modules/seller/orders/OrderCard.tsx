@@ -4,26 +4,31 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, Package, Truck, CheckCircle, XCircle, Clock, ChevronDown, ChevronUp, Pill } from "lucide-react";
+import { 
+    Eye, Package, Truck, CheckCircle, XCircle, Clock, 
+    ChevronDown, ChevronUp, AlertCircle 
+} from "lucide-react";
 import Image from "next/image";
-import { updateOrderStatus } from "@/actions/order.action";
+import { updateOrderItemStatus } from "@/actions/order.action";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { ConfirmModal } from "./ConfirmModal";
+
+interface OrderItem {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    imageUrl: string | null;
+    manufacturer: string;
+    status: string;
+}
 
 interface Order {
     id: string;
     createdAt: string;
-    status: string;
     totalAmount: number;
-    items: {
-        id: string;
-        name: string;
-        price: number;
-        quantity: number;
-        imageUrl: string | null;
-        manufacturer: string;
-    }[];
+    items: OrderItem[];
     customer: {
         id: string;
         name: string;
@@ -38,25 +43,24 @@ interface Order {
 
 interface OrderCardProps {
     order: Order;
-    isSelected: boolean;
-    onSelect: (checked: boolean) => void;
     onViewDetails: () => void;
+    onStatusUpdate?: () => void;
 }
 
 const getStatusBadge = (status: string) => {
     switch (status) {
         case "PLACED":
-            return { variant: "default" as const, icon: Clock, label: "Pending", color: "bg-blue-500" };
+            return { icon: Clock, label: "Placed", color: "bg-blue-500" };
         case "PROCESSING":
-            return { variant: "secondary" as const, icon: Package, label: "Processing", color: "bg-yellow-500" };
+            return { icon: Package, label: "Processing", color: "bg-yellow-500" };
         case "SHIPPED":
-            return { variant: "secondary" as const, icon: Truck, label: "Shipped", color: "bg-purple-500" };
+            return { icon: Truck, label: "Shipped", color: "bg-purple-500" };
         case "DELIVERED":
-            return { variant: "default" as const, icon: CheckCircle, label: "Delivered", color: "bg-green-500" };
+            return { icon: CheckCircle, label: "Delivered", color: "bg-green-500" };
         case "CANCELLED":
-            return { variant: "destructive" as const, icon: XCircle, label: "Cancelled", color: "bg-red-500" };
+            return { icon: XCircle, label: "Cancelled", color: "bg-red-500" };
         default:
-            return { variant: "default" as const, icon: Clock, label: status, color: "bg-gray-500" };
+            return { icon: Clock, label: status, color: "bg-gray-500" };
     }
 };
 
@@ -76,80 +80,146 @@ const isValidUrl = (url: string | null) => {
     catch { return false; }
 };
 
-// Get next available status options based on current status
 const getNextStatusOptions = (currentStatus: string) => {
     switch (currentStatus) {
         case "PLACED":
-            return [
-                { value: "PROCESSING", label: "Processing" }
-            ];
+            return [{ value: "PROCESSING", label: "Processing" }];
         case "PROCESSING":
-            return [
-                { value: "SHIPPED", label: "Shipped" }
-            ];
+            return [{ value: "SHIPPED", label: "Shipped" }];
         case "SHIPPED":
-            return [
-                { value: "DELIVERED", label: "Delivered" }
-            ];
+            return [{ value: "DELIVERED", label: "Delivered" }];
         default:
             return [];
     }
 };
 
-export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderCardProps) {
+const areAllItemsSameStatus = (items: OrderItem[]): boolean => {
+    if (items.length === 0) return true;
+    const firstStatus = items[0].status;
+    return items.every(item => item.status === firstStatus);
+};
+
+const getUniqueStatuses = (items: OrderItem[]): string[] => {
+    return [...new Set(items.map(item => item.status))];
+};
+
+export function OrderCard({ order, onViewDetails, onStatusUpdate }: OrderCardProps) {
     const router = useRouter();
     const [expanded, setExpanded] = useState(false);
-    const [updating, setUpdating] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState("");
-    const status = getStatusBadge(order.status);
-    const StatusIcon = status.icon;
+    const [localItems, setLocalItems] = useState<OrderItem[]>(order.items);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
     
-    const canUpdateStatus = order.status !== "DELIVERED" && order.status !== "CANCELLED";
-    const nextStatusOptions = getNextStatusOptions(order.status);
+    const allSameStatus = areAllItemsSameStatus(localItems);
+    const uniqueStatuses = getUniqueStatuses(localItems);
+    
+    let displayStatus = localItems[0]?.status || "PLACED";
+    let isMixedStatus = false;
+    
+    if (!allSameStatus) {
+        isMixedStatus = true;
+        const statusPriority = ["PLACED", "PROCESSING", "SHIPPED", "DELIVERED"];
+        const highestPriority = statusPriority.find(status => uniqueStatuses.includes(status));
+        if (highestPriority) displayStatus = highestPriority;
+        else if (uniqueStatuses.includes("CANCELLED")) displayStatus = "CANCELLED";
+    }
+    
+    const statusBadge = getStatusBadge(displayStatus);
+    const StatusIcon = statusBadge.icon;
+    const canUpdate = displayStatus !== "DELIVERED" && displayStatus !== "CANCELLED";
+    const nextOptions = getNextStatusOptions(displayStatus);
 
-    const handleStatusUpdate = async () => {
+    const handleBulkStatusUpdate = async () => {
         if (!selectedStatus) {
-            toast.error("Please select a status to update");
+            toast.error("Please select a status to apply");
             return;
         }
-        setUpdating(true);
+
+        setShowConfirmModal(false);
+        setIsUpdating(true);
         const toastId = toast.loading(`Updating order #${order.id.slice(0, 8).toUpperCase()} to ${selectedStatus}...`);
-        
+
         try {
-            const result = await updateOrderStatus(order.id, selectedStatus);
-            if (!result.success) {
-                toast.error(result.message, { id: toastId });
+            const updatePromises = localItems.map(item =>
+                updateOrderItemStatus(item.id, selectedStatus)
+            );
+
+            const results = await Promise.all(updatePromises);
+            const errors = results.filter(r => !r.success);
+            const successfulUpdates = results.filter(r => r.success);
+
+            if (errors.length > 0) {
+                toast.error(`${errors.length} item(s) failed to update`, { id: toastId });
+                
+                const updatedItems = localItems.map(item => {
+                    const successResult = successfulUpdates.find(r => r.data?.id === item.id);
+                    if (successResult) {
+                        return { ...item, status: selectedStatus };
+                    }
+                    return item;
+                });
+                setLocalItems(updatedItems);
             } else {
-                toast.success(`Order status updated to ${selectedStatus}`, { id: toastId });
-                // Refresh the page to show updated status
+                toast.success(`${localItems.length} item(s) updated to ${selectedStatus}`, { id: toastId });
+                setLocalItems(prev => prev.map(item => ({ ...item, status: selectedStatus })));
+                
+                if (onStatusUpdate) {
+                    onStatusUpdate();
+                }
+                
                 router.refresh();
             }
+
+            setSelectedStatus("");
         } catch (error) {
             toast.error("Failed to update order status", { id: toastId });
         } finally {
-            setUpdating(false);
-            setSelectedStatus("");
+            setIsUpdating(false);
         }
     };
 
+    const getStatusBadgeForItem = (status: string) => {
+        const badge = getStatusBadge(status);
+        return (
+            <Badge className={`${badge.color} text-white text-xs`}>
+                <badge.icon className="h-2 w-2 mr-1" />
+                {badge.label}
+            </Badge>
+        );
+    };
+
+    const selectedStatusLabel = nextOptions.find(opt => opt.value === selectedStatus)?.label || selectedStatus;
+
     return (
-        <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4 sm:p-6">
-                <div className="flex items-start gap-4">
-                    <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={onSelect}
-                        className="mt-1"
-                    />
-                    
+        <>
+            <ConfirmModal
+                open={showConfirmModal}
+                onOpenChange={setShowConfirmModal}
+                onConfirm={handleBulkStatusUpdate}
+                title="Confirm Status Update"
+                description={`Are you sure you want to update ${localItems.length} item(s) to ${selectedStatusLabel?.toLowerCase()}? This action can be reverted.`}
+                confirmText={`Update to ${selectedStatusLabel || "New Status"}`}
+                cancelText="Cancel"
+                isLoading={isUpdating}
+            />
+
+            <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 sm:p-6">
                     <div className="flex-1">
                         {/* Header */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b">
-                            <div className="flex items-center gap-3">
-                                <Badge className={`${status.color} text-white`}>
+                            <div className="flex items-center gap-3 flex-wrap">
+                                <Badge className={`${statusBadge.color} text-white`}>
                                     <StatusIcon className="h-3 w-3 mr-1" />
-                                    {status.label}
+                                    {statusBadge.label}
                                 </Badge>
+                                {isMixedStatus && (
+                                    <Badge variant="outline" className="text-xs gap-1">
+                                        <AlertCircle className="h-3 w-3" />
+                                        Mixed Status
+                                    </Badge>
+                                )}
                                 <span className="text-sm font-mono text-muted-foreground">
                                     #{order.id.slice(0, 8).toUpperCase()}
                                 </span>
@@ -180,40 +250,40 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
                         <div className="mt-3">
                             <div className="flex items-center gap-3">
                                 <div className="flex -space-x-2">
-                                    {order.items.slice(0, 3).map((item, idx) => (
+                                    {localItems.slice(0, 3).map((item, idx) => (
                                         <div key={item.id} className="w-8 h-8 bg-muted rounded-full border-2 border-background overflow-hidden">
                                             {isValidUrl(item.imageUrl) ? (
                                                 <Image src={item.imageUrl!} alt={item.name} width={32} height={32} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="flex items-center justify-center h-full text-sm"><Pill size={45}/></div>
+                                                <div className="flex items-center justify-center h-full text-sm">💊</div>
                                             )}
                                         </div>
                                     ))}
                                 </div>
                                 <p className="text-sm">
-                                    {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                                    {localItems.length} item{localItems.length !== 1 ? 's' : ''}
                                 </p>
                             </div>
                         </div>
                         
                         {/* Actions */}
                         <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <Button variant="ghost" size="sm" onClick={onViewDetails}>
                                     <Eye className="h-4 w-4 mr-1" />
                                     View Details
                                 </Button>
                                 
-                                {canUpdateStatus && nextStatusOptions.length > 0 && (
+                                {canUpdate && nextOptions.length > 0 && !isMixedStatus && (
                                     <div className="flex items-center gap-2">
                                         <select
                                             value={selectedStatus}
                                             onChange={(e) => setSelectedStatus(e.target.value)}
                                             className="px-3 py-1.5 text-sm border rounded-md bg-background"
-                                            disabled={updating}
+                                            disabled={isUpdating}
                                         >
                                             <option value="">Update Status</option>
-                                            {nextStatusOptions.map((option) => (
+                                            {nextOptions.map((option) => (
                                                 <option key={option.value} value={option.value}>
                                                     Mark as {option.label}
                                                 </option>
@@ -222,15 +292,22 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
                                         <Button
                                             variant="default"
                                             size="sm"
-                                            onClick={handleStatusUpdate}
-                                            disabled={!selectedStatus || updating}
+                                            onClick={() => setShowConfirmModal(true)}
+                                            disabled={!selectedStatus || isUpdating}
                                             className="h-8"
                                         >
-                                            {updating ? "Updating..." : "Apply"}
+                                            {isUpdating ? "Updating..." : "Apply"}
                                         </Button>
                                     </div>
                                 )}
+                                
+                                {isMixedStatus && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Update individual items below
+                                    </p>
+                                )}
                             </div>
+                            
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -242,20 +319,19 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
                             </Button>
                         </div>
                         
-                        {/* Expanded Details */}
+                        {/* Expanded Details - Items List */}
                         {expanded && (
                             <div className="mt-4 pt-4 border-t space-y-4">
-                                {/* Items List */}
                                 <div>
                                     <p className="text-sm font-medium mb-2">Items</p>
                                     <div className="space-y-2">
-                                        {order.items.map((item) => (
+                                        {localItems.map((item) => (
                                             <div key={item.id} className="flex items-center gap-3 py-2 border-b last:border-0">
                                                 <div className="w-10 h-10 bg-muted rounded overflow-hidden flex-shrink-0">
                                                     {isValidUrl(item.imageUrl) ? (
                                                         <Image src={item.imageUrl!} alt={item.name} width={40} height={40} className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <div className="flex items-center justify-center h-full text-lg"><Pill size={45}/></div>
+                                                        <div className="flex items-center justify-center h-full text-lg">💊</div>
                                                     )}
                                                 </div>
                                                 <div className="flex-1">
@@ -265,6 +341,9 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
                                                 <div className="text-right">
                                                     <p className="text-sm">${item.price.toFixed(2)}</p>
                                                     <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                                                </div>
+                                                <div className="flex-shrink-0">
+                                                    {getStatusBadgeForItem(item.status)}
                                                 </div>
                                             </div>
                                         ))}
@@ -285,8 +364,8 @@ export function OrderCard({ order, isSelected, onSelect, onViewDetails }: OrderC
                             </div>
                         )}
                     </div>
-                </div>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+        </>
     );
 }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Printer, MessageSquare, Package, Truck, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
-import { updateOrderStatus } from "@/actions/order.action";
+import { updateOrderItemStatus } from "@/actions/order.action";
 
 interface Order {
     id: string;
@@ -43,7 +43,7 @@ export function OrderActions({ order }: OrderActionsProps) {
         const toastId = toast.loading(`Updating order to ${nextStatus.label}...`);
         
         try {
-            const result = await updateOrderStatus(order.id, nextStatus.value);
+            const result = await updateOrderItemStatus(order.id, nextStatus.value);
             if (!result.success) {
                 toast.error(result.message, { id: toastId });
             } else {
