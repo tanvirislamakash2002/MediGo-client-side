@@ -2,14 +2,14 @@ import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getOrderById } from "@/actions/order.action";
-import { OrderHeader } from "@/components/modules/orders/details/OrderHeader";
-import { OrderTimeline } from "@/components/modules/orders/details/OrderTimeline";
-import { OrderItems } from "@/components/modules/orders/details/OrderItems";
-import { ShippingInfo } from "@/components/modules/orders/details/ShippingInfo";
-import { OrderSummary } from "@/components/modules/orders/details/OrderSummary";
-import { OrderActions } from "@/components/modules/orders/details/OrderActions";
-import { ReviewSection } from "@/components/modules/orders/details/ReviewSection";
-import { OrderSkeleton } from "@/components/modules/orders/details/OrderSkeleton";
+import { OrderHeader } from "@/components/modules/customer/orders/details/OrderHeader";
+import { OrderTimeline } from "@/components/modules/customer/orders/details/OrderTimeline";
+import { OrderItems } from "@/components/modules/customer/orders/details/OrderItems";
+import { ShippingInfo } from "@/components/modules/customer/orders/details/ShippingInfo";
+import { OrderSummary } from "@/components/modules/customer/orders/details/OrderSummary";
+import { OrderActions } from "@/components/modules/customer/orders/details/OrderActions";
+import { ReviewSection } from "@/components/modules/customer/orders/details/ReviewSection";
+import { OrderSkeleton } from "@/components/modules/customer/orders/details/OrderSkeleton";
 import { getUserReviewsForOrder } from "@/actions/review.action";
 
 

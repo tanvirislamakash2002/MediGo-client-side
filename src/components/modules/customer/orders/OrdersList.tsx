@@ -26,6 +26,7 @@ interface Order {
         imageUrl: string | null;
         manufacturer: string;
         requiresPrescription: boolean;
+        status: string;
     }[];
     shippingAddress: string;
     phone: string;
@@ -90,7 +91,6 @@ export function OrdersList({
     };
 
     const handleReorder = async (order: Order) => {
-        // console.log(order);
         // Prevent double clicks
         if (reorderingOrderId === order.id) return;
 
@@ -105,7 +105,6 @@ export function OrdersList({
 
         try {
             const itemsToAdd = order.items.filter(item => item);
-// console.log(itemsToAdd);
             if (itemsToAdd.length === 0) {
                 toast.error("No items available to reorder", { id: toastId });
                 return;
