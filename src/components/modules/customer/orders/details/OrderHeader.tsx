@@ -5,33 +5,48 @@ import { Button } from "@/components/ui/button";
 import { Copy, Printer } from "lucide-react";
 import { toast } from "sonner";
 
+interface OrderItem {
+    id: string;
+    status: string;
+}
+
 interface Order {
     id: string;
     createdAt: string;
     status: string;
     totalAmount: number;
     customerId: string;
+    items: OrderItem[];
 }
 
 interface OrderHeaderProps {
     order: Order;
 }
 
-const getStatusBadge = (status: string) => {
-    switch (status) {
-        case "PLACED":
-            return { label: "Order Placed", color: "bg-blue-500" };
-        case "PROCESSING":
-            return { label: "Processing", color: "bg-yellow-500" };
-        case "SHIPPED":
-            return { label: "Shipped", color: "bg-purple-500" };
-        case "DELIVERED":
-            return { label: "Delivered", color: "bg-green-500" };
-        case "CANCELLED":
-            return { label: "Cancelled", color: "bg-red-500" };
-        default:
-            return { label: status, color: "bg-gray-500" };
+// Calculate accurate status from items
+const getAccurateStatus = (items: OrderItem[]): { label: string; color: string; variant: string } => {
+    if (!items.length) return { label: "Order Placed", color: "bg-blue-500", variant: "default" };
+    
+    const statuses = items.map(i => i.status);
+    
+    if (statuses.every(s => s === "DELIVERED")) {
+        return { label: "Delivered", color: "bg-green-500", variant: "success" };
     }
+    if (statuses.every(s => s === "CANCELLED")) {
+        return { label: "Cancelled", color: "bg-red-500", variant: "destructive" };
+    }
+    if (statuses.some(s => s === "DELIVERED")) {
+        const delivered = statuses.filter(s => s === "DELIVERED").length;
+        return { label: `${delivered}/${items.length} Delivered`, color: "bg-green-500", variant: "partial" };
+    }
+    if (statuses.some(s => s === "SHIPPED")) {
+        return { label: "Partially Shipped", color: "bg-purple-500", variant: "warning" };
+    }
+    if (statuses.some(s => s === "PROCESSING")) {
+        return { label: "Processing", color: "bg-yellow-500", variant: "warning" };
+    }
+    
+    return { label: "Order Placed", color: "bg-blue-500", variant: "default" };
 };
 
 const formatDate = (dateString: string) => {
@@ -45,7 +60,7 @@ const formatDate = (dateString: string) => {
 };
 
 export function OrderHeader({ order }: OrderHeaderProps) {
-    const status = getStatusBadge(order.status);
+    const status = getAccurateStatus(order.items || []);
     const orderIdShort = order.id.slice(0, 8).toUpperCase();
 
     const handleCopyId = () => {

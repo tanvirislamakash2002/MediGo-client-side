@@ -25,10 +25,18 @@ import {
 } from "@/components/ui/alert-dialog";
 import { addToCart } from "@/actions/cart.action";
 
+interface OrderItem {
+    id: string;
+    name?: string;
+    medicineId?: string;
+    quantity: number;
+    status: string;
+}
+
 interface Order {
     id: string;
     status: string;
-    items?: Array<{ id: string; name?: string; medicineId?: string; quantity: number }>;
+    items?: OrderItem[];
 }
 
 interface OrderActionsProps {
@@ -40,7 +48,7 @@ export function OrderActions({ order }: OrderActionsProps) {
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
     const [isReordering, setIsReordering] = useState(false);
-    // Safe checks
+    
     if (!order) {
         return (
             <Card>
@@ -54,10 +62,22 @@ export function OrderActions({ order }: OrderActionsProps) {
         );
     }
 
-    const canCancel = order.status === "PLACED" || order.status === "PROCESSING";
-    const canReorder = order.status === "DELIVERED";
-    const canTrack = order.status === "SHIPPED";
     const items = order.items || [];
+    
+    // Check if ALL items are cancellable
+    const cancellableItems = items.filter(
+        item => item.status === "PLACED" || item.status === "PROCESSING"
+    );
+    const canCancel = items.length > 0 && cancellableItems.length === items.length;
+    
+    // Check if ANY items are delivered (for reorder)
+    const canReorder = items.some(item => item.status === "DELIVERED");
+    const canTrack = items.some(item => item.status === "SHIPPED");
+    
+    // Get non-cancellable items for warning message
+    const nonCancellableItems = items.filter(
+        item => item.status !== "PLACED" && item.status !== "PROCESSING"
+    );
 
     const handleCancel = async () => {
         setIsCancelling(true);
@@ -84,22 +104,19 @@ export function OrderActions({ order }: OrderActionsProps) {
         const toastId = toast.loading("Adding items to cart...");
 
         try {
-            // Filter out items (you may not have stock info, so just add all)
-            const itemsToAdd = items.filter(item => item.medicineId);
+            const itemsToAdd = items.filter(item => item.medicineId && item.status === "DELIVERED");
 
             if (itemsToAdd.length === 0) {
                 toast.error("No items available to reorder", { id: toastId });
                 return;
             }
 
-            // Add each item to cart with original quantity
             for (const item of itemsToAdd) {
                 await addToCart(item.medicineId as string, item.quantity);
             }
 
             toast.success(`${itemsToAdd.length} items added to cart!`, { id: toastId });
 
-            // Show action buttons
             setTimeout(() => {
                 toast.info("What would you like to do?", {
                     action: {
@@ -116,8 +133,6 @@ export function OrderActions({ order }: OrderActionsProps) {
         } finally {
             setIsReordering(false);
         }
-        // toast.success("Items added to cart");
-        // router.push("/cart");
     };
 
     const handleTrackOrder = () => {
@@ -131,6 +146,7 @@ export function OrderActions({ order }: OrderActionsProps) {
     const handleDownloadInvoice = () => {
         toast.success("Invoice downloaded");
     };
+    
     return (
         <>
             <Card>
@@ -181,15 +197,6 @@ export function OrderActions({ order }: OrderActionsProps) {
                         <MessageSquare className="h-4 w-4 mr-2" />
                         Contact Support
                     </Button>
-
-                    {/* <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={handleDownloadInvoice}
-                    >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download Invoice
-                    </Button> */}
                 </CardContent>
             </Card>
 
@@ -206,7 +213,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                                 <ul className="mt-2 space-y-1">
                                     {items.slice(0, 3).map((item) => (
                                         <li key={item.id} className="text-sm">
-                                            {item.quantity}x {item.name || item.id.slice(0, 8)}
+                                            {item.quantity}x {item.name || item.id.slice(0, 8)} - {item.status}
                                         </li>
                                     ))}
                                     {items.length > 3 && (
