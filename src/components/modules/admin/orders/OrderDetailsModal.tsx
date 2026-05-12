@@ -14,7 +14,7 @@ import {
     MapPin, Phone, Mail, Printer, MessageSquare, User,
     ChevronLeft, ChevronRight
 } from "lucide-react";
-import { updateOrderStatus, cancelOrder, adminUpdateOrderStatus, adminCancelOrder } from "@/actions/order.action";
+import { cancelOrder, adminUpdateOrderStatus, adminCancelOrder } from "@/actions/order.action";
 import { toast } from "sonner";
 import {
     AlertDialog,
@@ -48,6 +48,7 @@ interface Order {
         price: number;
         manufacturer: string;
         imageUrl?: string;
+        status: string;
     }>;
     shippingAddress: string;
     phone: string;
@@ -79,6 +80,73 @@ const getStatusDetails = (status: string) => {
     }
 };
 
+// Calculate accurate order status from items
+const getAccurateOrderStatus = (items: Array<{ status: string }>): { status: string; label: string; color: string; bg: string } => {
+    if (!items.length) {
+        return { status: "PLACED", label: "Placed", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" };
+    }
+
+    const statuses = items.map(i => i.status);
+    const uniqueStatuses = [...new Set(statuses)];
+
+    if (uniqueStatuses.length === 1) {
+        const status = uniqueStatuses[0];
+        switch (status) {
+            case "PLACED": return { status, label: "Placed", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/30" };
+            case "PROCESSING": return { status, label: "Processing", color: "text-yellow-500", bg: "bg-yellow-50 dark:bg-yellow-950/30" };
+            case "SHIPPED": return { status, label: "Shipped", color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/30" };
+            case "DELIVERED": return { status, label: "Delivered", color: "text-green-500", bg: "bg-green-50 dark:bg-green-950/30" };
+            case "CANCELLED": return { status, label: "Cancelled", color: "text-red-500", bg: "bg-red-50 dark:bg-red-950/30" };
+            default: return { status, label: status, color: "text-gray-500", bg: "bg-gray-50" };
+        }
+    }
+
+    // Mixed statuses
+    if (uniqueStatuses.includes("DELIVERED")) {
+        const delivered = statuses.filter(s => s === "DELIVERED").length;
+        return {
+            status: "PARTIALLY_DELIVERED",
+            label: `${delivered}/${items.length} Delivered`,
+            color: "text-green-500",
+            bg: "bg-green-50 dark:bg-green-950/30"
+        };
+    }
+
+    if (uniqueStatuses.includes("SHIPPED")) {
+        return {
+            status: "PARTIALLY_SHIPPED",
+            label: "Partially Shipped",
+            color: "text-purple-500",
+            bg: "bg-purple-50 dark:bg-purple-950/30"
+        };
+    }
+
+    if (uniqueStatuses.includes("PROCESSING")) {
+        return {
+            status: "PARTIALLY_PROCESSING",
+            label: "Partial Processing",
+            color: "text-yellow-500",
+            bg: "bg-yellow-50 dark:bg-yellow-950/30"
+        };
+    }
+
+    if (uniqueStatuses.includes("CANCELLED")) {
+        return {
+            status: "PARTIALLY_CANCELLED",
+            label: "Partially Cancelled",
+            color: "text-red-500",
+            bg: "bg-red-50 dark:bg-red-950/30"
+        };
+    }
+
+    return {
+        status: "MIXED",
+        label: "Mixed Status",
+        color: "text-gray-500",
+        bg: "bg-gray-50"
+    };
+};
+
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
         year: "numeric",
@@ -101,10 +169,13 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
 
     if (!order) return null;
 
-    const status = getStatusDetails(order.status);
-    const StatusIcon = status.icon;
-    const canUpdate = order.status !== "CANCELLED" && order.status !== "DELIVERED";
-    const canCancel = order.status !== "CANCELLED" && order.status !== "DELIVERED";
+    // Calculate accurate status from items
+    const accurateStatus = getAccurateOrderStatus(order.items);
+    const statusDetails = getStatusDetails(accurateStatus.status);
+    const StatusIcon = statusDetails.icon;
+
+    const canUpdate = accurateStatus.status !== "CANCELLED" && accurateStatus.status !== "DELIVERED";
+    const canCancel = accurateStatus.status !== "CANCELLED" && accurateStatus.status !== "DELIVERED";
 
     const statusOptions = [
         { value: "PROCESSING", label: "Processing" },
@@ -169,11 +240,11 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
     const DesktopContent = () => (
         <div className="space-y-6">
             {/* Status Banner - Responsive */}
-            <div className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg ${status.bg}`}>
+            <div className={`flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-lg ${accurateStatus.bg}`}>
                 <div className="flex items-center gap-3">
-                    <StatusIcon className={`h-6 w-6 ${status.color}`} />
+                    <StatusIcon className={`h-6 w-6 ${accurateStatus.color}`} />
                     <div>
-                        <p className="font-semibold">{status.label}</p>
+                        <p className="font-semibold">{accurateStatus.label}</p>
                         <p className="text-sm text-muted-foreground">
                             Order placed on {formatDate(order.createdAt)}
                         </p>
@@ -233,30 +304,38 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
                         </div>
                         <ScrollArea className="max-h-[300px] md:max-h-[400px]">
                             <div className="divide-y">
-                                {order.items.map((item) => (
-                                    <div key={item.id} className="p-4 flex flex-col sm:flex-row sm:justify-between gap-3">
-                                        <div className="flex gap-3 flex-1">
-                                            {/* Add image */}
-                                            {item.imageUrl && (
-                                                <div className="w-12 h-12 bg-muted rounded overflow-hidden flex-shrink-0">
-                                                    <img
-                                                        src={item.imageUrl}
-                                                        alt={item.name}
-                                                        className="w-full h-full object-cover"
-                                                    />
+                                {order.items.map((item) => {
+                                    const itemStatus = getStatusDetails(item.status);
+                                    const ItemIcon = itemStatus.icon;
+
+                                    return (
+                                        <div key={item.id} className="p-4 flex flex-col sm:flex-row sm:justify-between gap-3">
+                                            <div className="flex gap-3 flex-1">
+                                                {item.imageUrl && (
+                                                    <div className="w-12 h-12 bg-muted rounded overflow-hidden flex-shrink-0">
+                                                        <img
+                                                            src={item.imageUrl}
+                                                            alt={item.name}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <p className="font-medium break-words">{item.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{item.manufacturer}</p>
+                                                    <Badge className={`mt-1 text-xs ${itemStatus.bg} ${itemStatus.color}`}>
+                                                        <ItemIcon className="h-2 w-2 mr-1" />
+                                                        {itemStatus.label}
+                                                    </Badge>
                                                 </div>
-                                            )}
-                                            <div>
-                                                <p className="font-medium break-words">{item.name}</p>
-                                                <p className="text-xs text-muted-foreground">{item.manufacturer}</p>
+                                            </div>
+                                            <div className="text-left sm:text-right">
+                                                <p className="text-sm">${item.price.toFixed(2)} × {item.quantity}</p>
+                                                <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
                                             </div>
                                         </div>
-                                        <div className="text-left sm:text-right">
-                                            <p className="text-sm">${item.price.toFixed(2)} × {item.quantity}</p>
-                                            <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </ScrollArea>
                     </div>
@@ -338,11 +417,10 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
                                 <Textarea
                                     placeholder="Add internal note about this order..."
                                     defaultValue={note}
-                                    // onChange={(e) => setNote(e.target.value)}
                                     rows={3}
                                     className="resize-none"
                                 />
-                                <Button variant="outline" size="sm" className="w-full" onClick={()=>toast.info("working on the feature")}>
+                                <Button variant="outline" size="sm" className="w-full" onClick={() => toast.info("working on the feature")}>
                                     Save Note
                                 </Button>
                             </div>
@@ -357,10 +435,10 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
     const MobileContent = () => (
         <div className="space-y-3 p-3">
             {/* Status Banner */}
-            <div className={`flex items-center gap-3 p-4 rounded-lg ${status.bg}`}>
-                <StatusIcon className={`h-6 w-6 ${status.color}`} />
+            <div className={`flex items-center gap-3 p-4 rounded-lg ${accurateStatus.bg}`}>
+                <StatusIcon className={`h-6 w-6 ${accurateStatus.color}`} />
                 <div>
-                    <p className="font-semibold">{status.label}</p>
+                    <p className="font-semibold">{accurateStatus.label}</p>
                     <p className="text-xs text-muted-foreground">
                         {formatDate(order.createdAt)}
                     </p>
@@ -433,7 +511,7 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
                             {canUpdate && (
                                 <div className="space-y-2">
                                     <select
-                                        defaultValue={selectedStatus}
+                                        value={selectedStatus}
                                         onChange={(e) => setSelectedStatus(e.target.value)}
                                         className="w-full px-3 py-2 text-sm border rounded-md bg-background"
                                     >
@@ -562,7 +640,7 @@ export function OrderDetailsModal({ isOpen, order, onClose, onRefresh }: OrderDe
                                     <Input
                                         id="reason"
                                         placeholder="e.g., Out of stock, Customer request"
-                                        defaultValue={cancelReason}
+                                        value={cancelReason}
                                         onChange={(e) => setCancelReason(e.target.value)}
                                     />
                                 </div>

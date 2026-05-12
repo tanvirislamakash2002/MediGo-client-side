@@ -2,26 +2,35 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { 
-    Table, 
-    TableBody, 
-    TableCell, 
-    TableHead, 
-    TableHeader, 
-    TableRow 
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components/ui/pagination";
-import { Eye, Package, Truck, CheckCircle, XCircle, Clock } from "lucide-react";
-import { getAllOrders, updateOrderStatus } from "@/actions/order.action";
+import { Eye, Package, Truck, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import { getAllOrders } from "@/actions/order.action";
 import { toast } from "sonner";
 import { OrdersSkeleton } from "./OrdersSkeleton";
 import { BulkActionsBar } from "./BulkActionsBar";
 import { OrderDetailsModal } from "./OrderDetailsModal";
 
-// Updated Order interface to match OrderDetailsModal requirements
+interface OrderItem {
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+    manufacturer: string;
+    imageUrl?: string;
+    status: string; // Add item status
+}
+
 interface Order {
     id: string;
     createdAt: string;
@@ -34,14 +43,7 @@ interface Order {
         phone: string;
         address?: string;
     };
-    items: Array<{
-        id: string;
-        name: string;
-        quantity: number;
-        price: number;
-        manufacturer: string;
-        imageUrl?: string;
-    }>;
+    items: OrderItem[];
     shippingAddress: string;
     phone: string;
     deliveryInstructions?: string;
@@ -62,6 +64,53 @@ interface OrdersTableProps {
     };
 }
 
+// Calculate accurate order status from items
+const getAccurateOrderStatus = (items: OrderItem[]): { status: string; label: string; color: string; isMixed: boolean } => {
+    if (!items.length) {
+        return { status: "PLACED", label: "Placed", color: "bg-blue-500", isMixed: false };
+    }
+
+    const statuses = items.map(i => i.status);
+    const uniqueStatuses = [...new Set(statuses)];
+
+    if (uniqueStatuses.length === 1) {
+        const status = uniqueStatuses[0];
+        switch (status) {
+            case "PLACED": return { status, label: "Placed", color: "bg-blue-500", isMixed: false };
+            case "PROCESSING": return { status, label: "Processing", color: "bg-yellow-500", isMixed: false };
+            case "SHIPPED": return { status, label: "Shipped", color: "bg-purple-500", isMixed: false };
+            case "DELIVERED": return { status, label: "Delivered", color: "bg-green-500", isMixed: false };
+            case "CANCELLED": return { status, label: "Cancelled", color: "bg-red-500", isMixed: false };
+            default: return { status, label: status, color: "bg-gray-500", isMixed: false };
+        }
+    }
+
+    // Mixed statuses
+    if (uniqueStatuses.includes("CANCELLED") && uniqueStatuses.length === 1) {
+        return { status: "CANCELLED", label: "Cancelled", color: "bg-red-500", isMixed: false };
+    }
+
+    if (uniqueStatuses.includes("DELIVERED")) {
+        const delivered = statuses.filter(s => s === "DELIVERED").length;
+        return {
+            status: "PARTIALLY_DELIVERED",
+            label: `${delivered}/${items.length} Delivered`,
+            color: "bg-green-500",
+            isMixed: true
+        };
+    }
+
+    if (uniqueStatuses.includes("SHIPPED")) {
+        return { status: "PARTIALLY_SHIPPED", label: "Partially Shipped", color: "bg-purple-500", isMixed: true };
+    }
+
+    if (uniqueStatuses.includes("PROCESSING")) {
+        return { status: "PARTIALLY_PROCESSING", label: "Partial Processing", color: "bg-yellow-500", isMixed: true };
+    }
+
+    return { status: "MIXED", label: "Mixed", color: "bg-gray-500", isMixed: true };
+};
+
 const getStatusBadge = (status: string) => {
     switch (status) {
         case "PLACED":
@@ -74,6 +123,12 @@ const getStatusBadge = (status: string) => {
             return { icon: CheckCircle, label: "Delivered", color: "bg-green-500" };
         case "CANCELLED":
             return { icon: XCircle, label: "Cancelled", color: "bg-red-500" };
+        case "PARTIALLY_DELIVERED":
+            return { icon: CheckCircle, label: "Partial Delivery", color: "bg-green-500" };
+        case "PARTIALLY_SHIPPED":
+            return { icon: Truck, label: "Partial Shipment", color: "bg-purple-500" };
+        case "PARTIALLY_PROCESSING":
+            return { icon: Package, label: "Partial Processing", color: "bg-yellow-500" };
         default:
             return { icon: Clock, label: status, color: "bg-gray-500" };
     }
@@ -89,13 +144,13 @@ const formatDate = (dateString: string) => {
     });
 };
 
-export function OrdersTable({ 
-    initialOrders, 
+export function OrdersTable({
+    initialOrders,
     initialPage,
     initialStatus,
     initialSearch,
     initialSort,
-    pagination: initialPagination 
+    pagination: initialPagination
 }: OrdersTableProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -118,7 +173,7 @@ export function OrdersTable({
             const page = parseInt(searchParams.get("page") || "1");
             const fromDate = searchParams.get("fromDate") || undefined;
             const toDate = searchParams.get("toDate") || undefined;
-            
+
             const result = await getAllOrders({ status, search, sort, page, fromDate, toDate });
             if (result.success) {
                 setOrders(result.data?.orders || []);
@@ -165,7 +220,7 @@ export function OrdersTable({
         <>
             {/* Bulk Actions Bar */}
             {selectedOrders.size > 0 && (
-                <BulkActionsBar 
+                <BulkActionsBar
                     selectedCount={selectedOrders.size}
                     selectedIds={Array.from(selectedOrders)}
                     onClear={() => {
@@ -175,7 +230,7 @@ export function OrdersTable({
                     onRefresh={() => router.refresh()}
                 />
             )}
-            
+
             {/* Orders Table */}
             <div className="border rounded-lg overflow-hidden">
                 <Table>
@@ -208,9 +263,10 @@ export function OrdersTable({
                             </TableRow>
                         ) : (
                             orders.map((order) => {
-                                const status = getStatusBadge(order.status);
+                                const accurateStatus = getAccurateOrderStatus(order.items || []);
+                                const status = getStatusBadge(accurateStatus.status);
                                 const StatusIcon = status.icon;
-                                
+
                                 return (
                                     <TableRow key={order.id}>
                                         <TableCell>
@@ -238,10 +294,17 @@ export function OrdersTable({
                                             ${order.totalAmount.toFixed(2)}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge className={`${status.color} text-white`}>
-                                                <StatusIcon className="h-3 w-3 mr-1" />
-                                                {status.label}
-                                            </Badge>
+                                            <div className="flex items-center gap-1">
+                                                <Badge className={`${status.color} text-white`}>
+                                                    <StatusIcon className="h-3 w-3 mr-1" />
+                                                    {status.label}
+                                                </Badge>
+                                                {accurateStatus.isMixed && (
+                                                    <span title="Mixed status - some items have different statuses">
+                                                        <AlertCircle className="h-3 w-3 text-muted-foreground" />
+                                                    </span>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <Button
@@ -263,7 +326,7 @@ export function OrdersTable({
                     </TableBody>
                 </Table>
             </div>
-            
+
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
                 <div className="flex justify-between items-center">
@@ -278,7 +341,7 @@ export function OrdersTable({
                     />
                 </div>
             )}
-            
+
             {/* Order Details Modal */}
             <OrderDetailsModal
                 isOpen={showDetailsModal}
