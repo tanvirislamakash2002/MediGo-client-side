@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Trash2, Edit, ExternalLink, Pill, MessageSquare } from "lucide-react";
+import { Star, Trash2, Edit, ExternalLink, Pill, MessageSquare, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { deleteReview } from "@/actions/review.action";
 import {
@@ -31,6 +31,9 @@ interface Review {
     rating: number;
     comment: string;
     createdAt: string;
+    status?: string;
+    suspendReason?: string | null;
+    suspendedAt?: string | null;
     response?: {
         id: string;
         comment: string;
@@ -55,6 +58,8 @@ export function ReviewCard({ review, onDelete, onUpdate }: ReviewCardProps) {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showEditDialog, setShowEditDialog] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    const isSuspended = review.status === "SUSPENDED";
 
     const handleDelete = async () => {
         setIsDeleting(true);
@@ -88,7 +93,7 @@ export function ReviewCard({ review, onDelete, onUpdate }: ReviewCardProps) {
 
     return (
         <>
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className={`hover:shadow-md transition-shadow ${isSuspended ? "opacity-75 bg-muted/20" : ""}`}>
                 <CardContent className="p-4">
                     <div className="flex gap-4">
                         {/* Product Image */}
@@ -120,61 +125,101 @@ export function ReviewCard({ review, onDelete, onUpdate }: ReviewCardProps) {
                                     </Link>
                                     <div className="flex items-center gap-2 mt-1">
                                         {renderStars(review.rating)}
-                                        <Badge variant="outline" className="text-xs">
-                                            Verified Purchase
-                                        </Badge>
+                                        {!isSuspended && (
+                                            <Badge variant="outline" className="text-xs">
+                                                Verified Purchase
+                                            </Badge>
+                                        )}
+                                        {isSuspended && (
+                                            <Badge variant="destructive" className="text-xs">
+                                                Suspended
+                                            </Badge>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => setShowEditDialog(true)}
-                                        className="h-8 w-8"
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => setShowDeleteDialog(true)}
-                                        className="h-8 w-8 text-destructive hover:text-destructive"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
+                                {!isSuspended && (
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setShowEditDialog(true)}
+                                            className="h-8 w-8"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setShowDeleteDialog(true)}
+                                            className="h-8 w-8 text-destructive hover:text-destructive"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
-                            <p className="text-sm text-muted-foreground mt-2">
-                                {review.comment}
-                            </p>
-                            {/* seller response */}
-                            {review.response && (
-                                <div className="mt-3 p-3 bg-muted/30 rounded-lg border-l-4 border-primary">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <MessageSquare className="h-3 w-3 text-muted-foreground" />
-                                        <p className="text-xs font-medium text-muted-foreground">
-                                            Seller Response
-                                        </p>
-                                        <span className="text-xs text-muted-foreground">
-                                            {formatDistanceToNow(new Date(review.response.createdAt), { addSuffix: true })}
-                                        </span>
+                            {/* Suspended Review Message */}
+                            {isSuspended && review.suspendReason && (
+                                <div className="mt-2 p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
+                                    <div className="flex items-start gap-2">
+                                        <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                                                Review Suspended
+                                            </p>
+                                            <p className="text-sm text-red-700 dark:text-red-400 mt-1">
+                                                {review.suspendReason}
+                                            </p>
+                                            {review.suspendedAt && (
+                                                <p className="text-xs text-red-600 dark:text-red-500 mt-2">
+                                                    Suspended on {new Date(review.suspendedAt).toLocaleDateString()}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <p className="text-sm">
-                                        {review.response.comment}
-                                    </p>
                                 </div>
                             )}
+
+                            {/* Review Comment (only show if not suspended or if you want to show blurred) */}
+                            {!isSuspended && (
+                                <>
+                                    <p className="text-sm text-muted-foreground mt-2">
+                                        {review.comment}
+                                    </p>
+
+                                    {/* Seller Response */}
+                                    {review.response && (
+                                        <div className="mt-3 p-3 bg-muted/30 rounded-lg border-l-4 border-primary">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                                                <p className="text-xs font-medium text-muted-foreground">
+                                                    Seller Response
+                                                </p>
+                                                <span className="text-xs text-muted-foreground">
+                                                    {formatDistanceToNow(new Date(review.response.createdAt), { addSuffix: true })}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm">
+                                                {review.response.comment}
+                                            </p>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
                             <div className="flex items-center justify-between mt-3">
                                 <p className="text-xs text-muted-foreground">
                                     Posted on {new Date(review.createdAt).toLocaleDateString()}
                                 </p>
-                                <Button variant="ghost" size="sm" asChild>
-                                    <Link href={`/shop/${review.medicineId}`}>
-                                        View Product
-                                        <ExternalLink className="h-3 w-3 ml-1" />
-                                    </Link>
-                                </Button>
+                                {!isSuspended && (
+                                    <Button variant="ghost" size="sm" asChild>
+                                        <Link href={`/shop/${review.medicineId}`}>
+                                            View Product
+                                            <ExternalLink className="h-3 w-3 ml-1" />
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -201,12 +246,14 @@ export function ReviewCard({ review, onDelete, onUpdate }: ReviewCardProps) {
             </AlertDialog>
 
             {/* Edit Review Dialog */}
-            <EditReviewDialog
-                open={showEditDialog}
-                onOpenChange={setShowEditDialog}
-                review={review}
-                onUpdate={onUpdate}
-            />
+            {!isSuspended && (
+                <EditReviewDialog
+                    open={showEditDialog}
+                    onOpenChange={setShowEditDialog}
+                    review={review}
+                    onUpdate={onUpdate}
+                />
+            )}
         </>
     );
 }

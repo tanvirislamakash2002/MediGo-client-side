@@ -9,15 +9,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, MessageSquare, CheckCircle, Clock, X, Send, Pill } from "lucide-react";
+import { Star, MessageSquare, CheckCircle, Clock, X, Send, Pill, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { respondToReview } from "@/actions/review.action";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Review {
     id: string;
     rating: number;
     comment: string;
     createdAt: string;
+    status?: string;
+    suspendReason?: string | null;
     customer: {
         id: string;
         name: string;
@@ -53,8 +61,9 @@ export function ReviewCard({ review, onResponseAdded }: ReviewCardProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
+    const isSuspended = review.status === "SUSPENDED";
     const hasResponse = !!review.response;
-    const canRespond = !hasResponse || isEditing;
+    const canRespond = !hasResponse && !isSuspended || (isEditing && !isSuspended);
 
     const handleSubmitResponse = async () => {
         if (!responseText.trim()) {
@@ -108,8 +117,9 @@ export function ReviewCard({ review, onResponseAdded }: ReviewCardProps) {
             .toUpperCase()
             .slice(0, 2);
     };
+
     return (
-        <Card className="hover:shadow-md transition-shadow">
+        <Card className={`hover:shadow-md transition-shadow ${isSuspended ? "opacity-75 bg-muted/20" : ""}`}>
             <CardContent className="p-4">
                 <div className="flex gap-4">
                     {/* Product Image */}
@@ -139,12 +149,29 @@ export function ReviewCard({ review, onResponseAdded }: ReviewCardProps) {
                                 >
                                     {review.medicine.name}
                                 </Link>
-                                <div className="flex items-center gap-2 mt-1">
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
                                     {renderStars(review.rating)}
-                                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                        Verified Purchase
-                                    </Badge>
+                                    {!isSuspended && (
+                                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                            Verified Purchase
+                                        </Badge>
+                                    )}
+                                    {isSuspended && (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <Badge variant="destructive" className="text-xs">
+                                                        <AlertCircle className="h-3 w-3 mr-1" />
+                                                        Suspended
+                                                    </Badge>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p className="max-w-xs">{review.suspendReason || "Review suspended by admin"}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
@@ -162,92 +189,130 @@ export function ReviewCard({ review, onResponseAdded }: ReviewCardProps) {
                             </div>
                         </div>
 
+                        {/* Review Comment */}
                         <p className="text-sm text-muted-foreground mt-2">
                             {review.comment}
                         </p>
 
-                        {/* Response Section */}
-                        {hasResponse && !isEditing && !showResponseForm && (
-                            <div className="mt-3 p-3 bg-muted/30 rounded-lg">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <MessageSquare className="h-3 w-3 text-muted-foreground" />
-                                    <p className="text-xs font-medium">Your Response</p>
-                                    <span className="text-xs text-muted-foreground">
-                                        {formatDate(review.response!.createdAt)}
-                                    </span>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                            setIsEditing(true);
-                                            setShowResponseForm(true);
-                                        }}
-                                        className="h-6 px-2 text-xs ml-auto"
-                                    >
-                                        Edit
-                                    </Button>
-                                </div>
-                                <p className="text-sm">{review.response!.comment}</p>
-                            </div>
-                        )}
-
-                        {/* Response Form */}
-                        {canRespond && showResponseForm && (
-                            <div className="mt-3 space-y-2">
-                                <Textarea
-                                    placeholder="Write your response to this customer..."
-                                    value={responseText}
-                                    onChange={(e) => setResponseText(e.target.value)}
-                                    rows={3}
-                                />
-                                <div className="flex gap-2 justify-end">
-                                    <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() => {
-                                            setShowResponseForm(false);
-                                            setIsEditing(false);
-                                            setResponseText(review.response?.comment || "");
-                                        }}
-                                    >
-                                        <X className="h-3 w-3 mr-1" />
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        onClick={handleSubmitResponse}
-                                        disabled={isSubmitting}
-                                    >
-                                        <Send className="h-3 w-3 mr-1" />
-                                        {isSubmitting ? "Submitting..." : hasResponse ? "Update Response" : "Submit Response"}
-                                    </Button>
+                        {/* Suspension Reason (visible to seller) */}
+                        {isSuspended && review.suspendReason && (
+                            <div className="mt-3 p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
+                                <div className="flex items-start gap-2">
+                                    <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                                    <div>
+                                        <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                                            Review Suspended
+                                        </p>
+                                        <p className="text-sm text-red-700 dark:text-red-400">
+                                            Reason: {review.suspendReason}
+                                        </p>
+                                        <p className="text-xs text-red-600 dark:text-red-500 mt-1">
+                                            This review is not visible to customers. Contact admin for more information.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Action Buttons */}
-                        {!showResponseForm && !hasResponse && (
+                        {/* Response Section - Only show for non-suspended reviews */}
+                        {!isSuspended && (
+                            <>
+                                {hasResponse && !isEditing && !showResponseForm && (
+                                    <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <MessageSquare className="h-3 w-3 text-muted-foreground" />
+                                            <p className="text-xs font-medium">Your Response</p>
+                                            <span className="text-xs text-muted-foreground">
+                                                {formatDate(review.response!.createdAt)}
+                                            </span>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setIsEditing(true);
+                                                    setShowResponseForm(true);
+                                                }}
+                                                className="h-6 px-2 text-xs ml-auto"
+                                            >
+                                                Edit
+                                            </Button>
+                                        </div>
+                                        <p className="text-sm">{review.response!.comment}</p>
+                                    </div>
+                                )}
+
+                                {/* Response Form */}
+                                {canRespond && showResponseForm && (
+                                    <div className="mt-3 space-y-2">
+                                        <Textarea
+                                            placeholder="Write your response to this customer..."
+                                            value={responseText}
+                                            onChange={(e) => setResponseText(e.target.value)}
+                                            rows={3}
+                                        />
+                                        <div className="flex gap-2 justify-end">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setShowResponseForm(false);
+                                                    setIsEditing(false);
+                                                    setResponseText(review.response?.comment || "");
+                                                }}
+                                            >
+                                                <X className="h-3 w-3 mr-1" />
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                onClick={handleSubmitResponse}
+                                                disabled={isSubmitting}
+                                            >
+                                                <Send className="h-3 w-3 mr-1" />
+                                                {isSubmitting ? "Submitting..." : hasResponse ? "Update Response" : "Submit Response"}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Action Buttons */}
+                                {!showResponseForm && !hasResponse && (
+                                    <div className="flex gap-2 mt-3">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => setShowResponseForm(true)}
+                                        >
+                                            <MessageSquare className="h-3 w-3 mr-1" />
+                                            Respond to Review
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => router.push(`/seller/orders`)}
+                                        >
+                                            View Order
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {!showResponseForm && hasResponse && !isEditing && (
+                                    <div className="flex gap-2 mt-2">
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => router.push(`/seller/orders`)}
+                                        >
+                                            View Order
+                                        </Button>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {/* For suspended reviews - only show view order button */}
+                        {isSuspended && (
                             <div className="flex gap-2 mt-3">
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => setShowResponseForm(true)}
-                                >
-                                    <MessageSquare className="h-3 w-3 mr-1" />
-                                    Respond to Review
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => router.push(`/seller/orders`)}
-                                >
-                                    View Order
-                                </Button>
-                            </div>
-                        )}
-
-                        {!showResponseForm && hasResponse && !isEditing && (
-                            <div className="flex gap-2 mt-2">
                                 <Button
                                     size="sm"
                                     variant="ghost"

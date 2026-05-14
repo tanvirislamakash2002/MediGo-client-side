@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Pagination } from "@/components/ui/pagination";
 import { Eye, Package, Shield, Store, CheckCircle, XCircle, MoreHorizontal } from "lucide-react";
 import { getAllUsers, banUser, unbanUser, changeUserRole } from "@/actions/user.action";
@@ -27,6 +27,7 @@ interface User {
     id: string;
     name: string;
     email: string;
+    image: string;
     phone: string | null;
     role: string;
     isActive: boolean;
@@ -102,7 +103,6 @@ export function UsersTable({
     const [selectAll, setSelectAll] = useState(false);
 
     const currentPage = parseInt(searchParams.get("page") || initialPage.toString());
-
     useEffect(() => {
         const fetchUsers = async () => {
             setIsLoading(true);
@@ -253,6 +253,8 @@ export function UsersTable({
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-9 w-9">
+                                                    <AvatarImage src={user.image} alt={user.name} />
+
                                                     <AvatarFallback className="bg-primary/10 text-primary">
                                                         {getInitials(user.name)}
                                                     </AvatarFallback>

@@ -29,7 +29,7 @@ interface Review {
         id: string;
         name: string;
         email: string;
-        image?: string | null;
+        image: string | null;
     };
     medicine: {
         id: string;

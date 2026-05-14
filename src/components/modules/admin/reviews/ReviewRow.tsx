@@ -8,7 +8,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, Eye } from "lucide-react";
 import { updateReviewStatus } from "@/actions/review.action";
 import { toast } from "sonner";
@@ -26,7 +26,7 @@ interface Review {
         id: string;
         name: string;
         email: string;
-        image?: string | null;
+        image: string | null;
     };
     medicine: {
         id: string;
@@ -68,10 +68,10 @@ export function ReviewRow({ review, isSelected, onSelect, onStatusChange }: Revi
 
     const handleApprove = async () => {
         if (review.status === "APPROVED") return;
-        
+
         setIsUpdating(true);
         const toastId = toast.loading("Approving review...");
-        
+
         try {
             const result = await updateReviewStatus(review.id, "APPROVED");
             if (!result.success) {
@@ -91,7 +91,7 @@ export function ReviewRow({ review, isSelected, onSelect, onStatusChange }: Revi
     const handleSuspend = async (suspendReason: string) => {
         setIsUpdating(true);
         const toastId = toast.loading("Suspending review...");
-        
+
         try {
             const result = await updateReviewStatus(review.id, "SUSPENDED", suspendReason);
             if (!result.success) {
@@ -175,6 +175,7 @@ export function ReviewRow({ review, isSelected, onSelect, onStatusChange }: Revi
                 <TableCell>
                     <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
+                            <AvatarImage src={review.customer.image || undefined} alt={review.customer.name} />
                             <AvatarFallback className="text-xs">
                                 {getInitials(review.customer.name)}
                             </AvatarFallback>

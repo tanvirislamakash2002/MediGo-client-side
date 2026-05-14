@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { adminUpdateOrderStatus, updateOrderStatus } from "@/actions/order.action";
+import { adminUpdateOrderStatus } from "@/actions/order.action";
 import { toast } from "sonner";
 
 interface BulkActionsBarProps {
