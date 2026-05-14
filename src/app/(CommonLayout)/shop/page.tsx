@@ -1,11 +1,11 @@
-import { Suspense } from "react";
+// app/(CommonLayout)/shop/page.tsx
 import { getCategories } from "@/actions/category.action";
 import { getMedicines } from "@/actions/medicine.action";
 import { ShopHero } from "@/components/modules/shop/ShopHero";
 import { ShopSidebar } from "@/components/modules/shop/ShopSidebar";
 import { ShopHeader } from "@/components/modules/shop/ShopHeader";
 import { ShopGrid } from "@/components/modules/shop/ShopGrid";
-import { ShopGridSkeleton } from "@/components/modules/shop/ShopGridSkeleton";
+
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
@@ -27,7 +27,6 @@ interface PageProps {
 export default async function ShopPage({ searchParams }: PageProps) {
     const params = await searchParams;
 
-    // Parse search params
     const search = params.search || "";
     const categoryId = params.categoryId || "";
     const minPrice = params.minPrice ? parseFloat(params.minPrice) : undefined;
@@ -41,11 +40,9 @@ export default async function ShopPage({ searchParams }: PageProps) {
     const page = params.page ? parseInt(params.page) : 1;
     const limit = params.limit ? parseInt(params.limit) : 12;
 
-    // Fetch categories for sidebar
     const categoriesResult = await getCategories();
     const categories = !categoriesResult.success ? [] : categoriesResult?.data?.categories;
 
-    // Fetch medicines
     const medicinesResult = await getMedicines({
         search,
         categoryId,
@@ -67,7 +64,6 @@ export default async function ShopPage({ searchParams }: PageProps) {
 
             <div className="container mx-auto px-4 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Sidebar - Server Component */}
                     <aside className="lg:w-80 shrink-0">
                         <ShopSidebar
                             categories={categories}
@@ -80,7 +76,6 @@ export default async function ShopPage({ searchParams }: PageProps) {
                         />
                     </aside>
 
-                    {/* Main Content */}
                     <main className="flex-1">
                         <ShopHeader
                             totalResults={medicinesData?.pagination?.total || 0}
@@ -88,23 +83,20 @@ export default async function ShopPage({ searchParams }: PageProps) {
                             initialSortOrder={sortOrder}
                             initialLimit={limit}
                         />
-
-                        <Suspense fallback={<ShopGridSkeleton limit={limit} />}>
-                            <ShopGrid
-                                initialData={medicinesData}
-                                initialSearch={search}
-                                initialCategoryId={categoryId}
-                                initialMinPrice={minPrice}
-                                initialMaxPrice={maxPrice}
-                                initialManufacturer={manufacturer}
-                                initialRequiresPrescription={requiresPrescription}
-                                initialInStock={inStock}
-                                initialSortBy={sortBy}
-                                initialSortOrder={sortOrder}
-                                initialPage={page}
-                                initialLimit={limit}
-                            />
-                        </Suspense>
+                        <ShopGrid
+                            initialData={medicinesData}
+                            initialSearch={search}
+                            initialCategoryId={categoryId}
+                            initialMinPrice={minPrice}
+                            initialMaxPrice={maxPrice}
+                            initialManufacturer={manufacturer}
+                            initialRequiresPrescription={requiresPrescription}
+                            initialInStock={inStock}
+                            initialSortBy={sortBy}
+                            initialSortOrder={sortOrder}
+                            initialPage={page}
+                            initialLimit={limit}
+                        />
                     </main>
                 </div>
             </div>
