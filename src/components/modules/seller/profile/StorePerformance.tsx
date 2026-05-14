@@ -30,7 +30,7 @@ export function StorePerformance({ performance = {} }: StorePerformanceProps) {
     };
 
     const items = [
-        { label: "Store Rating", value: data.rating > 0 ? `${data.rating.toFixed(1)} ⭐` : "No ratings", icon: Star, color: "text-yellow-500" },
+        { label: "Store Rating", value: data.rating > 0 ? `${data.rating.toFixed(1)}` : "No ratings", icon: Star, color: "text-yellow-500" },
         { label: "Total Reviews", value: data.totalReviews, icon: Star, color: "text-yellow-500" },
         { label: "Total Products", value: data.totalProducts, icon: Package, color: "text-blue-500" },
         { label: "Total Orders", value: data.totalOrders, icon: ShoppingCart, color: "text-green-500" },
@@ -47,9 +47,9 @@ export function StorePerformance({ performance = {} }: StorePerformanceProps) {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Store Performance</CardTitle>
-                <Button variant="ghost" size="sm" asChild>
+                {/* <Button variant="ghost" size="sm" asChild>
                     <Link href="/seller/analytics">View Detailed Analytics →</Link>
-                </Button>
+                </Button> */}
             </CardHeader>
             <CardContent>
                 {hasData ? (

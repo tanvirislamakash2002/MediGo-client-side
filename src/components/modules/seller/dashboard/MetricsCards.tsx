@@ -58,7 +58,7 @@ export function MetricsCards({ stats }: MetricsCardsProps) {
         },
         {
             title: "Avg Rating",
-            value: `${stats.averageRating.value.toFixed(1)} ⭐`,
+            value: `${stats.averageRating.value.toFixed(1)}`,
             change: stats.averageRating.change,
             icon: Star,
             color: "text-yellow-500",

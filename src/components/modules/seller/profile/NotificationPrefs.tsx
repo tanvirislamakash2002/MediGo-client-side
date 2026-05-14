@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Edit, Save, X } from "lucide-react";
+import { Edit, Lightbulb, Save, X } from "lucide-react";
 import { sellerProfile } from "@/actions/profile";
 import { toast } from "sonner";
 
@@ -57,12 +57,12 @@ export function NotificationPrefs({ preferences = {} }: NotificationPrefsProps) 
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Notification Preferences</CardTitle>
-                {!isEditing && (
+                {/* {!isEditing && (
                     <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                     </Button>
-                )}
+                )} */}
             </CardHeader>
             <CardContent className="space-y-6">
                 <div>
@@ -118,7 +118,7 @@ export function NotificationPrefs({ preferences = {} }: NotificationPrefsProps) 
                 </div>
 
                 <div className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg">
-                    <p>💡 Note: SMS notifications require a verified phone number.</p>
+                    <p className="flex"><Lightbulb size={17} className="text-yellow-400 mr-2"/> Note: SMS notifications require a verified phone number.</p>
                 </div>
 
                 {isEditing && (

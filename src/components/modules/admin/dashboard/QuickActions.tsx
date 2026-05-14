@@ -9,7 +9,8 @@ import {
     Package, 
     AlertTriangle, 
     BarChart3, 
-    Settings 
+    Settings, 
+    Star
 } from "lucide-react";
 
 export function QuickActions() {
@@ -19,9 +20,10 @@ export function QuickActions() {
         { label: "Manage Users", icon: Users, href: "/admin/users", color: "bg-blue-500" },
         { label: "View Orders", icon: ShoppingCart, href: "/admin/orders", color: "bg-green-500" },
         { label: "Categories", icon: Package, href: "/admin/categories", color: "bg-purple-500" },
-        { label: "Low Stock", icon: AlertTriangle, href: "/admin/medicines?stock=low", color: "bg-red-500" },
-        { label: "Reports", icon: BarChart3, href: "/admin/reports", color: "bg-orange-500" },
-        { label: "Settings", icon: Settings, href: "/admin/settings", color: "bg-gray-500" },
+        { label: "Reviews", icon: Star, href: "/admin/reviews", color: "bg-orange-500" },
+        // { label: "Low Stock", icon: AlertTriangle, href: "/admin/medicines?stock=low", color: "bg-red-500" },
+        // { label: "Reports", icon: BarChart3, href: "/admin/reports", color: "bg-orange-500" },
+        // { label: "Settings", icon: Settings, href: "/admin/settings", color: "bg-gray-500" },
     ];
 
     return (

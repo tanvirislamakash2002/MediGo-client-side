@@ -108,7 +108,7 @@ export function DangerZone() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                    {/* <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
                             <p className="font-medium">Pause Store</p>
                             <p className="text-xs text-muted-foreground">
@@ -130,7 +130,7 @@ export function DangerZone() {
                         <Button variant="outline" size="sm" onClick={() => setShowCloseDialog(true)}>
                             Close Store
                         </Button>
-                    </div>
+                    </div> */}
 
                     <div className="flex items-center justify-between p-3 border border-destructive/50 rounded-lg bg-destructive/5">
                         <div>

@@ -4,12 +4,13 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface User {
     id: string;
     name: string;
     email: string;
+    image: string;
     role: string;
     isActive: boolean;
     createdAt: string;
@@ -72,6 +73,7 @@ export function RecentUsers({ users }: RecentUsersProps) {
                                     <td className="py-2">
                                         <div className="flex items-center gap-2">
                                             <Avatar className="h-8 w-8">
+                                                <AvatarImage src={user.image} alt={user.name} />
                                                 <AvatarFallback className="bg-primary/10 text-primary text-xs">
                                                     {getInitials(user.name)}
                                                 </AvatarFallback>

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Edit, Save, X, Truck } from "lucide-react";
+import { Edit, Save, X, Truck, Lightbulb } from "lucide-react";
 import { sellerProfile } from "@/actions/profile";
 import { toast } from "sonner";
 
@@ -157,8 +157,8 @@ export function ShippingSettings({ shipping = {} }: ShippingSettingsProps) {
                 </div>
 
                 <div className="mt-2 p-3 bg-muted/30 rounded-lg">
-                    <p className="text-xs text-muted-foreground">
-                        💡 Free shipping applies when order total exceeds ${formData.freeShippingThreshold}.
+                    <p className="text-xs text-muted-foreground flex">
+                        <Lightbulb className="text-yellow-400 mr-2"/> Free shipping applies when order total exceeds ${formData.freeShippingThreshold}.
                         Standard shipping fee of ${formData.shippingFee} applies to orders below this amount.
                     </p>
                 </div>

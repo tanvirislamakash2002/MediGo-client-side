@@ -79,7 +79,7 @@ export function DangerZone() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {/* Export Data */}
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                    {/* <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
                             <p className="font-medium">Export Account Data</p>
                             <p className="text-xs text-muted-foreground">
@@ -90,7 +90,7 @@ export function DangerZone() {
                             <Download className="h-4 w-4 mr-2" />
                             Export
                         </Button>
-                    </div>
+                    </div> */}
 
                     {/* Delete Account */}
                     <div className="flex items-center justify-between p-3 border border-destructive/50 rounded-lg bg-destructive/5">

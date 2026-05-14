@@ -1,8 +1,6 @@
-import { Suspense } from "react";
 import { getAllCategories } from "@/actions/category.action";
 import { CategoriesHeader } from "@/components/modules/categories/CategoriesHeader";
 import { CategoryGrid } from "@/components/modules/categories/CategoryGrid";
-import { CategorySkeleton } from "@/components/modules/categories/CategorySkeleton";
 import { CategoryBanner } from "@/components/modules/categories/CategoryBanner";
 import { CategoryFAQ } from "@/components/modules/categories/CategoryFAQ";
 
@@ -29,9 +27,7 @@ export default async function CategoriesPage() {
         <main className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
                 <CategoriesHeader />
-                <Suspense fallback={<CategorySkeleton />}>
-                    <CategoryGrid categories={categories} pagination={pagination} />
-                </Suspense>
+                <CategoryGrid categories={categories} pagination={pagination} />
                 <CategoryBanner />
                 <CategoryFAQ />
             </div>

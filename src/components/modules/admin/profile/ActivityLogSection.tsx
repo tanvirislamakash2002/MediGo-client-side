@@ -62,10 +62,10 @@ export function ActivityLogSection({ logs }: ActivityLogSectionProps) {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Recent Activity</CardTitle>
-                <Button variant="outline" size="sm" onClick={handleExport}>
+                {/* <Button variant="outline" size="sm" onClick={handleExport}>
                     <Download className="h-4 w-4 mr-2" />
                     Export
-                </Button>
+                </Button> */}
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Filters */}

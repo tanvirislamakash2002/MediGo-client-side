@@ -60,7 +60,7 @@ export function DashboardHeader({ adminName, lastLogin }: DashboardHeaderProps) 
                 )}
             </div>
             <div className="flex items-center gap-2">
-                <DropdownMenu>
+                {/* <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="gap-2">
                             <Calendar className="h-4 w-4" />
@@ -78,7 +78,7 @@ export function DashboardHeader({ adminName, lastLogin }: DashboardHeaderProps) 
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> */}
                 <Button
                     variant="outline"
                     size="sm"

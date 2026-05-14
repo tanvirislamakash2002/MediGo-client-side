@@ -34,7 +34,6 @@ export default async function AdminDashboardPage({ searchParams }: PageProps) {
     
     const result = await getDashboardStats({ range });
     const stats = !result.success ? null : result.data;
-    
     return (
         <div className="space-y-6">
             <DashboardHeader 

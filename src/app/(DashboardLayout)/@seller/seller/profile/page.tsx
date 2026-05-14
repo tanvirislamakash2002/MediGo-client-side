@@ -42,7 +42,6 @@ export default async function SellerProfilePage() {
     } : null;
     
    
-    
     return (
         <div className="space-y-6">
             <ProfileHeader sellerName={session.user.name} />
@@ -55,7 +54,7 @@ export default async function SellerProfilePage() {
                             <StoreInfo store={settingsWithDefaults} />
                             <PersonalInfo profile={profile} />
                             <BusinessHours hours={settingsWithDefaults.businessHours} />
-                            <DocumentVerification documents={settingsWithDefaults.documents} />
+                            {/* <DocumentVerification documents={settingsWithDefaults.documents} /> */}
                         </div>
                         
                         {/* Right Column */}

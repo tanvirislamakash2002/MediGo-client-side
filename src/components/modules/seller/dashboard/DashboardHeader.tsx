@@ -65,12 +65,12 @@ export function DashboardHeader({ sellerName, storeName }: DashboardHeaderProps)
             </div>
             <div className="flex items-center gap-2">
                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    {/* <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="gap-2">
                             <Calendar className="h-4 w-4" />
                             {getRangeLabel()}
                         </Button>
-                    </DropdownMenuTrigger>
+                    </DropdownMenuTrigger> */}
                     <DropdownMenuContent align="end">
                         {dateRanges.map((range) => (
                             <DropdownMenuItem

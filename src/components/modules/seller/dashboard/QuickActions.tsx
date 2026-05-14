@@ -18,11 +18,12 @@ export function QuickActions() {
 
     const actions = [
         { label: "Add Medicine", icon: Plus, href: "/seller/medicines/add", color: "bg-blue-500" },
+        { label: "Medicines", icon: Package, href: "/seller/medicines", color: "bg-purple-500" },
         { label: "View Orders", icon: ShoppingCart, href: "/seller/orders", color: "bg-green-500" },
-        { label: "Low Stock", icon: AlertTriangle, href: "/seller/medicines?stock=low", color: "bg-red-500" },
+        // { label: "Low Stock", icon: AlertTriangle, href: "/seller/medicines?stock=low", color: "bg-red-500" },
         { label: "View Reviews", icon: Star, href: "/seller/reviews", color: "bg-yellow-500" },
-        { label: "Reports", icon: BarChart3, href: "/seller/reports", color: "bg-purple-500" },
-        { label: "Store Settings", icon: Settings, href: "/seller/profile", color: "bg-gray-500" },
+        // { label: "Reports", icon: BarChart3, href: "/seller/reports", color: "bg-purple-500" },
+        // { label: "Store Settings", icon: Settings, href: "/seller/profile", color: "bg-gray-500" },
     ];
 
     return (
