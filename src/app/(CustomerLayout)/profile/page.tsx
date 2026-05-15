@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { customerProfile } from "@/actions/profile";
@@ -11,7 +10,6 @@ import { NotificationPrefs } from "@/components/modules/customer/profile/Notific
 import { WishlistSummary } from "@/components/modules/customer/profile/WishlistSummary";
 import { RecentReviews } from "@/components/modules/customer/profile/RecentReviews";
 import { DangerZone } from "@/components/modules/customer/profile/DangerZone";
-import { ProfileSkeleton } from "@/components/modules/customer/profile/ProfileSkeleton";
 import { getMyReviews } from "@/actions/review.action";
 import { getWishlist } from "@/actions/wishlist.action";
 
@@ -22,50 +20,41 @@ export default async function CustomerProfilePage() {
         redirect("/login?redirect=/customer/profile");
     }
 
-    const profileResult = await customerProfile.getCustomerProfile();
-    const addressesResult = await customerProfile.getCustomerAddresses();
-    const ordersResult = await customerProfile.getCustomerOrders();
-    const wishlistResult = await getWishlist();
-    const reviewsResult = await getMyReviews();
+    const [profileResult, addressesResult, ordersResult, wishlistResult, reviewsResult] = await Promise.all([
+        customerProfile.getCustomerProfile(),
+        customerProfile.getCustomerAddresses(),
+        customerProfile.getCustomerOrders(),
+        getWishlist(),
+        getMyReviews()
+    ]);
 
     const profile = !profileResult.success ? null : profileResult.data;
     const addresses = !addressesResult.success ? [] : addressesResult.data;
     const orders = !ordersResult.success ? [] : ordersResult.data;
     const wishlist = !wishlistResult.success ? [] : wishlistResult?.data?.items || [];
     const reviews = !reviewsResult.success ? [] : reviewsResult.data;
-    
-    const settingsWithDefaults = profile ? {
-        ...profile,
-        addresses: addresses,
-        orders: orders,
-        wishlist: wishlist,
-        reviews: reviews
-    } : null;
+
     return (
         <div className="space-y-6">
             <ProfileHeader customerName={session.user.name} />
 
-            <Suspense fallback={<ProfileSkeleton />}>
-                {settingsWithDefaults && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Left Column */}
-                        <div className="lg:col-span-1 space-y-6">
-                            <PersonalInfo profile={profile} />
-                            <AddressBook addresses={addresses} />
-                            <OrderSummary orders={orders} />
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column */}
+                <div className="lg:col-span-1 space-y-6">
+                    <PersonalInfo profile={profile} />
+                    <AddressBook addresses={addresses} />
+                    <OrderSummary orders={orders} />
+                </div>
 
-                        {/* Right Column */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <SecuritySection />
-                            <NotificationPrefs />
-                            <WishlistSummary wishlist={wishlist} />
-                            <RecentReviews reviews={reviews} />
-                            <DangerZone />
-                        </div>
-                    </div>
-                )}
-            </Suspense>
+                {/* Right Column */}
+                <div className="lg:col-span-2 space-y-6">
+                    <SecuritySection />
+                    <NotificationPrefs />
+                    <WishlistSummary wishlist={wishlist} />
+                    <RecentReviews reviews={reviews} />
+                    <DangerZone />
+                </div>
+            </div>
         </div>
     );
 }

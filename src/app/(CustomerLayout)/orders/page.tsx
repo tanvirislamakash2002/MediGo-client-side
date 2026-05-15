@@ -1,12 +1,12 @@
-import { Suspense } from "react";
+// app/(CustomerLayout)/orders/page.tsx
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getMyOrders } from "@/actions/order.action";
 import { OrdersHeader } from "@/components/modules/customer/orders/OrdersHeader";
 import { OrdersFilters } from "@/components/modules/customer/orders/OrdersFilters";
-import { OrdersSkeleton } from "@/components/modules/customer/orders/OrdersSkeleton";
 import { OrdersList } from "@/components/modules/customer/orders/OrdersList";
 import { OrderStats } from "@/components/modules/customer/orders/OrderStats";
+
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
@@ -42,12 +42,14 @@ export default async function OrdersPage({ searchParams }: PageProps) {
         delivered: 0,
         cancelled: 0
     };
+    
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
                 <OrdersHeader orderCount={pagination?.total || 0} />
 
                 <OrderStats stats={stats} />
+                
                 <div className="mt-6">
                     <OrdersFilters
                         initialStatus={status}
@@ -55,16 +57,14 @@ export default async function OrdersPage({ searchParams }: PageProps) {
                         initialSort={sort}
                     />
 
-                    <Suspense fallback={<OrdersSkeleton />}>
-                        <OrdersList
-                            initialOrders={orders}
-                            initialPage={page}
-                            initialStatus={status}
-                            initialSearch={search}
-                            initialSort={sort}
-                            pagination={pagination}
-                        />
-                    </Suspense>
+                    <OrdersList
+                        initialOrders={orders}
+                        initialPage={page}
+                        initialStatus={status}
+                        initialSearch={search}
+                        initialSort={sort}
+                        pagination={pagination}
+                    />
                 </div>
             </div>
         </div>

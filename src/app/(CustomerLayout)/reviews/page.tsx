@@ -1,22 +1,13 @@
-import { Suspense } from "react";
+// app/(CustomerLayout)/reviews/page.tsx
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getMyReviews } from "@/actions/review.action";
 import { ReviewsHeader } from "@/components/modules/customer/reviews/ReviewsHeader";
 import { ReviewsStats } from "@/components/modules/customer/reviews/ReviewsStats";
 import { ReviewsFilters } from "@/components/modules/customer/reviews/ReviewsFilters";
-import { ReviewsSkeleton } from "@/components/modules/customer/reviews/ReviewsSkeleton";
 import { ReviewsList } from "@/components/modules/customer/reviews/ReviewsList";
 
-interface PageProps {
-    searchParams: Promise<{
-        sort?: string;
-        rating?: string;
-        search?: string;
-        page?: string;
-    }>;
-}
-
+// Add the Review interface
 interface Review {
     id: string;
     rating: number;
@@ -25,6 +16,15 @@ interface Review {
     medicineId: string;
     medicineName: string;
     medicineImage?: string | null;
+}
+
+interface PageProps {
+    searchParams: Promise<{
+        sort?: string;
+        rating?: string;
+        search?: string;
+        page?: string;
+    }>;
 }
 
 export default async function CustomerReviewsPage({ searchParams }: PageProps) {
@@ -81,16 +81,14 @@ export default async function CustomerReviewsPage({ searchParams }: PageProps) {
                         
                         {/* Right Column - Reviews List */}
                         <div className="lg:col-span-2">
-                            <Suspense fallback={<ReviewsSkeleton />}>
-                                <ReviewsList 
-                                    initialReviews={reviews}
-                                    initialPage={page}
-                                    initialSort={sort}
-                                    initialRating={ratingFilter}
-                                    initialSearch={search}
-                                    pagination={pagination}
-                                />
-                            </Suspense>
+                            <ReviewsList 
+                                initialReviews={reviews}
+                                initialPage={page}
+                                initialSort={sort}
+                                initialRating={ratingFilter}
+                                initialSearch={search}
+                                pagination={pagination}
+                            />
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getOrderById } from "@/actions/order.action";
@@ -9,9 +8,7 @@ import { ShippingInfo } from "@/components/modules/customer/orders/details/Shipp
 import { OrderSummary } from "@/components/modules/customer/orders/details/OrderSummary";
 import { OrderActions } from "@/components/modules/customer/orders/details/OrderActions";
 import { ReviewSection } from "@/components/modules/customer/orders/details/ReviewSection";
-import { OrderSkeleton } from "@/components/modules/customer/orders/details/OrderSkeleton";
 import { getUserReviewsForOrder } from "@/actions/review.action";
-
 
 interface PageProps {
     params: Promise<{ orderId: string }>;
@@ -36,51 +33,55 @@ export default async function OrderDetailsPage({ params }: PageProps) {
 
     // Fetch order details
     const result = await getOrderById(orderId);
+    
+    // Handle not found - this will trigger not-found.tsx
     if (!result.success || !result.data) {
         notFound();
     }
+    
     const order = result.data;
 
     // Verify this order belongs to the logged-in user
     if (order.customerId !== session.user.id) {
-        redirect("/orders");
+        notFound(); // Use notFound instead of redirect for 404
     }
+    
     const medicineIds = order.items?.map((item: any) => item.medicineId) || [];
     const reviewsResult = await getUserReviewsForOrder(medicineIds);
     const existingReviews = reviewsResult.success ? reviewsResult.data : {};
+    
     // Ensure items is always an array
     const safeOrder = {
         ...order,
         items: order.items || []
     };
+    
     return (
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto">
-                    <Suspense fallback={<OrderSkeleton />}>
-                        <OrderHeader order={safeOrder} />
+                    <OrderHeader order={safeOrder} />
 
-                        <div className="mt-8">
-                            <OrderTimeline order={safeOrder} />
-                        </div>
+                    <div className="mt-8">
+                        <OrderTimeline order={safeOrder} />
+                    </div>
 
-                        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div className="lg:col-span-2 space-y-8">
-                                <OrderItems order={safeOrder} />
-                                <ShippingInfo order={safeOrder} />
-                                {safeOrder.status === "DELIVERED" && (
-                                    <ReviewSection
-                                        order={safeOrder}
-                                        existingReviews={existingReviews}
-                                    />
-                                )}
-                            </div>
-                            <div className="space-y-8">
-                                <OrderSummary order={safeOrder} />
-                                <OrderActions order={safeOrder} />
-                            </div>
+                    <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 space-y-8">
+                            <OrderItems order={safeOrder} />
+                            <ShippingInfo order={safeOrder} />
+                            {safeOrder.status === "DELIVERED" && (
+                                <ReviewSection
+                                    order={safeOrder}
+                                    existingReviews={existingReviews}
+                                />
+                            )}
                         </div>
-                    </Suspense>
+                        <div className="space-y-8">
+                            <OrderSummary order={safeOrder} />
+                            <OrderActions order={safeOrder} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

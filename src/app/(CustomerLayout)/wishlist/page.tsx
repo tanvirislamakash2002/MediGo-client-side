@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+// app/(CustomerLayout)/wishlist/page.tsx
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getWishlist } from "@/actions/wishlist.action";
@@ -6,7 +6,6 @@ import { WishlistHeader } from "@/components/modules/customer/wishlist/WishlistH
 import { WishlistFilters } from "@/components/modules/customer/wishlist/WishlistFilters";
 import { WishlistItems } from "@/components/modules/customer/wishlist/WishlistItems";
 import { WishlistSummary } from "@/components/modules/customer/wishlist/WishlistSummary";
-import { WishlistSkeleton } from "@/components/modules/customer/wishlist/WishlistSkeleton";
 
 interface WishlistItem {
     id: string;
@@ -29,6 +28,8 @@ interface PageProps {
         sort?: string;
         page?: string;
         inStock?: string;
+        minPrice?: string;
+        maxPrice?: string;
     }>;
 }
 
@@ -70,15 +71,13 @@ export default async function WishlistPage({ searchParams }: PageProps) {
 
                         {/* Right Column - Wishlist Items */}
                         <div className="flex-1">
-                            <Suspense fallback={<WishlistSkeleton />}>
-                                <WishlistItems
-                                    initialItems={wishlistItems}
-                                    initialPage={page}
-                                    initialSort={sort}
-                                    initialInStockFilter={inStockFilter}
-                                    pagination={pagination}
-                                />
-                            </Suspense>
+                            <WishlistItems
+                                initialItems={wishlistItems}
+                                initialPage={page}
+                                initialSort={sort}
+                                initialInStockFilter={inStockFilter}
+                                pagination={pagination}
+                            />
                         </div>
 
                         {/* Right Sidebar - Summary (Desktop) */}
