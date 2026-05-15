@@ -1,4 +1,4 @@
-import CreateMedicineForm from '@/components/modules/seller/createMedicineForm';
+import CreateMedicineForm from '@/components/modules/seller/medicines/createMedicineForm';
 import React from 'react';
 
 const AddMedicinePage = () => {

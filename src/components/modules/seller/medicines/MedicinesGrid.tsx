@@ -3,8 +3,8 @@
 import { useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { MedicineCard } from "@/components/modules/seller/medicine-card";
-import { DeleteConfirmationModal } from "@/components/modules/seller/delete-modal";
+import { MedicineCard } from "@/components/modules/seller/medicines/medicine-card";
+import { DeleteConfirmationModal } from "@/components/modules/seller/medicines/delete-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { getSellerMedicines, deleteMedicine } from "@/actions/medicine.action";
 import { Card, CardContent } from "@/components/ui/card";

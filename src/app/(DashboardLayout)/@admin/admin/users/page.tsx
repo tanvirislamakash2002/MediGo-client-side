@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getAllUsers } from "@/actions/user.action";
@@ -6,7 +5,6 @@ import { UsersHeader } from "@/components/modules/admin/users/UsersHeader";
 import { UsersStats } from "@/components/modules/admin/users/UsersStats";
 import { UsersFilters } from "@/components/modules/admin/users/UsersFilters";
 import { UsersTable } from "@/components/modules/admin/users/UsersTable";
-import { UsersSkeleton } from "@/components/modules/admin/users/UsersSkeleton";
 
 interface PageProps {
     searchParams: Promise<{
@@ -89,18 +87,16 @@ export default async function UsersPage({ searchParams }: PageProps) {
                 initialSort={sort}
             />
 
-            <Suspense fallback={<UsersSkeleton />}>
-                <UsersTable
-                    initialUsers={users}
-                    initialPage={page}
-                    initialRole={role}
-                    initialStatus={status}
-                    initialVerified={verified}
-                    initialSearch={search}
-                    initialSort={sort}
-                    pagination={pagination}
-                />
-            </Suspense>
+            <UsersTable
+                initialUsers={users}
+                initialPage={page}
+                initialRole={role}
+                initialStatus={status}
+                initialVerified={verified}
+                initialSearch={search}
+                initialSort={sort}
+                pagination={pagination}
+            />
         </div>
     );
 }
