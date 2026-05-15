@@ -1,8 +1,6 @@
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getMedicineById } from "@/actions/medicine.action";
 import { Breadcrumb } from "@/components/modules/shop/Details/Breadcrumb";
-import { MedicineSkeleton } from "@/components/modules/shop/Details/MedicineSkeleton";
 import { MedicineHero } from "@/components/modules/shop/Details/MedicineHero";
 import { MedicineActions } from "@/components/modules/shop/Details/MedicineActions";
 import { MedicineInfoTabs } from "@/components/modules/shop/Details/MedicineInfoTabs";
@@ -60,7 +58,6 @@ export default async function MedicineDetailsPage({ params }: PageProps) {
                 <Breadcrumb medicineName={medicine.name} />
 
                 <div className="mt-6">
-                    <Suspense fallback={<MedicineSkeleton />}>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* Left Column - Image */}
                             <MedicineHero medicine={medicine} />
@@ -87,7 +84,6 @@ export default async function MedicineDetailsPage({ params }: PageProps) {
                             categoryId={medicine.categoryId}
                             currentMedicineId={medicine.id}
                         />
-                    </Suspense>
                 </div>
             </div>
         </div>
