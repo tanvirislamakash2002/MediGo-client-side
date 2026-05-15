@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getSellerReviews, getSellerReviewStats } from "@/actions/review.action";
@@ -7,7 +6,6 @@ import { ReviewsStats } from "@/components/modules/seller/reviews/ReviewsStats";
 import { RatingDistribution } from "@/components/modules/seller/reviews/RatingDistribution";
 import { ReviewsFilters } from "@/components/modules/seller/reviews/ReviewsFilters";
 import { ReviewsList } from "@/components/modules/seller/reviews/ReviewsList";
-import { ReviewsSkeleton } from "@/components/modules/seller/reviews/ReviewsSkeleton";
 
 interface PageProps {
     searchParams: Promise<{
@@ -68,20 +66,18 @@ export default async function SellerReviewsPage({ searchParams }: PageProps) {
                 
                 {/* Right Column - Reviews List */}
                 <div className="lg:col-span-3">
-                    <Suspense fallback={<ReviewsSkeleton />}>
-                        <ReviewsList 
-                            initialReviews={reviews}
-                            initialPage={page}
-                            initialSort={sort}
-                            initialRating={rating}
-                            initialProductId={productId}
-                            initialDateRange={dateRange}
-                            initialResponded={responded}
-                            initialSearch={search}
-                            pagination={pagination}
-                            totalReviews={stats?.total || 0}
-                        />
-                    </Suspense>
+                    <ReviewsList 
+                        initialReviews={reviews}
+                        initialPage={page}
+                        initialSort={sort}
+                        initialRating={rating}
+                        initialProductId={productId}
+                        initialDateRange={dateRange}
+                        initialResponded={responded}
+                        initialSearch={search}
+                        pagination={pagination}
+                        totalReviews={stats?.total || 0}
+                    />
                 </div>
             </div>
         </div>

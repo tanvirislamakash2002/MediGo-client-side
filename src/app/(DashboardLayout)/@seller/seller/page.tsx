@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getSellerDashboardStats } from "@/actions/dashboard.action";
@@ -15,7 +14,6 @@ import { SalesByCategory } from "@/components/modules/seller/dashboard/SalesByCa
 import { ActivityFeed } from "@/components/modules/seller/dashboard/ActivityFeed";
 import { StorePerformance } from "@/components/modules/seller/dashboard/StorePerformance";
 import { TipsRecommendations } from "@/components/modules/seller/dashboard/TipsRecommendations";
-import { DashboardSkeleton } from "@/components/modules/seller/dashboard/DashboardSkeleton";
 
 interface PageProps {
     searchParams: Promise<{
@@ -43,42 +41,40 @@ export default async function SellerDashboardPage({ searchParams }: PageProps) {
                 storeName={session.user.storeName || "My Store"}
             />
 
-            <Suspense fallback={<DashboardSkeleton />}>
-                {stats && (
-                    <>
-                        <MetricsCards stats={stats.metrics} />
-                        <QuickActions />
+            {stats && (
+                <>
+                    <MetricsCards stats={stats.metrics} />
+                    <QuickActions />
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <SalesChart
-                                salesData={stats.salesData}
-                                range={range}
-                            />
-                            <SalesByCategory
-                                categoryData={stats.categorySales}
-                            />
-                        </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <SalesChart
+                            salesData={stats.salesData}
+                            range={range}
+                        />
+                        <SalesByCategory
+                            categoryData={stats.categorySales}
+                        />
+                    </div>
 
-                        <RecentOrders orders={stats.recentOrders} />
-                        <LowStockAlerts products={stats.lowStockProducts} />
+                    <RecentOrders orders={stats.recentOrders} />
+                    <LowStockAlerts products={stats.lowStockProducts} />
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <TopProducts products={stats.topProducts} />
-                            <RecentReviews reviews={stats.recentReviews} />
-                        </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <TopProducts products={stats.topProducts} />
+                        <RecentReviews reviews={stats.recentReviews} />
+                    </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <InventorySummary summary={stats.inventorySummary} />
-                            <StorePerformance performance={stats.storePerformance} />
-                        </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <InventorySummary summary={stats.inventorySummary} />
+                        <StorePerformance performance={stats.storePerformance} />
+                    </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <ActivityFeed activities={stats.recentActivities} />
-                            <TipsRecommendations tips={stats.recommendations} />
-                        </div>
-                    </>
-                )}
-            </Suspense>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <ActivityFeed activities={stats.recentActivities} />
+                        <TipsRecommendations tips={stats.recommendations} />
+                    </div>
+                </>
+            )}
         </div>
     );
 }

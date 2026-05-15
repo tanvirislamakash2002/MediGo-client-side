@@ -1,11 +1,9 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getSellerOrders } from "@/actions/order.action";
 import { OrdersHeader } from "@/components/modules/seller/orders/OrdersHeader";
 import { OrdersFilters } from "@/components/modules/seller/orders/OrdersFilters";
 import { OrdersList } from "@/components/modules/seller/orders/OrdersList";
-import { OrdersSkeleton } from "@/components/modules/seller/orders/OrdersSkeleton";
 import { StatsCards } from "@/components/modules/seller/orders/StatsCards";
 
 interface PageProps {
@@ -46,13 +44,14 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
     const orders = !result.success ? [] : result.data?.orders || [];
     const stats = result.data?.stats || {
         total: 0,
-        pending: 0,
+        placed: 0,
         processing: 0,
         shipped: 0,
         delivered: 0,
         cancelled: 0
     };
     const pagination = result.data?.pagination;
+    
     return (
         <div className="space-y-6">
             <OrdersHeader orderCount={stats.total} />
@@ -67,16 +66,14 @@ export default async function SellerOrdersPage({ searchParams }: PageProps) {
                 initialToDate={toDate}
             />
             
-            <Suspense fallback={<OrdersSkeleton />}>
-                <OrdersList 
-                    initialOrders={orders}
-                    initialPage={page}
-                    initialStatus={status}
-                    initialSearch={search}
-                    initialSort={sort}
-                    pagination={pagination}
-                />
-            </Suspense>
+            <OrdersList 
+                initialOrders={orders}
+                initialPage={page}
+                initialStatus={status}
+                initialSearch={search}
+                initialSort={sort}
+                pagination={pagination}
+            />
         </div>
     );
 }

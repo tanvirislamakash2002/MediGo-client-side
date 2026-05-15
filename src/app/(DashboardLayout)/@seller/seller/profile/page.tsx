@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { sellerProfile } from "@/actions/profile";
@@ -12,13 +11,15 @@ import { PayoutInfo } from "@/components/modules/seller/profile/PayoutInfo";
 import { NotificationPrefs } from "@/components/modules/seller/profile/NotificationPrefs";
 import { SecuritySection } from "@/components/modules/seller/profile/SecuritySection";
 import { StorePerformance } from "@/components/modules/seller/profile/StorePerformance";
-import { DocumentVerification } from "@/components/modules/seller/profile/DocumentVerification";
 import { DangerZone } from "@/components/modules/seller/profile/DangerZone";
-import { ProfileSkeleton } from "@/components/modules/seller/profile/ProfileSkeleton";
 
 export default async function SellerProfilePage() {
     const { data: session, success } = await getSession();
-        
+    
+    if (!success || !session || session.user.role !== "SELLER") {
+        redirect("/login?redirect=/seller/profile");
+    }
+    
     const profileResult = await sellerProfile.getSellerProfile();
     const settingsResult = await sellerProfile.getSellerStoreSettings();
     
@@ -41,35 +42,31 @@ export default async function SellerProfilePage() {
         }
     } : null;
     
-   
     return (
         <div className="space-y-6">
             <ProfileHeader sellerName={session.user.name} />
             
-            <Suspense fallback={<ProfileSkeleton />}>
-                {profile && settingsWithDefaults && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Left Column */}
-                        <div className="lg:col-span-1 space-y-6">
-                            <StoreInfo store={settingsWithDefaults} />
-                            <PersonalInfo profile={profile} />
-                            <BusinessHours hours={settingsWithDefaults.businessHours} />
-                            {/* <DocumentVerification documents={settingsWithDefaults.documents} /> */}
-                        </div>
-                        
-                        {/* Right Column */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <ShippingSettings shipping={settingsWithDefaults.shippingSettings} />
-                            <ReturnPolicy policy={settingsWithDefaults.returnPolicy} />
-                            <PayoutInfo payout={settingsWithDefaults.payoutInfo} />
-                            <NotificationPrefs preferences={settingsWithDefaults.notificationPreferences} />
-                            <SecuritySection />
-                            <StorePerformance performance={settingsWithDefaults.performance} />
-                            <DangerZone />
-                        </div>
+            {profile && settingsWithDefaults && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <StoreInfo store={settingsWithDefaults} />
+                        <PersonalInfo profile={profile} />
+                        <BusinessHours hours={settingsWithDefaults.businessHours} />
                     </div>
-                )}
-            </Suspense>
+                    
+                    {/* Right Column */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <ShippingSettings shipping={settingsWithDefaults.shippingSettings} />
+                        <ReturnPolicy policy={settingsWithDefaults.returnPolicy} />
+                        <PayoutInfo payout={settingsWithDefaults.payoutInfo} />
+                        <NotificationPrefs preferences={settingsWithDefaults.notificationPreferences} />
+                        <SecuritySection />
+                        <StorePerformance performance={settingsWithDefaults.performance} />
+                        <DangerZone />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

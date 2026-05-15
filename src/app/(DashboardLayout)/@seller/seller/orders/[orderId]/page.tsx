@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getOrderById } from "@/actions/order.action";
@@ -8,7 +7,6 @@ import { OrderItems } from "@/components/modules/seller/orders/details/OrderItem
 import { CustomerInfo } from "@/components/modules/seller/orders/details/CustomerInfo";
 import { OrderSummary } from "@/components/modules/seller/orders/details/OrderSummary";
 import { OrderActions } from "@/components/modules/seller/orders/details/OrderActions";
-import { OrderSkeleton } from "@/components/modules/seller/orders/details/OrderSkeleton";
 import { Prescriptions } from "@/components/modules/seller/orders/details/Prescriptions";
 
 interface PageProps {
@@ -43,27 +41,25 @@ export default async function SellerOrderDetailsPage({ params }: PageProps) {
         <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto">
-                    <Suspense fallback={<OrderSkeleton />}>
-                        <OrderHeader order={safeOrder} />
+                    <OrderHeader order={safeOrder} />
 
-                        <div className="mt-8">
-                            <OrderTimeline order={safeOrder} />
-                        </div>
+                    <div className="mt-8">
+                        <OrderTimeline order={safeOrder} />
+                    </div>
 
-                        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div className="lg:col-span-2 space-y-8">
-                                <OrderItems order={safeOrder} />
-                                <CustomerInfo order={safeOrder} />
-                                {safeOrder.prescriptions?.length > 0 && (
-                                    <Prescriptions prescriptions={safeOrder.prescriptions} />
-                                )}
-                            </div>
-                            <div className="space-y-8">
-                                <OrderSummary order={safeOrder} />
-                                <OrderActions order={safeOrder} />
-                            </div>
+                    <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 space-y-8">
+                            <OrderItems order={safeOrder} />
+                            <CustomerInfo order={safeOrder} />
+                            {safeOrder.prescriptions?.length > 0 && (
+                                <Prescriptions prescriptions={safeOrder.prescriptions} />
+                            )}
                         </div>
-                    </Suspense>
+                        <div className="space-y-8">
+                            <OrderSummary order={safeOrder} />
+                            <OrderActions order={safeOrder} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
