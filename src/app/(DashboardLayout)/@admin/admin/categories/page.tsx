@@ -1,9 +1,7 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getAllCategories } from "@/actions/category.action";
 import { CategoriesHeader } from "@/components/modules/admin/categories/CategoriesHeader";
-import { CategoriesSkeleton } from "@/components/modules/admin/categories/CategoriesSkeleton";
 import { CategoriesTable } from "@/components/modules/admin/categories/CategoriesTable";
 
 interface PageProps {
@@ -30,19 +28,18 @@ export default async function CategoriesPage({ searchParams }: PageProps) {
     const result = await getAllCategories({ search, sort, page });
     const categories = !result.success ? [] : result.data?.categories || [];
     const pagination = result.data?.pagination;
+    
     return (
         <div className="space-y-6">
             <CategoriesHeader />
             
-            <Suspense fallback={<CategoriesSkeleton />}>
-                <CategoriesTable 
-                    initialCategories={categories}
-                    initialSearch={search}
-                    initialSort={sort}
-                    initialPage={page}
-                    pagination={pagination}
-                />
-            </Suspense>
+            <CategoriesTable 
+                initialCategories={categories}
+                initialSearch={search}
+                initialSort={sort}
+                initialPage={page}
+                pagination={pagination}
+            />
         </div>
     );
 }

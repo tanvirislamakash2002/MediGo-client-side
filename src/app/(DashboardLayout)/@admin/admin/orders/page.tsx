@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getAllOrders } from "@/actions/order.action";
@@ -6,7 +5,6 @@ import { OrdersHeader } from "@/components/modules/admin/orders/OrdersHeader";
 import { OrdersStats } from "@/components/modules/admin/orders/OrdersStats";
 import { OrdersFilters } from "@/components/modules/admin/orders/OrdersFilters";
 import { OrdersTable } from "@/components/modules/admin/orders/OrdersTable";
-import { OrdersSkeleton } from "@/components/modules/admin/orders/OrdersSkeleton";
 
 interface PageProps {
     searchParams: Promise<{
@@ -53,6 +51,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
         cancelled: 0
     };
     const pagination = result.data?.pagination;
+    
     return (
         <div className="space-y-6">
             <OrdersHeader />
@@ -67,16 +66,14 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                 initialToDate={toDate}
             />
             
-            <Suspense fallback={<OrdersSkeleton />}>
-                <OrdersTable 
-                    initialOrders={orders}
-                    initialPage={page}
-                    initialStatus={status}
-                    initialSearch={search}
-                    initialSort={sort}
-                    pagination={pagination}
-                />
-            </Suspense>
+            <OrdersTable 
+                initialOrders={orders}
+                initialPage={page}
+                initialStatus={status}
+                initialSearch={search}
+                initialSort={sort}
+                pagination={pagination}
+            />
         </div>
     );
 }

@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/actions/auth.action";
 import { getAllReviewsForAdmin, getAdminReviewStats } from "@/actions/review.action";
@@ -6,7 +5,6 @@ import { ReviewsHeader } from "@/components/modules/admin/reviews/ReviewsHeader"
 import { ReviewsStats } from "@/components/modules/admin/reviews/ReviewsStats";
 import { ReviewsFilters } from "@/components/modules/admin/reviews/ReviewsFilters";
 import { ReviewsTable } from "@/components/modules/admin/reviews/ReviewsTable";
-import { ReviewsSkeleton } from "@/components/modules/admin/reviews/ReviewsSkeleton";
 import { RatingDistribution } from "@/components/modules/admin/reviews/RatingDistribution";
 
 interface PageProps {
@@ -45,6 +43,7 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
     const reviews = reviewsResult.success ? reviewsResult.data?.reviews || [] : [];
     const stats = statsResult.success ? statsResult.data : null;
     const pagination = reviewsResult.success ? reviewsResult.data?.pagination : null;
+    
     return (
         <div className="space-y-6">
             <ReviewsHeader />
@@ -67,20 +66,18 @@ export default async function AdminReviewsPage({ searchParams }: PageProps) {
                         initialSort={sort}
                     />
                     
-                    <Suspense fallback={<ReviewsSkeleton />}>
-                        <ReviewsTable 
-                            initialReviews={reviews}
-                            initialPage={page}
-                            initialStatus={status}
-                            initialRating={rating}
-                            initialDateRange={dateRange}
-                            initialSellerId={sellerId}
-                            initialSearch={search}
-                            initialSort={sort}
-                            pagination={pagination}
-                            stats={stats}
-                        />
-                    </Suspense>
+                    <ReviewsTable 
+                        initialReviews={reviews}
+                        initialPage={page}
+                        initialStatus={status}
+                        initialRating={rating}
+                        initialDateRange={dateRange}
+                        initialSellerId={sellerId}
+                        initialSearch={search}
+                        initialSort={sort}
+                        pagination={pagination}
+                        stats={stats}
+                    />
                 </div>
             </div>
         </div>
