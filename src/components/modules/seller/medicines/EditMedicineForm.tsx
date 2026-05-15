@@ -266,7 +266,6 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
             </div>
         );
     }
-
     return (
         <div className="max-w-2xl mx-auto">
             <Card>
@@ -342,7 +341,6 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
                             )}
                         </div>
 
-                        {/* Rest of your form fields remain the same */}
                         {/* Name Field */}
                         <form.Field
                             name="name"
@@ -372,7 +370,167 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
                             }}
                         />
 
-                        {/* ... rest of your form fields (description, price, stock, manufacturer, category, prescription) ... */}
+                        {/* Description Field */}
+                        <form.Field
+                            name="description"
+                            children={(field) => {
+                                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                                return (
+                                    <div className="space-y-2">
+                                        <label htmlFor={field.name} className="text-sm font-medium">
+                                            Description
+                                        </label>
+                                        <Textarea
+                                            id={field.name}
+                                            name={field.name}
+                                            value={field.state.value}
+                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            onBlur={field.handleBlur}
+                                            placeholder="Describe the medicine, its uses, dosage, etc."
+                                            rows={4}
+                                            className={isInvalid ? "border-red-500" : ""}
+                                        />
+                                        {isInvalid && (
+                                            <p className="text-sm text-red-500">
+                                                {field.state.meta.errors.join(", ")}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            }}
+                        />
+
+                        {/* Price and Stock */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <form.Field
+                                name="price"
+                                children={(field) => {
+                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                                    return (
+                                        <div className="space-y-2">
+                                            <label htmlFor={field.name} className="text-sm font-medium">
+                                                Price ($)
+                                            </label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                id={field.name}
+                                                name={field.name}
+                                                value={field.state.value}
+                                                onChange={(e) => field.handleChange(parseFloat(e.target.value))}
+                                                onBlur={field.handleBlur}
+                                                placeholder="0.00"
+                                                className={isInvalid ? "border-red-500" : ""}
+                                            />
+                                            {isInvalid && (
+                                                <p className="text-sm text-red-500">
+                                                    {field.state.meta.errors.join(", ")}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                }}
+                            />
+
+                            <form.Field
+                                name="stock"
+                                children={(field) => {
+                                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                                    return (
+                                        <div className="space-y-2">
+                                            <label htmlFor={field.name} className="text-sm font-medium">
+                                                Stock Quantity
+                                            </label>
+                                            <Input
+                                                type="number"
+                                                id={field.name}
+                                                name={field.name}
+                                                value={field.state.value}
+                                                onChange={(e) => field.handleChange(parseInt(e.target.value))}
+                                                onBlur={field.handleBlur}
+                                                placeholder="0"
+                                                className={isInvalid ? "border-red-500" : ""}
+                                            />
+                                            {isInvalid && (
+                                                <p className="text-sm text-red-500">
+                                                    {field.state.meta.errors.join(", ")}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                }}
+                            />
+                        </div>
+
+                        {/* Manufacturer Field */}
+                        <form.Field
+                            name="manufacturer"
+                            children={(field) => {
+                                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                                return (
+                                    <div className="space-y-2">
+                                        <label htmlFor={field.name} className="text-sm font-medium">
+                                            Manufacturer
+                                        </label>
+                                        <Input
+                                            id={field.name}
+                                            name={field.name}
+                                            value={field.state.value}
+                                            onChange={(e) => field.handleChange(e.target.value)}
+                                            onBlur={field.handleBlur}
+                                            placeholder="e.g., ABC Pharma"
+                                            className={isInvalid ? "border-red-500" : ""}
+                                        />
+                                        {isInvalid && (
+                                            <p className="text-sm text-red-500">
+                                                {field.state.meta.errors.join(", ")}
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            }}
+                        />
+
+                        {/* Category Field - Using separate state */}
+                        <div className="space-y-2 relative">
+                            <label className="text-sm font-medium">Category</label>
+                            <Select
+                                value={form.getFieldValue("categoryId")}
+                                onValueChange={(value) => form.setFieldValue("categoryId", value)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent position="popper" className="z-50">
+                                    {categoryData?.map((category: Category) => (
+                                        <SelectItem key={category.id} value={category.id}>
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Prescription Checkbox - Keep as is but add relative positioning */}
+                        <div className="relative">
+                            <form.Field
+                                name="requiresPrescription"
+                                children={(field) => {
+                                    return (
+                                        <div className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={field.name}
+                                                checked={field.state.value}
+                                                onCheckedChange={(checked) => field.handleChange(checked as boolean)}
+                                            />
+                                            <label htmlFor={field.name} className="text-sm font-medium cursor-pointer">
+                                                Requires Prescription
+                                            </label>
+                                        </div>
+                                    );
+                                }}
+                            />
+                        </div>
                     </form>
                 </CardContent>
                 <div className="p-6 pt-0 flex gap-3">
