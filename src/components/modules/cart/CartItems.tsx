@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,44 +11,58 @@ import { Trash2, AlertCircle, Plus, Minus, Pill } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { updateCartItem } from "@/actions/cart.action";
-import { CartItem } from "@/types/cart.type";
 import { useCart } from "@/hooks/useCart";
+import { CartItem } from "@/types/cart.type";
 
 interface CartItemsProps {
     initialItems: CartItem[];
     onSelectionChange?: (selectedItems: CartItem[], total: number) => void;
 }
 
+// ✅ Add the missing isValidUrl function
+const isValidUrl = (url: string | null) => {
+    if (!url) return false;
+    try {
+        new URL(url);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
 export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
     const router = useRouter();
-    const [items, setItems] = useState<CartItem[]>(initialItems);
+    const {
+        cart: items,
+        removeCartItem,
+        updateCartItem: hookUpdateCartItem,
+        refreshCart,
+        isUpdating // ✅ Use the hook's loading state
+    } = useCart();
+
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-    const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [selectAll, setSelectAll] = useState(false);
-    const { removeCartItem } = useCart()
-    const isValidUrl = (url: string | null) => {
-        if (!url) return false;
-        try { new URL(url); return true; }
-        catch { return false; }
-    };
+    // ✅ Add missing updatingId state
+    const [localUpdatingId, setLocalUpdatingId] = useState<string | null>(null);
 
-    // Update parent component when selection changes
-    const updateSelection = (newSelected: Set<string>) => {
-        setSelectedItems(newSelected);
-        const selected = items.filter(item => newSelected.has(item.id));
+    // ✅ Memoize the selection change callback to avoid infinite loops
+    const updateParentSelection = useCallback(() => {
+        const selected = items.filter(item => selectedItems.has(item.id));
         const total = selected.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
         onSelectionChange?.(selected, total);
-    };
+    }, [items, selectedItems, onSelectionChange]);
+
+    // Update parent when selection changes
+    useEffect(() => {
+        updateParentSelection();
+    }, [updateParentSelection]);
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
             const allIds = new Set(items.map(item => item.id));
             setSelectedItems(allIds);
-            updateSelection(allIds);
         } else {
             setSelectedItems(new Set());
-            updateSelection(new Set());
         }
         setSelectAll(checked);
     };
@@ -61,38 +75,23 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
             newSelected.delete(itemId);
         }
         setSelectedItems(newSelected);
-        updateSelection(newSelected);
         setSelectAll(newSelected.size === items.length);
     };
 
     const handleQuantityChange = async (itemId: string, newQuantity: number, stock: number) => {
-        // console.log(itemId, newQuantity);
         if (newQuantity < 1) return;
         if (newQuantity > stock) {
             toast.error(`Only ${stock} items available`);
             return;
         }
 
-        setUpdatingId(itemId);
+        setLocalUpdatingId(itemId);
         try {
-            const result = await updateCartItem(itemId, newQuantity);
-            console.log(result);
-            if (!result.success) {
-                toast.error(result.message);
-            } else {
-                setItems(prev => prev.map(item =>
-                    item.id === itemId ? { ...item, quantity: newQuantity } : item
-                ));
-                toast.success("Quantity updated");
-            }
-        } catch (error) {
-            toast.error("Failed to update quantity");
+            await hookUpdateCartItem(itemId, newQuantity);
         } finally {
-            setUpdatingId(null);
+            setLocalUpdatingId(null);
         }
     };
-
-
 
     const handleRemoveSelected = async () => {
         if (selectedItems.size === 0) return;
@@ -101,22 +100,29 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
         const itemsToRemove = items.filter(item => selectedItems.has(item.id));
 
         try {
+            // ✅ Remove items one by one using the hook
             for (const item of itemsToRemove) {
                 await removeCartItem(item.id);
             }
 
-            const remainingItems = items.filter(item => !selectedItems.has(item.id));
-            setItems(remainingItems);
             setSelectedItems(new Set());
-            updateSelection(new Set());
             setSelectAll(false);
-
             toast.success(`${itemsToRemove.length} items removed`, { id: toastId });
 
-            // Refresh the page to update cart data
+            // ✅ Refresh the page once after all removals
             router.refresh();
         } catch (error) {
             toast.error("Failed to remove items", { id: toastId });
+        }
+    };
+
+    const handleSingleRemove = async (itemId: string) => {
+        setLocalUpdatingId(itemId);
+        try {
+            await removeCartItem(itemId);
+            router.refresh();
+        } finally {
+            setLocalUpdatingId(null);
         }
     };
 
@@ -220,7 +226,7 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
                                                 size="icon"
                                                 className="h-8 w-8 rounded-none"
                                                 onClick={() => handleQuantityChange(item.id, item.quantity - 1, item.stock)}
-                                                disabled={updatingId === item.id || item.quantity <= 1}
+                                                disabled={localUpdatingId === item.id || item.quantity <= 1}
                                             >
                                                 <Minus className="h-3 w-3" />
                                             </Button>
@@ -231,14 +237,14 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
                                                 className="w-12 h-8 text-center border-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 min={1}
                                                 max={item.stock}
-                                                disabled={updatingId === item.id}
+                                                disabled={localUpdatingId === item.id}
                                             />
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-8 w-8 rounded-none"
                                                 onClick={() => handleQuantityChange(item.id, item.quantity + 1, item.stock)}
-                                                disabled={updatingId === item.id || item.quantity >= item.stock}
+                                                disabled={localUpdatingId === item.id || item.quantity >= item.stock}
                                             >
                                                 <Plus className="h-3 w-3" />
                                             </Button>
@@ -260,8 +266,8 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
                                         variant="ghost"
                                         size="sm"
                                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                        onClick={() => removeCartItem(item.id)}
-                                        disabled={updatingId === item.id}
+                                        onClick={() => handleSingleRemove(item.id)}
+                                        disabled={localUpdatingId === item.id}
                                     >
                                         <Trash2 className="h-4 w-4 mr-1" />
                                         Remove

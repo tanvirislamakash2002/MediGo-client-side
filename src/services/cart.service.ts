@@ -180,6 +180,9 @@ export const cartService = {
     removeCartItem: async (itemId: string) => {
         try {
             const cookieStore = await cookies();
+            const cookieString = cookieStore.toString();
+
+            console.log('Cookies being sent:', cookieString);
             const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
                 method: "DELETE",
                 headers: { Cookie: cookieStore.toString() }

@@ -1,4 +1,3 @@
-// app/(CustomerLayout)/cart/page.tsx
 import { getCartItems } from "@/actions/cart.action";
 import { CartContent } from "@/components/modules/cart/CartContent";
 import { CartItem } from "@/types/cart.type";

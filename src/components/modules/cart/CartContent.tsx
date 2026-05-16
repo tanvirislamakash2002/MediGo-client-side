@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { CartHeader } from "./CartHeader";
 import { CartItems } from "./CartItems";
@@ -22,14 +22,15 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
         cartTotal,
         isLoading,
         isAuthenticated,
-        updateCartItem,
-        removeCartItem,
         refreshCart
     } = useCart();
+    
     const [selectedItems, setSelectedItems] = useState<CartItem[]>([]);
     const [selectedTotal, setSelectedTotal] = useState(0);
     const [isClient, setIsClient] = useState(false);
+    const hasRefreshed = useRef(false); // ✅ Track if refresh already happened
 
+    // ✅ Use cart from hook if available, otherwise fallback to initial props
     const displayItems = cart.length > 0 ? cart : initialItems;
     const displayTotal = cartTotal > 0 ? cartTotal : initialTotal;
 
@@ -37,19 +38,21 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
         setIsClient(true);
     }, []);
 
-    // Refresh cart when component mounts to ensure latest data
+    // ✅ Only refresh once on initial client mount
     useEffect(() => {
-        if (isClient) {
+        if (isClient && !hasRefreshed.current) {
+            hasRefreshed.current = true;
             refreshCart();
         }
     }, [isClient, refreshCart]);
 
-    const handleSelectionChange = (items: CartItem[], total: number) => {
+    // ✅ Memoize the selection change handler
+    const handleSelectionChange = useCallback((items: CartItem[], total: number) => {
         setSelectedItems(items);
         setSelectedTotal(total);
-    };
+    }, []);
 
-    const handleCheckout = () => {
+    const handleCheckout = useCallback(() => {
         if (selectedItems.length === 0) return;
 
         // Get selected item IDs
@@ -57,8 +60,9 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
 
         // Navigate to checkout with selected IDs in URL
         router.push(`/checkout?selected=${selectedIds.join(',')}`);
-    };
+    }, [selectedItems, router]);
 
+    // ✅ Show loading state
     if (isLoading && !isClient) {
         return <CartSkeleton />;
     }
@@ -66,6 +70,7 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
     if (displayItems.length === 0) {
         return <EmptyCart />;
     }
+
     return (
         <>
             <CartHeader itemCount={displayItems.length} />

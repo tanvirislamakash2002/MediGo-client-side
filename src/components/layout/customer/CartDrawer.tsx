@@ -1,5 +1,7 @@
-"use client";
+'use client';
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Trash2, Plus, Minus, Pill } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, Pill, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -22,22 +24,47 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+    const router = useRouter();
     const { 
         cart, 
         cartCount, 
         cartTotal, 
         updateCartItem, 
-        removeCartItem 
+        removeCartItem,
+        isUpdating // ✅ Get loading state from hook
     } = useCart();
+    
+    // ✅ Track which item is being updated locally
+    const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
 
-    const handleUpdateQuantity = (itemId: string, currentQuantity: number, stock: number, delta: number) => {
+    const handleUpdateQuantity = async (itemId: string, currentQuantity: number, stock: number, delta: number) => {
         const newQuantity = currentQuantity + delta;
         if (newQuantity < 1) return;
         if (newQuantity > stock) {
             toast.error(`Only ${stock} items available`);
             return;
         }
-        updateCartItem(itemId, newQuantity);
+        
+        setUpdatingItemId(itemId);
+        try {
+            await updateCartItem(itemId, newQuantity);
+            router.refresh(); // ✅ Force refresh to sync data
+        } finally {
+            setUpdatingItemId(null);
+        }
+    };
+
+    const handleRemoveItem = async (itemId: string) => {
+        setUpdatingItemId(itemId);
+        try {
+            await removeCartItem(itemId);
+            router.refresh(); // ✅ Force refresh after removal
+            toast.success("Item removed from cart");
+        } catch (error) {
+            toast.error("Failed to remove item");
+        } finally {
+            setUpdatingItemId(null);
+        }
     };
 
     const isValidUrl = (url: string | null) => {
@@ -45,6 +72,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         try { new URL(url); return true; }
         catch { return false; }
     };
+
     return (
         <Sheet open={isOpen} onOpenChange={onClose}>
             <SheetContent className="w-full sm:w-[450px] flex flex-col">
@@ -68,65 +96,78 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 ) : (
                     <>
                         <ScrollArea className="flex-1 pr-4">
-                            <div className="space-y-4 py-4">
-                                {cart.map((item) => (
-                                    <div key={item.id} className="flex gap-3">
-                                        <div className="w-16 h-16 bg-muted rounded overflow-hidden flex-shrink-0">
-                                            {isValidUrl(item.imageUrl) ? (
-                                                <Image
-                                                    src={item.imageUrl!}
-                                                    alt={item.name}
-                                                    width={64}
-                                                    height={64}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="flex items-center justify-center h-full text-2xl"><Pill size={45}/></div>
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium truncate">{item.name}</p>
-                                            <p className="text-xs text-muted-foreground">{item.manufacturer}</p>
-                                            <p className="text-sm font-semibold mt-1">
-                                                ${(item.price * item.quantity).toFixed(2)}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-7 w-7"
-                                                    onClick={() => handleUpdateQuantity(item.id, item.quantity, item.stock, -1)}
-                                                >
-                                                    <Minus className="h-3 w-3" />
-                                                </Button>
-                                                <span className="text-sm w-8 text-center">{item.quantity}</span>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-7 w-7"
-                                                    onClick={() => handleUpdateQuantity(item.id, item.quantity, item.stock, 1)}
-                                                >
-                                                    <Plus className="h-3 w-3" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-7 w-7 text-destructive hover:text-destructive"
-                                                    onClick={() => removeCartItem(item.id)}
-                                                >
-                                                    <Trash2 className="h-3 w-3" />
-                                                </Button>
+                            <div className="space-y-4 py-4 ml-4">
+                                {cart.map((item) => {
+                                    const isUpdatingThisItem = updatingItemId === item.id;
+                                    
+                                    return (
+                                        <div key={item.id} className="flex gap-3">
+                                            <div className="w-16 h-16 bg-muted rounded overflow-hidden flex-shrink-0">
+                                                {isValidUrl(item.imageUrl) ? (
+                                                    <Image
+                                                        src={item.imageUrl!}
+                                                        alt={item.name}
+                                                        width={64}
+                                                        height={64}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex items-center justify-center h-full text-2xl">
+                                                        <Pill size={45}/>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium truncate">{item.name}</p>
+                                                <p className="text-xs text-muted-foreground">{item.manufacturer}</p>
+                                                <p className="text-sm font-semibold mt-1">
+                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                </p>
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-7 w-7"
+                                                        onClick={() => handleUpdateQuantity(item.id, item.quantity, item.stock, -1)}
+                                                        disabled={isUpdatingThisItem || isUpdating}
+                                                    >
+                                                        {isUpdatingThisItem ? (
+                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                        ) : (
+                                                            <Minus className="h-3 w-3" />
+                                                        )}
+                                                    </Button>
+                                                    <span className="text-sm w-8 text-center">{item.quantity}</span>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-7 w-7"
+                                                        onClick={() => handleUpdateQuantity(item.id, item.quantity, item.stock, 1)}
+                                                        disabled={isUpdatingThisItem || isUpdating}
+                                                    >
+                                                        <Plus className="h-3 w-3" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-7 w-7 text-destructive hover:text-destructive"
+                                                        onClick={() => handleRemoveItem(item.id)}
+                                                        disabled={isUpdatingThisItem || isUpdating}
+                                                    >
+                                                        <Trash2 className="h-3 w-3" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} each</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-xs text-muted-foreground">${item.price.toFixed(2)} each</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </ScrollArea>
 
-                        <div className="border-t pt-4 space-y-4">
+                        <div className="border-t pt-4 space-y-4 mx-4 mb-4">
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Subtotal</span>
