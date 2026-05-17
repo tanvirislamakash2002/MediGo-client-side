@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,16 +23,16 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-    const router = useRouter();
-    const { 
-        cart, 
-        cartCount, 
-        cartTotal, 
-        updateCartItem, 
+
+    const {
+        cart,
+        cartCount,
+        cartTotal,
+        updateCartItem,
         removeCartItem,
         isUpdating // ✅ Get loading state from hook
     } = useCart();
-    
+
     // ✅ Track which item is being updated locally
     const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
 
@@ -44,11 +43,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             toast.error(`Only ${stock} items available`);
             return;
         }
-        
+
         setUpdatingItemId(itemId);
         try {
             await updateCartItem(itemId, newQuantity);
-            router.refresh(); // ✅ Force refresh to sync data
         } finally {
             setUpdatingItemId(null);
         }
@@ -58,7 +56,6 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         setUpdatingItemId(itemId);
         try {
             await removeCartItem(itemId);
-            router.refresh(); // ✅ Force refresh after removal
             toast.success("Item removed from cart");
         } catch (error) {
             toast.error("Failed to remove item");
@@ -99,7 +96,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <div className="space-y-4 py-4 ml-4">
                                 {cart.map((item) => {
                                     const isUpdatingThisItem = updatingItemId === item.id;
-                                    
+
                                     return (
                                         <div key={item.id} className="flex gap-3">
                                             <div className="w-16 h-16 bg-muted rounded overflow-hidden flex-shrink-0">
@@ -113,7 +110,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                     />
                                                 ) : (
                                                     <div className="flex items-center justify-center h-full text-2xl">
-                                                        <Pill size={45}/>
+                                                        <Pill size={45} />
                                                     </div>
                                                 )}
                                             </div>

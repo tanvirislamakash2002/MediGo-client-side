@@ -24,15 +24,15 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
         isAuthenticated,
         refreshCart
     } = useCart();
-    
+
     const [selectedItems, setSelectedItems] = useState<CartItem[]>([]);
     const [selectedTotal, setSelectedTotal] = useState(0);
     const [isClient, setIsClient] = useState(false);
     const hasRefreshed = useRef(false); // ✅ Track if refresh already happened
 
     // ✅ Use cart from hook if available, otherwise fallback to initial props
-    const displayItems = cart.length > 0 ? cart : initialItems;
-    const displayTotal = cartTotal > 0 ? cartTotal : initialTotal;
+    const displayItems = cart;
+    const displayTotal = cartTotal;
 
     useEffect(() => {
         setIsClient(true);

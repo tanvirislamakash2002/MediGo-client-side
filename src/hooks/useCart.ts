@@ -12,6 +12,7 @@ import {
 import { getSession } from "@/actions/auth.action";
 import { cartStore } from "@/lib/guest-cart";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface CartItem {
     id: string;
@@ -37,6 +38,7 @@ interface GuestCartItem {
 }
 
 export function useCart() {
+    const router = useRouter();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [cartCount, setCartCount] = useState(0);
     const [cartTotal, setCartTotal] = useState(0);
@@ -132,6 +134,7 @@ export function useCart() {
 
             if (isAuthenticated) {
                 await fetchCart();
+                router.refresh();
                 toast.success(`Added to cart`);
             } else {
                 // Guest user - result.data contains the medicine details
@@ -148,6 +151,7 @@ export function useCart() {
                     const guestItem = result.data as GuestCartItem;
                     cartStore.addItem(guestItem);
                     loadGuestCart();
+                    router.refresh();
                     toast.success(`Added ${quantity} x ${result.data.name} to cart`);
                 } else {
                     console.error("No data in result for guest user");
@@ -183,6 +187,7 @@ export function useCart() {
                     return;
                 }
                 await fetchCart();
+                router.refresh();
                 toast.success("Cart updated");
             } catch (error) {
                 toast.error("Failed to update cart");
@@ -195,6 +200,7 @@ export function useCart() {
             const medicineId = itemId.replace("guest-", "");
             cartStore.updateQuantity(medicineId, quantity);
             loadGuestCart();
+            router.refresh();
             toast.success("Cart updated");
         }
     }, [isAuthenticated, fetchCart, loadGuestCart]);
@@ -209,6 +215,7 @@ export function useCart() {
                     return;
                 }
                 await fetchCart();
+                router.refresh();
                 toast.success("Item removed from cart");
             } catch (error) {
                 toast.error("Failed to remove item");
@@ -218,6 +225,7 @@ export function useCart() {
             const medicineId = itemId.replace("guest-", "");
             cartStore.removeItem(medicineId);
             loadGuestCart();
+            router.refresh();
             toast.success("Item removed from cart");
         }
     }, [isAuthenticated, fetchCart, loadGuestCart]);
@@ -232,6 +240,7 @@ export function useCart() {
                     return;
                 }
                 await fetchCart();
+                router.refresh();
                 toast.success("Cart cleared");
             } catch (error) {
                 toast.error("Failed to clear cart");
@@ -240,6 +249,7 @@ export function useCart() {
             // ✅ Guest user - clear localStorage
             cartStore.clearCart();
             loadGuestCart();
+            router.refresh();
             toast.success("Cart cleared");
         }
     }, [isAuthenticated, fetchCart, loadGuestCart]);

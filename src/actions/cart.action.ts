@@ -22,14 +22,18 @@ export const addToCart = async (medicineId: string, quantity: number) => {
 };
 
 export const updateCartItem = async (itemId: string, quantity: number) => {
-    const result = await cartService.updateCartItem(itemId, quantity);
+    const { data: session } = await userService.getSession();
+    const sessionToken = session?.session.token;
+    const result = await cartService.updateCartItem(itemId, quantity, sessionToken);
     updateTag("cart");
     revalidatePath("/cart");
     return result;
 };
 
 export const removeCartItem = async (itemId: string) => {
-    const result = await cartService.removeCartItem(itemId);
+    const { data: session } = await userService.getSession();
+    const sessionToken = session?.session.token;
+    const result = await cartService.removeCartItem(itemId, sessionToken);
     updateTag("cart");
     revalidatePath("/cart");
     return result;

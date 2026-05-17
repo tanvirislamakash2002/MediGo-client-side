@@ -133,10 +133,9 @@ export const cartService = {
     },
 
     // Update cart item quantity
-    updateCartItem: async (itemId: string, quantity: number) => {
+    updateCartItem: async (itemId: string, quantity: number, sessionToken?: string) => {
         try {
             const cookieStore = await cookies();
-            const sessionToken = cookieStore.get("better-auth.session_token")?.value;
             console.log('sessionToken');
             if (!sessionToken) {
                 return {
@@ -177,12 +176,17 @@ export const cartService = {
     },
 
     // Remove item from cart
-    removeCartItem: async (itemId: string) => {
+    removeCartItem: async (itemId: string, sessionToken?: string) => {
         try {
             const cookieStore = await cookies();
             const cookieString = cookieStore.toString();
 
-            console.log('Cookies being sent:', cookieString);
+            if (!sessionToken) {
+                return {
+                    success: false,
+                    message: "Please login to remove item"
+                };
+            }
             const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
                 method: "DELETE",
                 headers: { Cookie: cookieStore.toString() }

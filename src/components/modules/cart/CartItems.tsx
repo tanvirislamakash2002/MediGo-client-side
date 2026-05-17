@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, AlertCircle, Plus, Minus, Pill } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { updateCartItem } from "@/actions/cart.action";
 import { useCart } from "@/hooks/useCart";
 import { CartItem } from "@/types/cart.type";
 
@@ -31,7 +29,7 @@ const isValidUrl = (url: string | null) => {
 };
 
 export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
-    const router = useRouter();
+    
     const {
         cart: items,
         removeCartItem,
@@ -100,7 +98,6 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
         const itemsToRemove = items.filter(item => selectedItems.has(item.id));
 
         try {
-            // ✅ Remove items one by one using the hook
             for (const item of itemsToRemove) {
                 await removeCartItem(item.id);
             }
@@ -109,8 +106,7 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
             setSelectAll(false);
             toast.success(`${itemsToRemove.length} items removed`, { id: toastId });
 
-            // ✅ Refresh the page once after all removals
-            router.refresh();
+
         } catch (error) {
             toast.error("Failed to remove items", { id: toastId });
         }
@@ -120,7 +116,6 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
         setLocalUpdatingId(itemId);
         try {
             await removeCartItem(itemId);
-            router.refresh();
         } finally {
             setLocalUpdatingId(null);
         }

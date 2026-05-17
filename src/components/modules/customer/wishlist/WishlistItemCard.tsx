@@ -155,7 +155,7 @@ export function WishlistItemCard({ item, isSelected, onSelect, onRemove }: Wishl
                                                 {item.medicine.category.name}
                                             </Badge>
                                             {item.medicine.requiresPrescription && (
-                                                <Badge variant="destructive" className="text-xs bg-red-500">
+                                                <Badge variant="destructive" className="text-xs">
                                                     Rx Required
                                                 </Badge>
                                             )}
