@@ -221,8 +221,8 @@ export function WishlistItems({
                     <WishlistItemCard
                         key={item.id}
                         item={item}
-                        isSelected={selectedItems.has(item.id)}  // ✅ Pass selection state
-                        onSelect={(checked) => handleSelectItem(item.id, checked)}  // ✅ Pass handler
+                        isSelected={selectedItems.has(item.id)}  
+                        onSelect={(checked) => handleSelectItem(item.id, checked)}  
                         onRemove={handleRemoveItem}
                     />
                 ))}

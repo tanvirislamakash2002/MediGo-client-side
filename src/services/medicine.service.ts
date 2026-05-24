@@ -45,7 +45,7 @@ export const medicineService = {
 
             return {
                 success: true,
-                data: data.data || data
+                data: data
             };
         } catch (error) {
             console.error('Get medicines error:', error);
@@ -143,7 +143,7 @@ export const medicineService = {
     // Updated to return consistent response with success flag
     getMedicineById: async (id: string) => {
         try {
-                    const cookieStore = await cookies();
+            const cookieStore = await cookies();
             const res = await fetch(`${API_URL}/medicine/${id}`, {
                 headers: {
                     Cookie: cookieStore.toString()

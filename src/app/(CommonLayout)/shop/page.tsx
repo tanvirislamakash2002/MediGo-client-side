@@ -1,4 +1,3 @@
-// app/(CommonLayout)/shop/page.tsx
 import { getCategories } from "@/actions/category.action";
 import { getMedicines } from "@/actions/medicine.action";
 import { ShopHero } from "@/components/modules/shop/ShopHero";
@@ -57,7 +56,6 @@ export default async function ShopPage({ searchParams }: PageProps) {
         limit
     });
     const medicinesData = !medicinesResult.success ? null : medicinesResult?.data;
-    
     return (
         <div className="min-h-screen bg-background">
             <ShopHero />

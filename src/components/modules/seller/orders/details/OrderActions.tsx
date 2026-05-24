@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,14 +36,24 @@ interface OrderActionsProps {
 const getNextStatusOptions = (currentStatus: string) => {
     switch (currentStatus) {
         case "PLACED":
-            return { value: "PROCESSING", label: "Processing", icon: Package, color: "bg-yellow-500" };
+            return { value: "PROCESSING", label: "Processing", icon: Package };
         case "PROCESSING":
-            return { value: "SHIPPED", label: "Shipped", icon: Truck, color: "bg-purple-500" };
+            return { value: "SHIPPED", label: "Shipped", icon: Truck };
         case "SHIPPED":
-            return { value: "DELIVERED", label: "Delivered", icon: CheckCircle, color: "bg-green-500" };
+            return { value: "DELIVERED", label: "Delivered", icon: CheckCircle };
         default:
             return null;
     }
+};
+
+const areAllItemsSameStatus = (items: OrderItem[]): boolean => {
+    if (items.length === 0) return true;
+    const firstStatus = items[0].status;
+    return items.every(item => item.status === firstStatus);
+};
+
+const getUniqueStatuses = (items: OrderItem[]): string[] => {
+    return [...new Set(items.map(item => item.status))];
 };
 
 export function OrderActions({ order }: OrderActionsProps) {
@@ -51,28 +61,55 @@ export function OrderActions({ order }: OrderActionsProps) {
     const [isUpdating, setIsUpdating] = useState(false);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
+    const [localItems, setLocalItems] = useState<OrderItem[]>(order.items);
+
+    // Update localItems when prop changes (e.g., after refresh)
+    useEffect(() => {
+        setLocalItems(order.items);
+    }, [order.items]);
+
+    const uniqueStatuses = getUniqueStatuses(localItems);
+    const allSameStatus = areAllItemsSameStatus(localItems);
     
-    const nextStatus = getNextStatusOptions(order.status);
-    const canCancel = order.status === "PLACED" || order.status === "PROCESSING";
+    let displayStatus = localItems[0]?.status || "PLACED";
+    let isMixedStatus = false;
+    
+    if (!allSameStatus) {
+        isMixedStatus = true;
+        const statusPriority = ["PLACED", "PROCESSING", "SHIPPED", "DELIVERED"];
+        const highestPriority = statusPriority.find(status => uniqueStatuses.includes(status));
+        if (highestPriority) displayStatus = highestPriority;
+        else if (uniqueStatuses.includes("CANCELLED")) displayStatus = "CANCELLED";
+    }
+    
+    const nextStatus = getNextStatusOptions(displayStatus);
+    const canCancel = displayStatus === "PLACED" || displayStatus === "PROCESSING";
 
     const handleStatusUpdate = async () => {
         if (!nextStatus) return;
-        
+
         setShowStatusModal(false);
         setIsUpdating(true);
         const toastId = toast.loading(`Updating order items to ${nextStatus.label}...`);
-        
+
         try {
-            const updatePromises = order.items.map(item =>
+            const updatePromises = localItems.map(item =>
                 updateOrderItemStatus(item.id, nextStatus.value)
             );
-            
+
             const results = await Promise.all(updatePromises);
             const errors = results.filter(r => !r.success);
-            
+
             if (errors.length > 0) {
                 toast.error(`${errors.length} item(s) failed to update`, { id: toastId });
             } else {
+                // Update local state immediately
+                const updatedItems = localItems.map(item => ({
+                    ...item,
+                    status: nextStatus.value
+                }));
+                setLocalItems(updatedItems);
+                
                 toast.success(`All items updated to ${nextStatus.label}`, { id: toastId });
                 router.refresh();
             }
@@ -87,18 +124,25 @@ export function OrderActions({ order }: OrderActionsProps) {
         setShowCancelModal(false);
         setIsUpdating(true);
         const toastId = toast.loading("Cancelling order...");
-        
+
         try {
-            const updatePromises = order.items.map(item =>
+            const updatePromises = localItems.map(item =>
                 updateOrderItemStatus(item.id, "CANCELLED")
             );
-            
+
             const results = await Promise.all(updatePromises);
             const errors = results.filter(r => !r.success);
-            
+
             if (errors.length > 0) {
                 toast.error(`${errors.length} item(s) failed to cancel`, { id: toastId });
             } else {
+                // Update local state immediately
+                const updatedItems = localItems.map(item => ({
+                    ...item,
+                    status: "CANCELLED"
+                }));
+                setLocalItems(updatedItems);
+                
                 toast.success("Order cancelled successfully", { id: toastId });
                 router.refresh();
             }
@@ -126,7 +170,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                         <AlertDialogTitle>Confirm Status Update</AlertDialogTitle>
                         <AlertDialogDescription asChild>
                             <div className="text-sm text-muted-foreground">
-                                <p>Are you sure you want to update all {order.items.length} item(s) in this order to {nextStatus?.label?.toLowerCase()}?</p>
+                                <p>Are you sure you want to update all {localItems.length} item(s) in this order to {nextStatus?.label?.toLowerCase()}?</p>
                                 <br />
                                 <p>This action will:</p>
                                 <ul className="list-disc list-inside mt-2 space-y-1">
@@ -162,7 +206,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                                 <br />
                                 <p>This action will:</p>
                                 <ul className="list-disc list-inside mt-2 space-y-1">
-                                    <li>Cancel all {order.items.length} item(s) in this order</li>
+                                    <li>Cancel all {localItems.length} item(s) in this order</li>
                                     <li>Restore the stock quantities</li>
                                     <li>Notify the customer about the cancellation</li>
                                     <li>Cannot be undone</li>
@@ -172,8 +216,8 @@ export function OrderActions({ order }: OrderActionsProps) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isUpdating}>Go Back</AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={handleCancelOrder} 
+                        <AlertDialogAction
+                            onClick={handleCancelOrder}
                             disabled={isUpdating}
                             className="bg-red-600 hover:bg-red-700"
                         >
@@ -193,7 +237,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                     <CardTitle>Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-3">
-                    {nextStatus && (
+                    {nextStatus && !isMixedStatus && (
                         <Button
                             variant="default"
                             className="w-full"
@@ -204,8 +248,8 @@ export function OrderActions({ order }: OrderActionsProps) {
                             Mark as {nextStatus.label}
                         </Button>
                     )}
-                    
-                    {canCancel && (
+
+                    {canCancel && !isMixedStatus && (
                         <Button
                             variant="destructive"
                             className="w-full"
@@ -216,7 +260,13 @@ export function OrderActions({ order }: OrderActionsProps) {
                             Cancel Order
                         </Button>
                     )}
-                                    
+
+                    {isMixedStatus && (
+                        <p className="text-sm text-muted-foreground text-center">
+                            Update individual items from the items list
+                        </p>
+                    )}
+
                     <Button
                         variant="outline"
                         className="w-full"
@@ -225,7 +275,7 @@ export function OrderActions({ order }: OrderActionsProps) {
                         <Printer className="h-4 w-4 mr-2" />
                         Print Order
                     </Button>
-                    
+
                     <Button
                         variant="outline"
                         className="w-full"
