@@ -24,12 +24,10 @@ export function ArticleActions({ articleId, articleTitle }: ArticleActionsProps)
 
     const handleLike = () => {
         toast.success("Thanks for liking this article!");
-        // TODO: API call to save like
     };
 
     const handleSave = () => {
         toast.success("Article saved to your reading list");
-        // TODO: API call to save article
     };
 
     const handleShare = () => {

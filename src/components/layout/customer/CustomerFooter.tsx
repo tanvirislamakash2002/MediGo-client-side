@@ -56,9 +56,10 @@ export function CustomerFooter() {
                         <ul className="space-y-2">
                             <li><Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition">About Us</Link></li>
                             <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition">Contact Us</Link></li>
-                            <li><Link href="/faq" className="text-sm text-muted-foreground hover:text-primary transition">FAQs</Link></li>
-                            <li><Link href="/shipping" className="text-sm text-muted-foreground hover:text-primary transition">Shipping Information</Link></li>
-                            <li><Link href="/returns" className="text-sm text-muted-foreground hover:text-primary transition">Return Policy</Link></li>
+                            {/* <li><Link href="/faq" className="text-sm text-muted-foreground hover:text-primary transition">FAQs</Link></li> */}
+                            {/* <li><Link href="/shipping" className="text-sm text-muted-foreground hover:text-primary transition">Shipping Information</Link></li> */}
+                            {/* <li><Link href="/returns" className="text-sm text-muted-foreground hover:text-primary transition">Return Policy</Link></li> */}
+                            <li><Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition">Privacy Policy</Link></li>
                         </ul>
                     </div>
 
@@ -66,10 +67,10 @@ export function CustomerFooter() {
                     <div>
                         <h3 className="font-semibold mb-4">Customer Service</h3>
                         <ul className="space-y-2">
-                            <li><Link href="/help" className="text-sm text-muted-foreground hover:text-primary transition">Help Center</Link></li>
-                            <li><Link href="/track-order" className="text-sm text-muted-foreground hover:text-primary transition">Track Order</Link></li>
-                            <li><Link href="/cancel-order" className="text-sm text-muted-foreground hover:text-primary transition">Cancel Order</Link></li>
-                            <li><Link href="/report" className="text-sm text-muted-foreground hover:text-primary transition">Report an Issue</Link></li>
+                            <li><Link href="/terms" className="text-sm text-muted-foreground hover:text-primary transition">Help Center</Link></li>
+                            <li><Link href="/orders" className="text-sm text-muted-foreground hover:text-primary transition">Track Order</Link></li>
+                            <li><Link href="/orders?status=CANCELLED&page=1" className="text-sm text-muted-foreground hover:text-primary transition">Cancel Order</Link></li>
+                            <li><Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition">Report an Issue</Link></li>
                         </ul>
                     </div>
 

@@ -140,7 +140,7 @@ function ProductCard({ product }: { product: Medicine }) {
                     <Button
                         size="icon"
                         variant="secondary"
-                        className="h-8 w-8 rounded-full bg-white/90 hover:bg-white"
+                        className="h-8 w-8 rounded-full  hover:bg-gray-600"
                         onClick={handleQuickView}
                     >
                         <Eye className="h-4 w-4" />
@@ -148,7 +148,7 @@ function ProductCard({ product }: { product: Medicine }) {
                     <Button
                         size="icon"
                         variant="secondary"
-                        className="h-8 w-8 rounded-full bg-white/90 hover:bg-white"
+                        className="h-8 w-8 rounded-full hover:bg-red-500"
                         onClick={handleWishlist}
                     >
                         <Heart className="h-4 w-4" />
@@ -224,7 +224,6 @@ export function BestsellingMedicines({ medicineData }: { medicineData: Medicine[
         setProducts(medicineData);
         setLoading(false);
     });
-
     if (error) {
         return (
             <section className="py-16 bg-background">
@@ -269,7 +268,7 @@ export function BestsellingMedicines({ medicineData }: { medicineData: Medicine[
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        {products.map((product) => (
+                        {products.slice(0,8).map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>

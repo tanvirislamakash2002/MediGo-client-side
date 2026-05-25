@@ -83,9 +83,9 @@ export function Footer() {
                         <ul className="space-y-2">
                             <li><Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition">About Us</Link></li>
                             <li><Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition">Contact Us</Link></li>
-                            <li><Link href="/faq" className="text-sm text-muted-foreground hover:text-primary transition">FAQs</Link></li>
-                            <li><Link href="/shipping" className="text-sm text-muted-foreground hover:text-primary transition">Shipping Information</Link></li>
-                            <li><Link href="/returns" className="text-sm text-muted-foreground hover:text-primary transition">Return Policy</Link></li>
+                            {/* <li><Link href="/faq" className="text-sm text-muted-foreground hover:text-primary transition">FAQs</Link></li> */}
+                            {/* <li><Link href="/shipping" className="text-sm text-muted-foreground hover:text-primary transition">Shipping Information</Link></li> */}
+                            {/* <li><Link href="/returns" className="text-sm text-muted-foreground hover:text-primary transition">Return Policy</Link></li> */}
                             <li><Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition">Privacy Policy</Link></li>
                         </ul>
                     </div>
@@ -95,10 +95,10 @@ export function Footer() {
                         <h3 className="font-semibold mb-4">Shop</h3>
                         <ul className="space-y-2">
                             <li><Link href="/shop" className="text-sm text-muted-foreground hover:text-primary transition">All Medicines</Link></li>
-                            <li><Link href="/shop?view=categories" className="text-sm text-muted-foreground hover:text-primary transition">Categories</Link></li>
-                            <li><Link href="/offers" className="text-sm text-muted-foreground hover:text-primary transition">Offers & Discounts</Link></li>
+                            <li><Link href="/categories">Categories</Link></li>
+                            {/* <li><Link href="/offers" className="text-sm text-muted-foreground hover:text-primary transition">Offers & Discounts</Link></li> */}
                             <li><Link href="/shop?sortBy=createdAt&sortOrder=desc" className="text-sm text-muted-foreground hover:text-primary transition">New Arrivals</Link></li>
-                            <li><Link href="/shop?sortBy=sold&sortOrder=desc" className="text-sm text-muted-foreground hover:text-primary transition">Best Sellers</Link></li>
+                            {/* <li><Link href="/shop?sortBy=sold&sortOrder=desc" className="text-sm text-muted-foreground hover:text-primary transition">Best Sellers</Link></li> */}
                         </ul>
                     </div>
 
@@ -132,16 +132,16 @@ export function Footer() {
                         <div className="mt-6">
                             <h4 className="text-sm font-semibold mb-3">Follow Us</h4>
                             <div className="flex gap-3">
-                                <Link href="#" className="text-muted-foreground hover:text-primary transition">
+                                <Link href="https://www.facebook.com" className="text-muted-foreground hover:text-primary transition">
                                     <Facebook className="h-5 w-5" />
                                 </Link>
-                                <Link href="#" className="text-muted-foreground hover:text-primary transition">
+                                <Link href="https://x.com" className="text-muted-foreground hover:text-primary transition">
                                     <Twitter className="h-5 w-5" />
                                 </Link>
-                                <Link href="#" className="text-muted-foreground hover:text-primary transition">
+                                <Link href="https://www.instagram.com" className="text-muted-foreground hover:text-primary transition">
                                     <Instagram className="h-5 w-5" />
                                 </Link>
-                                <Link href="#" className="text-muted-foreground hover:text-primary transition">
+                                <Link href="https://www.youtube.com" className="text-muted-foreground hover:text-primary transition">
                                     <Youtube className="h-5 w-5" />
                                 </Link>
                             </div>

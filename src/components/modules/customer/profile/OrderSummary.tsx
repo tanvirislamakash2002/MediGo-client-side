@@ -44,7 +44,7 @@ export function OrderSummary({ orders }: OrderSummaryProps) {
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Order Summary</CardTitle>
                 <Button variant="ghost" size="sm" asChild>
-                    <Link href="/customer/orders">View All →</Link>
+                    <Link href="/orders">View All →</Link>
                 </Button>
             </CardHeader>
             <CardContent className="space-y-4">

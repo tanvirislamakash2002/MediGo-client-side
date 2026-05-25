@@ -132,7 +132,6 @@ function ArticleCard({ article, variant = "default" }: { article: Article; varia
         if (diffDays < 7) return `${diffDays} days ago`;
         return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     };
-
     if (variant === "featured") {
         return (
             <Card className="overflow-hidden group hover:shadow-xl transition-all duration-300">
@@ -272,7 +271,8 @@ function ArticleCard({ article, variant = "default" }: { article: Article; varia
                         <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
                             <User className="h-3 w-3 text-primary" />
                         </div>
-                        <span className="text-xs text-muted-foreground">{article.author.split(" ")[0]}</span>
+                        <span className="text-xs text-muted-foreground">{article.author}</span>
+                        {/* <span className="text-xs text-muted-foreground">{article.author.split(" ")[0]}</span> */}
                     </div>
                     <Button asChild variant="ghost" size="sm" className="gap-1 text-primary">
                         <Link href={`/articles/${article.id}`}>
@@ -375,14 +375,14 @@ export function HealthTips() {
                 </div>
 
                 {/* View All Articles Button */}
-                <div className="text-center mb-12">
+                {/* <div className="text-center mb-12">
                     <Button asChild variant="outline" size="lg" className="gap-2">
                         <Link href="/articles">
                             View All Articles
                             <TrendingUp className="h-4 w-4" />
                         </Link>
                     </Button>
-                </div>
+                </div> */}
 
                 {/* Newsletter Signup */}
                 <NewsletterSignup />

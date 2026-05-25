@@ -46,12 +46,12 @@ export function NotificationPrefs() {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Notification Preferences</CardTitle>
-                {!isEditing && (
+                {/* {!isEditing && (
                     <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                     </Button>
-                )}
+                )} */}
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="flex items-center justify-between py-2 border-b">

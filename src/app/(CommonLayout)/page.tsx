@@ -17,7 +17,7 @@ const {data} =  await getMedicines()
       <TrustIndicators />
       <HowItWorks />
       <FeaturedCategories />
-      <BestsellingMedicines medicineData = {data} />
+      <BestsellingMedicines medicineData = {data?.data} />
       <SpecialOffers />
       <HealthTips />
     </main>
