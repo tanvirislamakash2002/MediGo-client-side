@@ -121,18 +121,30 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
     },
   });
 
-  const handleGoogleLogin = async () => {
+  // const handleGoogleLogin = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     await authClient.signIn.social({
+  //       provider: "google",
+  //       callbackURL: "https://medigo1.vercel.app",
+  //     });
+  //   } catch (error) {
+  //     toast.error("Failed to login with Google");
+  //     setIsLoading(false);
+  //   }
+  // };
+const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await authClient.signIn.social({
-        provider: "google",
-        callbackURL: "http://localhost:3000",
-      });
+        await authClient.signIn.social({
+            provider: "google",
+            callbackURL: window.location.origin,  // Just the origin
+        });
     } catch (error) {
-      toast.error("Failed to login with Google");
-      setIsLoading(false);
+        toast.error("Failed to login with Google");
+        setIsLoading(false);
     }
-  };
+};
 
   const handleDemoLogin = async (role: "admin" | "seller" | "customer") => {
     const credentials = DEMO_CREDENTIALS[role];
