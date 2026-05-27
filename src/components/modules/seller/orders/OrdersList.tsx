@@ -131,7 +131,6 @@ export function OrdersList({
 
         fetchOrders();
     };
-// console.log(orders);
     return (
         <>
             {/* Orders List */}

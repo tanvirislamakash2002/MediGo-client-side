@@ -40,7 +40,6 @@ export const cartStore = {
         return newCart;
     },
 
-    // ✅ Add this method
     updateQuantity: (medicineId: string, quantity: number): GuestCartItem[] => {
         if (quantity <= 0) {
             return cartStore.removeItem(medicineId);
@@ -54,7 +53,6 @@ export const cartStore = {
         return newCart;
     },
 
-    // ✅ Add this method
     removeItem: (medicineId: string): GuestCartItem[] => {
         const cart = cartStore.getCart();
         const newCart = cart.filter(i => i.medicineId !== medicineId);

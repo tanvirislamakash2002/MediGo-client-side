@@ -73,7 +73,7 @@ export function EditCategoryModal({ isOpen, category, onClose, onSuccess }: Edit
                 } else {
                     toast.success("Category updated successfully", { id: toastId });
                     router.refresh();
-                    onSuccess();
+                    onSuccess?.();
                     onClose();
                 }
             } catch (error) {

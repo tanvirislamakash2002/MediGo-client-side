@@ -60,7 +60,7 @@ const formSchema = z.object({
 
 const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
     const router = useRouter();
-    const medicineId = medicine.id; // ✅ Fix: use medicine.id from prop
+    const medicineId = medicine.id;
 
     // State for data
     const [categoryData, setCategoryData] = useState<Category[] | null>(null);
@@ -73,6 +73,7 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
     const [imagePreview, setImagePreview] = useState<string | null>(medicine.imageUrl || null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [isImageChanged, setIsImageChanged] = useState(false);
 
     // Fetch categories
     useEffect(() => {
@@ -95,6 +96,8 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
         fetchCategories();
     }, []);
 
+
+    // Replace handleImageSelect:
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -110,22 +113,40 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
             return;
         }
 
+        // Revoke old preview URL if it was a blob
+        if (imagePreview && imagePreview.startsWith('blob:')) {
+            URL.revokeObjectURL(imagePreview);
+        }
+
         setImageFile(file);
         const previewUrl = URL.createObjectURL(file);
         setImagePreview(previewUrl);
         setUploadProgress(0);
+        setIsImageChanged(true);
     };
 
+    // Replace removeImage:
     const removeImage = () => {
-        if (imagePreview && medicine.imageUrl !== imagePreview) {
+        // Revoke blob URL if it exists
+        if (imagePreview && imagePreview.startsWith('blob:')) {
             URL.revokeObjectURL(imagePreview);
         }
+
+        // Reset to no image
         setImageFile(null);
-        setImagePreview(medicine.imageUrl || null);
+        setImagePreview(null);
+        setIsImageChanged(true);
         setUploadProgress(0);
     };
 
+    // Update uploadImage function:
     const uploadImage = async (medicineId: string): Promise<boolean> => {
+        // If no image file and no change, keep existing image
+        if (!imageFile && !isImageChanged) return true;
+
+        // If image was removed (no file and no preview), return true (no image to upload)
+        if (!imageFile && !imagePreview) return true;
+
         if (!imageFile) return true;
 
         setIsUploading(true);
@@ -150,6 +171,7 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
 
             if (result.success && result.data?.imageUrl) {
                 setUploadProgress(100);
+                setIsImageChanged(false);
                 return true;
             } else {
                 toast.error(result.message || "Failed to upload image");
@@ -169,13 +191,23 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
         }
     };
 
-    // Form submission handler
+    // Update handleSubmit to handle image removal:
     const handleSubmit = async (values: FormValues) => {
         setIsSubmitting(true);
         const toastId = toast.loading("Updating medicine...");
 
         try {
-            const updateResult = await updateMedicine(medicineId, values);
+            // Prepare update data
+            let updateData = { ...values };
+
+            // If image was removed (no preview and no file)
+            if (isImageChanged && !imagePreview && !imageFile) {
+                // Set imageUrl to empty string to remove existing image
+                updateData.imageUrl = "";
+
+            }
+
+            const updateResult = await updateMedicine(medicineId, updateData);
 
             if (!updateResult.success) {
                 toast.error(updateResult.message, { id: toastId });
@@ -183,6 +215,7 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
                 return;
             }
 
+            // Upload new image if there's a file
             if (imageFile) {
                 const uploadSuccess = await uploadImage(medicineId);
                 if (!uploadSuccess) {
@@ -196,6 +229,7 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
 
             router.push("/seller/medicines");
         } catch (error) {
+            console.error("Update error:", error);
             toast.error("Failed to update medicine", { id: toastId });
         } finally {
             setIsSubmitting(false);
@@ -204,7 +238,7 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
 
     const form = useForm({
         defaultValues: {
-            name: medicine.name, // ✅ Use medicine prop directly
+            name: medicine.name,
             description: medicine.description,
             price: medicine.price,
             stock: medicine.stock,
@@ -240,7 +274,7 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
     });
 
     // Loading state
-    if (isLoadingCategories) { // ✅ Only check categories loading
+    if (isLoadingCategories) {
         return (
             <div className="max-w-2xl mx-auto">
                 <Card>
@@ -266,6 +300,15 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
             </div>
         );
     }
+
+    const handleCancel = () => {
+        // Clean up blob URL if exists
+        if (imagePreview && imagePreview.startsWith('blob:')) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        router.back();
+    };
+
     return (
         <div className="max-w-2xl mx-auto">
             <Card>
@@ -553,7 +596,7 @@ const EditMedicineForm = ({ medicine }: EditMedicineFormProps) => {
                         type="button"
                         variant="outline"
                         className="flex-1"
-                        onClick={() => router.back()}
+                        onClick={handleCancel}
                         disabled={isSubmitting || isUploading}
                     >
                         Cancel

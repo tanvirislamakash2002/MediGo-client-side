@@ -28,9 +28,9 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
     const [selectedItems, setSelectedItems] = useState<CartItem[]>([]);
     const [selectedTotal, setSelectedTotal] = useState(0);
     const [isClient, setIsClient] = useState(false);
-    const hasRefreshed = useRef(false); // ✅ Track if refresh already happened
+    const hasRefreshed = useRef(false); 
 
-    // ✅ Use cart from hook if available, otherwise fallback to initial props
+
     const displayItems = cart;
     const displayTotal = cartTotal;
 
@@ -38,7 +38,6 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
         setIsClient(true);
     }, []);
 
-    // ✅ Only refresh once on initial client mount
     useEffect(() => {
         if (isClient && !hasRefreshed.current) {
             hasRefreshed.current = true;
@@ -46,7 +45,6 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
         }
     }, [isClient, refreshCart]);
 
-    // ✅ Memoize the selection change handler
     const handleSelectionChange = useCallback((items: CartItem[], total: number) => {
         setSelectedItems(items);
         setSelectedTotal(total);
@@ -62,7 +60,6 @@ export function CartContent({ initialItems, initialTotal }: CartContentProps) {
         router.push(`/checkout?selected=${selectedIds.join(',')}`);
     }, [selectedItems, router]);
 
-    // ✅ Show loading state
     if (isLoading && !isClient) {
         return <CartSkeleton />;
     }

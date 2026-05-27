@@ -42,7 +42,7 @@ export const cartService = {
             else {
                 return {
                     success: true,
-                    data: { items: [], totalItems: 0, totalPrice: 0 }  // ✅ Ensure consistent structure
+                    data: { items: [], totalItems: 0, totalPrice: 0 }  
                 };
             }
         } catch (error) {
@@ -85,7 +85,7 @@ export const cartService = {
             else {
                 const medicineRes = await fetch(`${API_URL}/medicine/${medicineId}`);
                 const medicineData = await medicineRes.json();
-                console.log("Raw medicine API response:", JSON.stringify(medicineData, null, 2));
+                
                 if (!medicineRes.ok) {
                     return {
                         success: false,
@@ -93,10 +93,8 @@ export const cartService = {
                     };
                 }
 
-                // ✅ Handle both response formats
                 const medicine = medicineData.data || medicineData;
 
-                // ✅ Validate required fields
                 if (!medicine.id || !medicine.name) {
                     console.error("Invalid medicine data:", medicine);
                     return {
@@ -116,8 +114,6 @@ export const cartService = {
                     stock: medicine.stock || 0
                 };
 
-                console.log("Created guest cart item:", cartItem); // ✅ Debug log
-
                 return {
                     success: true,
                     data: cartItem
@@ -136,7 +132,6 @@ export const cartService = {
     updateCartItem: async (itemId: string, quantity: number, sessionToken?: string) => {
         try {
             const cookieStore = await cookies();
-            console.log('sessionToken');
             if (!sessionToken) {
                 return {
                     success: false,

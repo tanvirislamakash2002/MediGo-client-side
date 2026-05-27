@@ -92,7 +92,7 @@ export function useCart() {
     const loadGuestCart = useCallback(() => {
         const guestCart = cartStore.getCart();
         const formattedCart: CartItem[] = guestCart.map((item, index) => ({
-            id: `guest-${item.medicineId}`, // ✅ Better ID using medicineId
+            id: `guest-${item.medicineId}`, 
             medicineId: item.medicineId,
             name: item.name,
             price: item.price,
@@ -124,9 +124,6 @@ export function useCart() {
         try {
             const result = await addToCartAction(medicineId, quantity);
 
-            // ✅ Debug log
-            console.log("Add to cart result:", JSON.stringify(result, null, 2));
-
             if (!result.success) {
                 toast.error(result.message);
                 return false;
@@ -139,9 +136,6 @@ export function useCart() {
             } else {
                 // Guest user - result.data contains the medicine details
                 if (result.data) {
-                    console.log("Guest item data:", result.data); // ✅ Debug log
-
-                    // ✅ Validate data before adding
                     if (!result.data.medicineId || !result.data.name) {
                         console.error("Invalid guest item data:", result.data);
                         toast.error("Failed to add item to cart");
@@ -195,8 +189,6 @@ export function useCart() {
                 setIsUpdating(false);
             }
         } else {
-            // ✅ Guest user - update localStorage
-            // For guest, itemId is actually medicineId (since we used medicineId as id)
             const medicineId = itemId.replace("guest-", "");
             cartStore.updateQuantity(medicineId, quantity);
             loadGuestCart();
@@ -221,7 +213,6 @@ export function useCart() {
                 toast.error("Failed to remove item");
             }
         } else {
-            // ✅ Guest user - remove from localStorage
             const medicineId = itemId.replace("guest-", "");
             cartStore.removeItem(medicineId);
             loadGuestCart();
@@ -246,7 +237,6 @@ export function useCart() {
                 toast.error("Failed to clear cart");
             }
         } else {
-            // ✅ Guest user - clear localStorage
             cartStore.clearCart();
             loadGuestCart();
             router.refresh();

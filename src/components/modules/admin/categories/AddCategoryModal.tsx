@@ -15,6 +15,7 @@ import * as z from "zod";
 interface AddCategoryModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onSuccess?: () => void;
 }
 
 const formSchema = z.object({
@@ -24,7 +25,7 @@ const formSchema = z.object({
     description: z.string().max(200, "Description must be less than 200 characters").optional(),
 });
 
-export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
+export function AddCategoryModal({ isOpen, onClose, onSuccess }: AddCategoryModalProps) {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -55,15 +56,17 @@ export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
         onSubmit: async ({ value }) => {
             setIsSubmitting(true);
             const toastId = toast.loading("Creating category...");
-            
+
             try {
                 const result = await createCategory(value);
                 if (!result.success) {
                     toast.error(result.message, { id: toastId });
                 } else {
                     toast.success("Category created successfully", { id: toastId });
-                    router.refresh();
-                    onClose();
+                    onSuccess?.();
+                    setTimeout(() => {
+                        onClose();
+                    }, 50);
                     form.reset();
                 }
             } catch (error) {
@@ -80,7 +83,7 @@ export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
                 <DialogHeader>
                     <DialogTitle>Add New Category</DialogTitle>
                 </DialogHeader>
-                
+
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -115,7 +118,7 @@ export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
                             );
                         }}
                     />
-                    
+
                     <form.Field
                         name="description"
                         children={(field) => {
@@ -144,7 +147,7 @@ export function AddCategoryModal({ isOpen, onClose }: AddCategoryModalProps) {
                             );
                         }}
                     />
-                    
+
                     <div className="flex gap-3 pt-4">
                         <Button
                             type="submit"

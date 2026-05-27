@@ -29,7 +29,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ id: st
     if (!article) {
         notFound();
     }
-console.log(article);
     return (
         <main className="min-h-screen bg-background">
             {/* Article Header */}

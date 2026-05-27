@@ -149,7 +149,7 @@ export function CheckoutForm({ initialItems, initialTotal, user }: CheckoutFormP
                     discountAmount: discountAmount,
                     discountCode: appliedPromo?.code || null,
                     totalAmount: finalTotal,
-                    prescriptionUrls: uploadedPrescriptions, // ✅ Include uploaded prescription URLs
+                    prescriptionUrls: uploadedPrescriptions, 
                 };
 
                 const resultOrder = await placeOrder(orderData);
@@ -171,7 +171,6 @@ export function CheckoutForm({ initialItems, initialTotal, user }: CheckoutFormP
         },
     });
 
-    // ✅ Upload prescription file
     const handlePrescriptionUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;

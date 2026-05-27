@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Checkbox } from "@/components/ui/checkbox";  // ✅ Add this import
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,8 +41,8 @@ interface WishlistItem {
 
 interface WishlistItemCardProps {
     item: WishlistItem;
-    isSelected: boolean;  // ✅ Add this
-    onSelect: (checked: boolean) => void;  // ✅ Add this
+    isSelected: boolean; 
+    onSelect: (checked: boolean) => void;
     onRemove: (itemId: string) => void;
 }
 
@@ -111,7 +111,6 @@ export function WishlistItemCard({ item, isSelected, onSelect, onRemove }: Wishl
             <Card className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                     <div className="flex gap-4">
-                        {/* ✅ Add Checkbox */}
                         <div className="flex-shrink-0 pt-1">
                             <Checkbox
                                 checked={isSelected}

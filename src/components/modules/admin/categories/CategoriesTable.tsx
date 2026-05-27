@@ -75,10 +75,14 @@ export function CategoriesTable({
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const currentPage = parseInt(searchParams.get("page") || initialPage.toString());
     const currentSort = searchParams.get("sort") || initialSort;
 
+    const handleDataChange = () => {
+        setRefreshKey(prev => prev + 1);
+    };
     useEffect(() => {
         const fetchCategories = async () => {
             setIsLoading(true);
@@ -99,7 +103,7 @@ export function CategoriesTable({
         };
 
         fetchCategories();
-    }, [searchParams, initialSort]);
+    }, [searchParams, initialSort, refreshKey]);
 
     const updateFilters = (key: string, value: string) => {
         const params = new URLSearchParams(searchParams);
@@ -153,15 +157,20 @@ export function CategoriesTable({
     const handleDeleteConfirm = async () => {
         if (!selectedCategory) return;
 
-        const result = await deleteCategory(selectedCategory.id);
-        if (!result.success) {
-            toast.error(result.message);
-        } else {
-            toast.success("Category deleted successfully");
-            router.refresh();
+        const toastId = toast.loading("Deleting category...");
+
+        try {
+            const result = await deleteCategory(selectedCategory.id);
+            if (!result.success) {
+                toast.error(result.message, { id: toastId });
+            } else {
+                toast.success("Category deleted successfully", { id: toastId });
+                setShowDeleteModal(false);
+                setSelectedCategory(null);
+            }
+        } catch (error) {
+            toast.error("Failed to delete category", { id: toastId });
         }
-        setShowDeleteModal(false);
-        setSelectedCategory(null);
     };
 
     const getSortLabel = () => {
@@ -172,6 +181,25 @@ export function CategoriesTable({
     if (isLoading && categories.length === 0) {
         return <CategoriesSkeleton />;
     }
+
+    const refreshCategories = async () => {
+        setIsLoading(true);
+        const searchValue = searchParams.get("search") || "";
+        const sortValue = searchParams.get("sort") || initialSort;
+        const page = parseInt(searchParams.get("page") || "1");
+
+        const result = await getAllCategories({
+            search: searchValue,
+            sort: sortValue,
+            page
+        });
+        if (result.success) {
+            setCategories(result?.data?.categories || []);
+            setPagination(result?.data?.pagination);
+        }
+        setIsLoading(false);
+    };
+
     return (
         <>
             {/* Search and Sort Bar */}
@@ -327,7 +355,10 @@ export function CategoriesTable({
                 isOpen={showEditModal}
                 category={selectedCategory}
                 onClose={() => setShowEditModal(false)}
-                onSuccess={() => router.refresh()}
+                onSuccess={() => {
+                    refreshCategories();
+                    handleDataChange();
+                }}
             />
 
             <DeleteCategoryModal
@@ -335,11 +366,19 @@ export function CategoriesTable({
                 category={selectedCategory}
                 onConfirm={handleDeleteConfirm}
                 onClose={() => setShowDeleteModal(false)}
+                onSuccess={() => {
+                    refreshCategories();
+                    handleDataChange();
+                }}
             />
 
             <AddCategoryModal
                 isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
+                onSuccess={() => {
+                    refreshCategories();
+                    handleDataChange();
+                }}
             />
         </>
     );

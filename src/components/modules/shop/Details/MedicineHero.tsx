@@ -28,7 +28,6 @@ export function MedicineHero({ medicine }: MedicineHeroProps) {
     };
 
     const renderRating = () => {
-        // ✅ Return early if no rating data
         if (!medicine.averageRating && medicine.averageRating !== 0) return null;
         
         const fullStars = Math.floor(medicine.averageRating || 0);

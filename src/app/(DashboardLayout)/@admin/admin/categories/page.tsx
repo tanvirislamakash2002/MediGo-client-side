@@ -22,7 +22,7 @@ export default async function CategoriesPage({ searchParams }: PageProps) {
     
     const params = await searchParams;
     const search = params.search;
-    const sort = params.sort || "name";
+    const sort = params.sort || "newest";
     const page = params.page ? parseInt(params.page) : 1;
     
     const result = await getAllCategories({ search, sort, page });

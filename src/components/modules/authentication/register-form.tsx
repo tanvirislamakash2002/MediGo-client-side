@@ -156,14 +156,9 @@ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-        // Get the current origin dynamically
-        const callbackURL = typeof window !== "undefined" 
-            ? window.location.origin 
-            : process.env.NEXT_PUBLIC_APP_URL || "https://medigo1.vercel.app";
-        
         await authClient.signIn.social({
             provider: "google",
-            callbackURL: callbackURL,
+            callbackURL: window.location.origin,
         });
     } catch (error) {
         toast.error("Failed to login with Google");

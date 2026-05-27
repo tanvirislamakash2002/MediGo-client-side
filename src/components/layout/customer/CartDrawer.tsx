@@ -30,10 +30,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         cartTotal,
         updateCartItem,
         removeCartItem,
-        isUpdating // ✅ Get loading state from hook
+        isUpdating 
     } = useCart();
 
-    // ✅ Track which item is being updated locally
     const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
 
     const handleUpdateQuantity = async (itemId: string, currentQuantity: number, stock: number, delta: number) => {

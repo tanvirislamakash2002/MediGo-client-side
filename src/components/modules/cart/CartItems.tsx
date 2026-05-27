@@ -17,7 +17,6 @@ interface CartItemsProps {
     onSelectionChange?: (selectedItems: CartItem[], total: number) => void;
 }
 
-// ✅ Add the missing isValidUrl function
 const isValidUrl = (url: string | null) => {
     if (!url) return false;
     try {
@@ -35,22 +34,20 @@ export function CartItems({ initialItems, onSelectionChange }: CartItemsProps) {
         removeCartItem,
         updateCartItem: hookUpdateCartItem,
         refreshCart,
-        isUpdating // ✅ Use the hook's loading state
+        isUpdating 
     } = useCart();
 
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
     const [selectAll, setSelectAll] = useState(false);
-    // ✅ Add missing updatingId state
+    
     const [localUpdatingId, setLocalUpdatingId] = useState<string | null>(null);
 
-    // ✅ Memoize the selection change callback to avoid infinite loops
     const updateParentSelection = useCallback(() => {
         const selected = items.filter(item => selectedItems.has(item.id));
         const total = selected.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         onSelectionChange?.(selected, total);
     }, [items, selectedItems, onSelectionChange]);
 
-    // Update parent when selection changes
     useEffect(() => {
         updateParentSelection();
     }, [updateParentSelection]);
