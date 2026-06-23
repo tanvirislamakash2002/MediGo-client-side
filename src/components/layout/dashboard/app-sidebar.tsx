@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { redirect, usePathname } from "next/navigation";
 import {
     Sidebar,
@@ -15,6 +16,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarRail,
+    useSidebar  // ← Keep this import
 } from "@/components/ui/sidebar";
 import {
     LogOut,
@@ -29,8 +31,6 @@ import { getProfileRoute, isActiveRoute } from "@/constants/routes";
 import { User as UserType } from "@/types";
 import { useLogout } from "@/hooks/useLogout";
 
-
-
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
     user: UserType;
 }
@@ -38,9 +38,12 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
     const pathname = usePathname();
     const { logout } = useLogout();
-    const profileRoute = getProfileRoute(user.role)
+    const profileRoute = getProfileRoute(user.role);
+    
+    // ✅ USE the sidebar state
+    const { state } = useSidebar();
+    const isCollapsed = state === "collapsed";
 
-    // Select routes based on user role
     const routes = user.role === Roles.admin ? adminRoutes : sellerRoutes;
 
     const initials = user.name
@@ -56,15 +59,34 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             className="border-r shrink-0 h-screen sticky top-0"
             {...props}
         >
-            {/* Sidebar Header - Fixed */}
-            <SidebarHeader className="border-b px-4 py-4 h-16 flex-shrink-0">
+            {/* Sidebar Header */}
+            <SidebarHeader className="border-b">
                 <Link href="/" className="flex items-center gap-2">
-                    <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent whitespace-nowrap">
-                        MediGo
-                    </span>
-                    <span className="text-xs text-muted-foreground hidden group-data-[collapsible=icon]:hidden">
-                        {user.role === Roles.admin ? "Admin" : "Seller"}
-                    </span>
+                    {/* ✅ Symbol logo - ONLY when collapsed */}
+                    {isCollapsed && (
+                        <Image
+                            src="/logo/symbol-logo.png"
+                            alt="MediGo"
+                            width={32}
+                            height={32}
+                            priority
+                        />
+                    )}
+
+                    {/* ✅ Text logo - ONLY when expanded */}
+                    {!isCollapsed && (
+                        <div className="flex items-center gap-2">
+                            <Image
+                                src="/logo/text-logo.png"
+                                alt="MediGo"
+                                width={100}
+                                height={30}
+                            />
+                            <span className="text-xs text-muted-foreground">
+                                {user.role === Roles.admin ? "Admin" : "Seller"}
+                            </span>
+                        </div>
+                    )}
                 </Link>
             </SidebarHeader>
 
@@ -110,12 +132,15 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                             {initials}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                        <p className="text-sm font-medium truncate">{user.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                            {user.email}
-                        </p>
-                    </div>
+                    {/* ✅ Only show user info when expanded */}
+                    {!isCollapsed && (
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{user.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                                {user.email}
+                            </p>
+                        </div>
+                    )}
                 </div>
                 <div className="space-y-1">
                     <Button
@@ -125,7 +150,8 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                     >
                         <Link href={profileRoute}>
                             <User className="h-4 w-4 mr-2 flex-shrink-0" />
-                            <span className="group-data-[collapsible=icon]:hidden truncate">Profile</span>
+                            {/* ✅ Only show text when expanded */}
+                            {!isCollapsed && <span className="truncate">Profile</span>}
                         </Link>
                     </Button>
                     <Button
@@ -134,7 +160,8 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                         onClick={logout}
                     >
                         <LogOut className="h-4 w-4 mr-2 flex-shrink-0" />
-                        <span className="group-data-[collapsible=icon]:hidden truncate">Logout</span>
+                        {/* ✅ Only show text when expanded */}
+                        {!isCollapsed && <span className="truncate">Logout</span>}
                     </Button>
                 </div>
             </SidebarFooter>

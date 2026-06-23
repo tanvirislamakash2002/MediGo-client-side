@@ -18,6 +18,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MediGo",
   description: "A Medicine selling platform",
+    icons: {
+    icon: '/logo/symbol-logo.ico',     
+    apple: '/logo/symbol-logo.ico',
+  },
 };
 
 export default function RootLayout({

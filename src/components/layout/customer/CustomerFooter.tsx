@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Shield, Truck, CreditCard, Clock } from "lucide-react";
+import Image from "next/image";
 
 export function CustomerFooter() {
     return (
@@ -30,7 +31,15 @@ export function CustomerFooter() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Company Info */}
                     <div>
-                        <h3 className="font-bold text-lg mb-4">MediGo</h3>
+                        <Link href="/" className="inline-block mb-4">
+                            <Image
+                                src="/logo/text-logo.png"
+                                alt="MediGo"
+                                width={120}
+                                height={36}
+                                priority
+                            />
+                        </Link>
                         <p className="text-sm text-muted-foreground mb-4">
                             Your trusted online medicine shop. Delivering quality healthcare products to your doorstep.
                         </p>
@@ -95,7 +104,7 @@ export function CustomerFooter() {
                                 <span className="text-sm">Delivery in 2-4 Days</span>
                             </div>
                         </div>
-                        
+
                         {/* Social Links */}
                         <div className="mt-6">
                             <h4 className="text-sm font-semibold mb-3">Follow Us</h4>

@@ -39,6 +39,7 @@ import { getDashboardRoute, getProfileRoute } from "@/constants/routes";
 import { User as UserType } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLogout } from "@/hooks/useLogout";
+import Image from "next/image";
 
 
 
@@ -99,10 +100,13 @@ export function Navbar() {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                MediGo
-              </span>
-              <span className="hidden sm:inline text-xs text-muted-foreground">| Trusted Medicines</span>
+              <Image
+                src="/logo/text-logo.png"
+                alt="MediGo"
+                width={100}
+                height={30}                
+                priority
+              />
             </Link>
 
             {/* Desktop Navigation */}
@@ -248,7 +252,12 @@ export function Navbar() {
               <div className="flex items-center justify-between">
                 <SheetTitle>
                   <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-                    <span className="text-xl font-bold text-primary">MediGo</span>
+                    <Image
+                      src="/logo/text-logo.png"
+                      alt="MediGo"
+                      width={90}
+                      height={34}
+                    />
                   </Link>
                 </SheetTitle>
                 <Button

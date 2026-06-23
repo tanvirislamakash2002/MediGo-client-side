@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Shield, Truck, CreditCard, Clock, Heart } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export function Footer() {
     const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ export function Footer() {
     const handleSubscribe = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email) return;
-        
+
         setIsSubscribing(true);
         // Simulate subscription
         setTimeout(() => {
@@ -57,7 +58,15 @@ export function Footer() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Company Info */}
                     <div>
-                        <h3 className="font-bold text-lg mb-4">MediGo</h3>
+                        <Link href="/" className="inline-block mb-4">
+                            <Image
+                                src="/logo/text-logo.png"
+                                alt="MediGo"
+                                width={120}
+                                height={36}
+                                priority
+                            />
+                        </Link>
                         <p className="text-sm text-muted-foreground mb-4">
                             Your trusted online medicine shop. Delivering quality healthcare products to your doorstep with care and reliability.
                         </p>
@@ -127,7 +136,7 @@ export function Footer() {
                                 <span className="text-sm">24/7 Customer Support</span>
                             </div>
                         </div>
-                        
+
                         {/* Social Links */}
                         <div className="mt-6">
                             <h4 className="text-sm font-semibold mb-3">Follow Us</h4>
