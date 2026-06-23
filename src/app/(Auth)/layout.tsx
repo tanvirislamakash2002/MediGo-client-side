@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Home, Heart, Shield, Pill } from "lucide-react";
+import Image from "next/image";
 
 export default function AuthLayout({
     children,
@@ -22,12 +23,24 @@ export default function AuthLayout({
                     {/* Logo and Actions */}
                     <div className="flex items-center justify-between">
                         <Link href="/" className="flex items-center gap-2 group">
-                            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-105">
-                                <Pill className="h-5 w-5 text-primary-foreground" />
-                            </div>
-                            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                                MediGo
-                            </span>
+                            {/* Light mode logo */}
+                            <Image
+                                src="/logo/text-logo.png"
+                                alt="MediGo"
+                                width={140}
+                                height={42}
+                                priority
+                                className="block dark:hidden"
+                            />
+                            {/* Dark mode logo */}
+                            <Image
+                                src="/logo/text-logo-light.png"
+                                alt="MediGo"
+                                width={140}
+                                height={42}
+                                priority
+                                className="hidden dark:block"
+                            />
                         </Link>
                         <div className="flex items-center gap-2">
                             <ThemeToggle />
@@ -84,7 +97,7 @@ export default function AuthLayout({
 
                     {/* Footer */}
                     <div className="text-xs text-muted-foreground">
-                        © 2024 MediGo. All rights reserved.
+                        © {new Date().getFullYear()} MediGo. All rights reserved.
                     </div>
                 </div>
             </div>
@@ -96,12 +109,24 @@ export default function AuthLayout({
                     <div className="lg:hidden mb-8">
                         <div className="flex items-center justify-between mb-6">
                             <Link href="/" className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                                    <Pill className="h-4 w-4 text-primary-foreground" />
-                                </div>
-                                <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                                    MediGo
-                                </span>
+                                {/* Light mode logo */}
+                                <Image
+                                    src="/logo/text-logo.png"
+                                    alt="MediGo"
+                                    width={100}
+                                    height={30}
+                                    priority
+                                    className="block dark:hidden"
+                                />
+                                {/* Dark mode logo */}
+                                <Image
+                                    src="/logo/text-logo-light.png"
+                                    alt="MediGo"
+                                    width={100}
+                                    height={30}
+                                    priority
+                                    className="hidden dark:block"
+                                />
                             </Link>
                             <div className="flex items-center gap-2">
                                 <ThemeToggle />

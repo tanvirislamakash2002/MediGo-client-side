@@ -32,12 +32,23 @@ export function CustomerFooter() {
                     {/* Company Info */}
                     <div>
                         <Link href="/" className="inline-block mb-4">
+                            {/* Light mode logo */}
                             <Image
                                 src="/logo/text-logo.png"
                                 alt="MediGo"
                                 width={120}
                                 height={36}
                                 priority
+                                className="block dark:hidden"
+                            />
+                            {/* Dark mode logo */}
+                            <Image
+                                src="/logo/text-logo-light.png"
+                                alt="MediGo"
+                                width={120}
+                                height={36}
+                                priority
+                                className="hidden dark:block"
                             />
                         </Link>
                         <p className="text-sm text-muted-foreground mb-4">

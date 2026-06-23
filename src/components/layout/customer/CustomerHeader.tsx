@@ -91,12 +91,23 @@ export function CustomerHeader({ user }: CustomerHeaderProps) {
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
                         <Link href="/shop" className="flex items-center gap-2 shrink-0">
+                            {/* Light mode logo */}
                             <Image
                                 src="/logo/text-logo.png"
                                 alt="MediGo"
                                 width={120}
                                 height={36}
                                 priority
+                                className="block dark:hidden"
+                            />
+                            {/* Dark mode logo */}
+                            <Image
+                                src="/logo/text-logo-light.png"
+                                alt="MediGo"
+                                width={120}
+                                height={36}
+                                priority
+                                className="hidden dark:block"
                             />
                         </Link>
 

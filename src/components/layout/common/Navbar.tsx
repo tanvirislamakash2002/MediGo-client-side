@@ -101,10 +101,19 @@ export function Navbar() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0">
               <Image
+                src="/logo/text-logo-light.png"
+                alt="MediGo"
+                width={100}
+                height={30}
+                className="hidden dark:block"  // Hide on dark mode
+                priority
+              />
+              <Image
                 src="/logo/text-logo.png"
                 alt="MediGo"
                 width={100}
-                height={30}                
+                height={30}
+                className="block dark:hidden"  // Hide on light mode
                 priority
               />
             </Link>
@@ -253,10 +262,18 @@ export function Navbar() {
                 <SheetTitle>
                   <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
                     <Image
+                      src="/logo/text-logo-light.png"
+                      alt="MediGo"
+                      width={90}
+                      height={34}
+                      className="hidden dark:block"
+                    />
+                    <Image
                       src="/logo/text-logo.png"
                       alt="MediGo"
                       width={90}
                       height={34}
+                      className="block dark:hidden"
                     />
                   </Link>
                 </SheetTitle>

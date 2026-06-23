@@ -16,7 +16,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarRail,
-    useSidebar  // ← Keep this import
+    useSidebar
 } from "@/components/ui/sidebar";
 import {
     LogOut,
@@ -40,7 +40,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
     const { logout } = useLogout();
     const profileRoute = getProfileRoute(user.role);
     
-    // ✅ USE the sidebar state
+    // USE the sidebar state
     const { state } = useSidebar();
     const isCollapsed = state === "collapsed";
 
@@ -62,7 +62,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             {/* Sidebar Header */}
             <SidebarHeader className="border-b">
                 <Link href="/" className="flex items-center gap-2">
-                    {/* ✅ Symbol logo - ONLY when collapsed */}
+                    {/* Symbol logo - ONLY when collapsed */}
                     {isCollapsed && (
                         <Image
                             src="/logo/symbol-logo.png"
@@ -73,14 +73,24 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                         />
                     )}
 
-                    {/* ✅ Text logo - ONLY when expanded */}
+                    {/* Text logo - ONLY when expanded */}
                     {!isCollapsed && (
                         <div className="flex items-center gap-2">
+                            {/* Light mode logo */}
                             <Image
                                 src="/logo/text-logo.png"
                                 alt="MediGo"
                                 width={100}
                                 height={30}
+                                className="block dark:hidden"
+                            />
+                            {/* Dark mode logo */}
+                            <Image
+                                src="/logo/text-logo-light.png"
+                                alt="MediGo"
+                                width={100}
+                                height={30}
+                                className="hidden dark:block"
                             />
                             <span className="text-xs text-muted-foreground">
                                 {user.role === Roles.admin ? "Admin" : "Seller"}
@@ -132,7 +142,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                             {initials}
                         </AvatarFallback>
                     </Avatar>
-                    {/* ✅ Only show user info when expanded */}
+                    {/* Only show user info when expanded */}
                     {!isCollapsed && (
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{user.name}</p>
@@ -150,7 +160,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                     >
                         <Link href={profileRoute}>
                             <User className="h-4 w-4 mr-2 flex-shrink-0" />
-                            {/* ✅ Only show text when expanded */}
+                            {/* Only show text when expanded */}
                             {!isCollapsed && <span className="truncate">Profile</span>}
                         </Link>
                     </Button>
@@ -160,7 +170,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                         onClick={logout}
                     >
                         <LogOut className="h-4 w-4 mr-2 flex-shrink-0" />
-                        {/* ✅ Only show text when expanded */}
+                        {/* Only show text when expanded */}
                         {!isCollapsed && <span className="truncate">Logout</span>}
                     </Button>
                 </div>
