@@ -4,8 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Provider } from "react-redux"
-import { store } from "@/redux/store";
+import { ReduxProvider } from "@/providers/ReduxProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +36,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-        <Provider store={store}>
+        <ReduxProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
@@ -49,7 +48,7 @@ export default function RootLayout({
               <Toaster richColors />
             </TooltipProvider>
           </ThemeProvider>
-        </Provider>
+        </ReduxProvider>
       </body>
     </html>
   );
