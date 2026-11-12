@@ -1,26 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { IInitialCartState } from "./cart.type";
 
-interface InitialCartState {
-    items: CartItem[];
-    couponCode: string | null;
-    lastValidatedAt: string | null;
-    isSyncing: boolean;
-    error: string | null;
-}
 
-interface CartItem {
-    id: string;
-    medicineId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    stock: number;
-    manufacturer: string;
-    imageUrl: string | null;
-    requiresPrescription: boolean;
-}
-
-const initialState: InitialCartState = {
+const initialState: IInitialCartState = {
     items: [],
     couponCode: null,
     lastValidatedAt: null,
@@ -31,7 +13,13 @@ const initialState: InitialCartState = {
 const cartSlice = createSlice({
     name: "cart",
     initialState,
-    reducers: {}
+    reducers: {
+        addToCart: (state, action) => {
+            state.items.push(action.payload)
+        }
+    }
 })
+
+export const { addToCart } = cartSlice.actions
 
 export default cartSlice.reducer;
