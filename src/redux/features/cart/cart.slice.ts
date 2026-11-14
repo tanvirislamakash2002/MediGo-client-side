@@ -43,9 +43,27 @@ const cartSlice = createSlice({
                 }
             }
         },
-        // add removeItem, clearCart as needed
+        removeItem: (
+            state,
+            action: PayloadAction<string | { id?: string; medicineId?: string }>
+        ) => {
+            if (typeof action.payload === "string") {
+                const targetId = action.payload;
+                state.items = state.items.filter(
+                    (item) => item.id !== targetId && item.medicineId !== targetId
+                );
+            } else {
+                const { id, medicineId } = action.payload;
+                state.items = state.items.filter(
+                    (item) =>
+                        !(id && item.id === id) &&
+                        !(medicineId && item.medicineId === medicineId)
+                );
+            }
+        },
+        // add clearCart as needed
     },
 });
 
-export const { setCart, addToCart, updateQuantity } = cartSlice.actions;
+export const { setCart, addToCart, updateQuantity, removeItem } = cartSlice.actions;
 export default cartSlice.reducer;
