@@ -20,12 +20,30 @@ const wishlistSlice = createSlice({
             state.isLoading = false;
             state.error = null;
         },
-
+        addToWishlistOptimistic: (
+            state,
+            action: PayloadAction<{ medicineId: string; item?: IWishlistItem }>
+        ) => {
+            const { medicineId, item } = action.payload;
+            if (!state.itemIds.includes(medicineId)) {
+                state.itemIds.push(medicineId);
+                if (item) {
+                    state.items.push(item);
+                } else {
+                    state.items.push({
+                        id: `temp-${medicineId}`,
+                        medicineId,
+                        addedAt: new Date().toISOString(),
+                    });
+                }
+            }
+        },
     },
 });
 
 export const {
-    setWishlist
+    setWishlist,
+    addToWishlistOptimistic
 } = wishlistSlice.actions;
 
 export default wishlistSlice.reducer;
