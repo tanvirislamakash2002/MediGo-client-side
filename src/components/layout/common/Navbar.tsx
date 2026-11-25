@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
 import { getSession } from "@/actions/auth.action";
 import {
   Menu,
@@ -52,6 +53,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { cartCount } = useCart();
+  const { wishlistCount } = useWishlist();
   const { logout } = useLogout();
   const [user, setUser] = useState<UserType | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -208,9 +210,16 @@ export function Navbar() {
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/wishlist" className="cursor-pointer">
-                            <Heart className="mr-2 h-4 w-4" />
-                            Wishlist
+                          <Link href="/wishlist" className="cursor-pointer flex items-center justify-between w-full">
+                            <div className="flex items-center">
+                              <Heart className="mr-2 h-4 w-4" />
+                              Wishlist
+                            </div>
+                            {wishlistCount > 0 && (
+                              <span className="ml-auto text-xs bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 font-medium px-1.5 py-0.5 rounded-full">
+                                {wishlistCount}
+                              </span>
+                            )}
                           </Link>
                         </DropdownMenuItem>
                       </>
@@ -377,9 +386,16 @@ export function Navbar() {
                         asChild
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
-                        <Link href="/wishlist">
-                          <Heart className="h-4 w-4 mr-2" />
-                          Wishlist
+                        <Link href="/wishlist" className="flex items-center justify-between w-full">
+                          <div className="flex items-center">
+                            <Heart className="h-4 w-4 mr-2" />
+                            Wishlist
+                          </div>
+                          {wishlistCount > 0 && (
+                            <span className="text-xs bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 font-medium px-2 py-0.5 rounded-full">
+                              {wishlistCount}
+                            </span>
+                          )}
                         </Link>
                       </Button>
                     </>

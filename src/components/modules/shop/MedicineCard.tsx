@@ -8,7 +8,6 @@ import { ShoppingCart, Eye, Heart, Loader2, Pill } from "lucide-react";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
 import { useWishlist } from "@/hooks/useWishlist";
-import { checkInWishlist } from "@/actions/wishlist.action";
 
 interface Medicine {
     id: string;
@@ -28,21 +27,11 @@ interface MedicineCardProps {
 }
 
 export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
-    const [inWishlist, setInWishlist] = useState(false);
-    const [isWishlistLoading, setIsWishlistLoading] = useState(false);
     const { addToCart, isAdding } = useCart();
-    const { toggleWishlist } = useWishlist();
+    const { toggleWishlist, isInWishlist, isWishlistLoading } = useWishlist();
 
-    // Check if item is in wishlist on mount
-    useEffect(() => {
-        const checkStatus = async () => {
-            const result = await checkInWishlist(medicine.id);
-            if (result.success) {
-                setInWishlist(result.data?.inWishlist || false);
-            }
-        };
-        checkStatus();
-    }, [medicine.id]);
+    const inWishlist = isInWishlist(medicine.id);
+    const isThisWishlistLoading = isWishlistLoading[medicine.id];
 
     const isValidUrl = (url: string | null) => {
         if (!url) return false;
@@ -63,12 +52,7 @@ export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
 
     const handleToggleWishlist = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        setIsWishlistLoading(true);
-        const success = await toggleWishlist(medicine.id, inWishlist);
-        if (success) {
-            setInWishlist(!inWishlist);
-        }
-        setIsWishlistLoading(false);
+        await toggleWishlist(medicine.id, inWishlist, medicine);
     };
 
     return (
@@ -98,9 +82,9 @@ export function MedicineCard({ medicine, onViewDetails }: MedicineCardProps) {
                 <button
                     onClick={handleToggleWishlist}
                     className="absolute top-2 right-2 p-2 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-md hover:scale-110 transition-transform z-10"
-                    disabled={isWishlistLoading}
+                    disabled={isThisWishlistLoading}
                 >
-                    {isWishlistLoading ? (
+                    {isThisWishlistLoading ? (
                         <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
                     ) : (
                         <Heart 

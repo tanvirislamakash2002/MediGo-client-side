@@ -1,75 +1,174 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { addToWishlist, removeFromWishlist, checkInWishlist } from "@/actions/wishlist.action";
+import { addToWishlist as addToWishlistAction, removeFromWishlist as removeFromWishlistAction, getWishlist } from "@/actions/wishlist.action";
 import { toast } from "sonner";
 import { getSession } from "@/actions/auth.action";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import {
+    setWishlist,
+    addToWishlistOptimistic,
+    removeFromWishlistOptimistic,
+    setWishlistLoading,
+} from "@/redux/features/wishlist/wishlist.slice";
+import { IWishlistItem } from "@/redux/features/wishlist/wishlist.type";
+
+// Deduplicate authentication checks across mounting components
+let authPromise: Promise<{ isAuthenticated: boolean }> | null = null;
+let isFetchingWishlist = false;
 
 export function useWishlist() {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const dispatch = useAppDispatch();
 
+    const wishlist = useAppSelector((state) => state.wishlist.items);
+    const wishlistIds = useAppSelector((state) => state.wishlist.itemIds);
+    const isInitialized = useAppSelector((state) => state.wishlist.isInitialized);
+    const isReduxLoading = useAppSelector((state) => state.wishlist.isLoading);
+
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(!isInitialized);
+    const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
+
+    // Fast O(1) membership check
+    const isInWishlist = useCallback(
+        (medicineId: string) => wishlistIds.includes(medicineId),
+        [wishlistIds]
+    );
+
+    const wishlistCount = wishlistIds.length;
+
+    // Deduplicated auth check
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const { data, success } = await getSession();
-                setIsAuthenticated(!!data && success === true);
-            } catch (error) {
-                console.error("Auth check failed:", error);
-                setIsAuthenticated(false);
-            } finally {
+        let isMounted = true;
+
+        if (!authPromise) {
+            authPromise = getSession()
+                .then(({ data, success }) => ({
+                    isAuthenticated: !!data && success === true,
+                }))
+                .catch((err) => {
+                    console.error("Auth check failed:", err);
+                    return { isAuthenticated: false };
+                });
+        }
+
+        authPromise.then((res) => {
+            if (isMounted) {
+                setIsAuthenticated(res.isAuthenticated);
                 setIsLoading(false);
             }
+        });
+
+        return () => {
+            isMounted = false;
         };
-        checkAuth();
     }, []);
-    const [isWishlistLoading, setIsWishlistLoading] = useState<Record<string, boolean>>({});
 
-    const toggleWishlist = useCallback(async (medicineId: string, isInWishlist: boolean) => {
-        if (!isAuthenticated) {
-            toast.error("Please login to add items to wishlist");
-            return false;
-        }
-
-        setIsWishlistLoading(prev => ({ ...prev, [medicineId]: true }));
+    // Fetch wishlist from server and sync to Redux
+    const fetchWishlist = useCallback(async () => {
+        if (!isAuthenticated || isFetchingWishlist) return;
+        isFetchingWishlist = true;
+        dispatch(setWishlistLoading(true));
 
         try {
-            let result;
-            if (isInWishlist) {
-                result = await removeFromWishlist(medicineId);
-                if (result.success) {
-                    toast.success("Removed from wishlist");
-                }
-            } else {
-                result = await addToWishlist(medicineId);
-                if (result.success) {
-                    toast.success("Added to wishlist");
-                }
+            const result = await getWishlist(1, 100);
+            if (result.success && result.data?.items) {
+                dispatch(setWishlist(result.data.items));
+            }
+        } catch (error) {
+            console.error("Failed to load wishlist:", error);
+        } finally {
+            isFetchingWishlist = false;
+            dispatch(setWishlistLoading(false));
+        }
+    }, [isAuthenticated, dispatch]);
+
+    // Initial load: Only runs if the wishlist has not been initialized yet
+    useEffect(() => {
+        if (isLoading || isInitialized) return;
+
+        if (isAuthenticated) {
+            fetchWishlist();
+        } else {
+            dispatch(setWishlist([]));
+        }
+    }, [isAuthenticated, isLoading, isInitialized, fetchWishlist, dispatch]);
+
+    // Optimistic toggle
+    const toggleWishlist = useCallback(
+        async (medicineId: string, currentStatus?: boolean, medicineData?: any) => {
+            if (!isAuthenticated) {
+                toast.error("Please login to add items to wishlist");
+                return false;
             }
 
-            return result?.success || false;
-        } catch (error) {
-            toast.error("Something went wrong");
-            return false;
-        } finally {
-            setIsWishlistLoading(prev => ({ ...prev, [medicineId]: false }));
-        }
-    }, [isAuthenticated]);
+            const currentlyIn = typeof currentStatus === "boolean" ? currentStatus : wishlistIds.includes(medicineId);
 
-    const checkWishlistStatus = useCallback(async (medicineId: string) => {
-        if (!isAuthenticated) return false;
+            // 1. Instantly update Redux (0ms UI latency)
+            if (currentlyIn) {
+                dispatch(removeFromWishlistOptimistic(medicineId));
+            } else {
+                dispatch(
+                    addToWishlistOptimistic({
+                        medicineId,
+                        item: medicineData
+                            ? {
+                                  id: `temp-${medicineId}`,
+                                  medicineId,
+                                  addedAt: new Date().toISOString(),
+                                  medicine: medicineData,
+                              }
+                            : undefined,
+                    })
+                );
+            }
 
-        try {
-            const result = await checkInWishlist(medicineId);
-            return result.success ? result.data?.inWishlist || false : false;
-        } catch (error) {
-            return false;
-        }
-    }, [isAuthenticated]);
+            setActionLoading((prev) => ({ ...prev, [medicineId]: true }));
+
+            try {
+                const result = currentlyIn
+                    ? await removeFromWishlistAction(medicineId)
+                    : await addToWishlistAction(medicineId);
+
+                if (!result.success) {
+                    toast.error(result.message || "Failed to update wishlist");
+                    // Rollback from server
+                    await fetchWishlist();
+                    return false;
+                }
+
+                toast.success(currentlyIn ? "Removed from wishlist" : "Added to wishlist");
+                return true;
+            } catch (error) {
+                console.error("Toggle wishlist error:", error);
+                toast.error("Something went wrong");
+                await fetchWishlist(); // Rollback
+                return false;
+            } finally {
+                setActionLoading((prev) => ({ ...prev, [medicineId]: false }));
+            }
+        },
+        [isAuthenticated, wishlistIds, dispatch, fetchWishlist]
+    );
+
+    // Backward-compatible check function that runs instantaneously from Redux cache
+    const checkWishlistStatus = useCallback(
+        async (medicineId: string) => {
+            return wishlistIds.includes(medicineId);
+        },
+        [wishlistIds]
+    );
 
     return {
+        wishlist,
+        wishlistIds,
+        wishlistCount,
+        isInWishlist,
         toggleWishlist,
         checkWishlistStatus,
-        isWishlistLoading
+        fetchWishlist,
+        isWishlistLoading: actionLoading,
+        isLoading: isLoading || isReduxLoading,
+        isAuthenticated,
     };
 }

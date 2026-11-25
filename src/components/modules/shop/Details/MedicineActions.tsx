@@ -25,17 +25,11 @@ interface MedicineActionsProps {
 
 export function MedicineActions({ medicine }: MedicineActionsProps) {
     const [quantity, setQuantity] = useState(1);
-    const [inWishlist, setInWishlist] = useState(false);
     const { addToCart, isAdding } = useCart();
-    const { toggleWishlist, checkWishlistStatus, isWishlistLoading } = useWishlist();
+    const { toggleWishlist, isInWishlist, isWishlistLoading } = useWishlist();
 
-    useEffect(() => {
-        const checkStatus = async () => {
-            const status = await checkWishlistStatus(medicine.id);
-            setInWishlist(status);
-        };
-        checkStatus();
-    }, [medicine.id, checkWishlistStatus]);
+    const inWishlist = isInWishlist(medicine.id);
+    const isWishlistLoadingThis = isWishlistLoading[medicine.id];
 
     const handleQuantityChange = (value: number) => {
         if (value >= 1 && value <= medicine.stock) {
@@ -48,10 +42,7 @@ export function MedicineActions({ medicine }: MedicineActionsProps) {
     };
 
     const handleToggleWishlist = async () => {
-        const success = await toggleWishlist(medicine.id, inWishlist);
-        if (success) {
-            setInWishlist(!inWishlist);
-        }
+        await toggleWishlist(medicine.id, inWishlist, medicine);
     };
 
     const isWishlistLoadingThis = isWishlistLoading[medicine.id];
