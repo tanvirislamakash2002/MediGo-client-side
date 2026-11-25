@@ -9,6 +9,8 @@ import { Heart, ShoppingCart } from "lucide-react";
 import { getWishlist, addToWishlist } from "@/actions/wishlist.action";
 import { toast } from "sonner";
 import { useCart } from "@/hooks/useCart";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { setWishlist } from "@/redux/features/wishlist/wishlist.slice";
 
 interface WishlistItem {
     id: string;
@@ -53,6 +55,15 @@ export function WishlistItems({
     const [isLoading, setIsLoading] = useState(false);
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
     const { addToCart } = useCart();
+    const dispatch = useAppDispatch();
+    const isInitialized = useAppSelector((state) => state.wishlist.isInitialized);
+
+    // Hydrate Redux with initial items if not yet initialized
+    useEffect(() => {
+        if (!isInitialized && initialItems && initialItems.length > 0) {
+            dispatch(setWishlist(initialItems));
+        }
+    }, [initialItems, isInitialized, dispatch]);
 
     const currentPage = parseInt(searchParams.get("page") || initialPage.toString());
 
@@ -221,8 +232,8 @@ export function WishlistItems({
                     <WishlistItemCard
                         key={item.id}
                         item={item}
-                        isSelected={selectedItems.has(item.id)}  
-                        onSelect={(checked) => handleSelectItem(item.id, checked)}  
+                        isSelected={selectedItems.has(item.id)}
+                        onSelect={(checked) => handleSelectItem(item.id, checked)}
                         onRemove={handleRemoveItem}
                     />
                 ))}
