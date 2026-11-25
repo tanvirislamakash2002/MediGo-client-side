@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Heart, ShoppingCart, Trash2, Truck, Clock, AlertCircle, Pill } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/hooks/useCart";
-import { removeFromWishlist } from "@/actions/wishlist.action";
+import { useWishlist } from "@/hooks/useWishlist";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -41,7 +41,7 @@ interface WishlistItem {
 
 interface WishlistItemCardProps {
     item: WishlistItem;
-    isSelected: boolean; 
+    isSelected: boolean;
     onSelect: (checked: boolean) => void;
     onRemove: (itemId: string) => void;
 }
@@ -55,6 +55,7 @@ const isValidUrl = (url: string | null) => {
 export function WishlistItemCard({ item, isSelected, onSelect, onRemove }: WishlistItemCardProps) {
     const router = useRouter();
     const { addToCart, isAdding } = useCart();
+    const { toggleWishlist } = useWishlist();
     const [isRemoving, setIsRemoving] = useState(false);
     const [showRemoveDialog, setShowRemoveDialog] = useState(false);
     const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -67,11 +68,11 @@ export function WishlistItemCard({ item, isSelected, onSelect, onRemove }: Wishl
             toast.error("This item is out of stock");
             return;
         }
-        
+
         setIsAddingToCart(true);
         const success = await addToCart(item.medicine.id, 1);
         setIsAddingToCart(false);
-        
+
         if (success) {
             toast.success("Added to cart");
         }
@@ -79,19 +80,11 @@ export function WishlistItemCard({ item, isSelected, onSelect, onRemove }: Wishl
 
     const handleRemove = async () => {
         setIsRemoving(true);
-        const toastId = toast.loading("Removing from wishlist...");
-        
         try {
-            const result = await removeFromWishlist(item.medicine.id);
-            if (!result.success) {
-                toast.error(result.message, { id: toastId });
-            } else {
-                toast.success("Removed from wishlist", { id: toastId });
+            const success = await toggleWishlist(item.medicine.id, true);
+            if (success) {
                 onRemove(item.id);
-                router.refresh();
             }
-        } catch (error) {
-            toast.error("Failed to remove item", { id: toastId });
         } finally {
             setIsRemoving(false);
             setShowRemoveDialog(false);
@@ -131,7 +124,7 @@ export function WishlistItemCard({ item, isSelected, onSelect, onRemove }: Wishl
                                             className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <div className="flex items-center justify-center h-full text-3xl"><Pill size={45}/></div>
+                                        <div className="flex items-center justify-center h-full text-3xl"><Pill size={45} /></div>
                                     )}
                                 </div>
                             </Link>
@@ -140,7 +133,7 @@ export function WishlistItemCard({ item, isSelected, onSelect, onRemove }: Wishl
                             <div className="flex-1">
                                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                                     <div>
-                                        <Link 
+                                        <Link
                                             href={`/shop/${item.medicine.id}`}
                                             className="font-semibold hover:text-primary transition-colors"
                                         >
