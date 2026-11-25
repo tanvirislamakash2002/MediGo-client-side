@@ -51,6 +51,12 @@ const wishlistSlice = createSlice({
             state.isInitialized = true;
             state.error = null;
         },
+        setWishlistLoading: (state, action: PayloadAction<boolean>) => {
+            state.isLoading = action.payload;
+        },
+        setWishlistInitialized: (state, action: PayloadAction<boolean>) => {
+            state.isInitialized = action.payload;
+        },
     },
 });
 
@@ -58,7 +64,9 @@ export const {
     setWishlist,
     addToWishlistOptimistic,
     removeFromWishlistOptimistic,
-    clearWishlist
+    clearWishlist,
+    setWishlistLoading,
+    setWishlistInitialized,
 } = wishlistSlice.actions;
 
 export default wishlistSlice.reducer;
