@@ -38,12 +38,21 @@ const wishlistSlice = createSlice({
                 }
             }
         },
+        removeFromWishlistOptimistic: (state, action: PayloadAction<string>) => {
+            const medicineId = action.payload;
+            state.itemIds = state.itemIds.filter((id) => id !== medicineId);
+            state.items = state.items.filter(
+                (item) => item.medicineId !== medicineId && item.id !== medicineId
+            );
+        },
+
     },
 });
 
 export const {
     setWishlist,
-    addToWishlistOptimistic
+    addToWishlistOptimistic,
+    removeFromWishlistOptimistic
 } = wishlistSlice.actions;
 
 export default wishlistSlice.reducer;
