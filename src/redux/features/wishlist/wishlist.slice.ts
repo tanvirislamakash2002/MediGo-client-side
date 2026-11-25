@@ -45,14 +45,20 @@ const wishlistSlice = createSlice({
                 (item) => item.medicineId !== medicineId && item.id !== medicineId
             );
         },
-
+        clearWishlist: (state) => {
+            state.items = [];
+            state.itemIds = [];
+            state.isInitialized = true;
+            state.error = null;
+        },
     },
 });
 
 export const {
     setWishlist,
     addToWishlistOptimistic,
-    removeFromWishlistOptimistic
+    removeFromWishlistOptimistic,
+    clearWishlist
 } = wishlistSlice.actions;
 
 export default wishlistSlice.reducer;
