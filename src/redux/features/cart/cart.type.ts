@@ -4,6 +4,7 @@ export interface IInitialCartState {
     couponCode: string | null;
     lastValidatedAt: string | null;
     isSyncing: boolean;
+    isInitialized: boolean;
     error: string | null;
 }
 

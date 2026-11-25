@@ -7,13 +7,19 @@ import {
     updateCartItem as updateCartItemAction,
     removeCartItem as removeCartItemAction,
     clearCart as clearCartAction,
+    mergeCart as mergeCartAction,
 } from "@/actions/cart.action";
 import { getSession } from "@/actions/auth.action";
-import { cartStore } from "@/lib/guest-cart";
+import { guestCartStore } from "@/lib/guest-cart";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { setCart } from "@/redux/features/cart/cart.slice";
+import {
+    setCart,
+    addToCart as addToCartRedux,
+    updateQuantity as updateQuantityRedux,
+    removeItem as removeItemRedux,
+    clearCart as clearCartRedux,
+} from "@/redux/features/cart/cart.slice";
 import { ICartItem } from "@/redux/features/cart/cart.type";
 
 interface GuestCartItem {
@@ -27,12 +33,16 @@ interface GuestCartItem {
     stock: number;
 }
 
+// Module-level singletons to prevent multi-mount network stampedes across components
+let authPromise: Promise<{ isAuthenticated: boolean }> | null = null;
+let isSyncingCart = false;
+
 export function useCart() {
-    const router = useRouter();
     const dispatch = useAppDispatch();
 
-    // Redux store is the single source of truth for cart items
+    // Redux store is the single source of truth for cart items and initialization
     const cart = useAppSelector((state) => state.cart.items);
+    const isInitialized = useAppSelector((state) => state.cart.isInitialized);
 
     // Derived values computed directly from Redux state
     const cartTotal = useMemo(
@@ -47,45 +57,38 @@ export function useCart() {
     const [isAdding, setIsAdding] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(!isInitialized);
 
-    // Check authentication
+    // Deduplicated auth check across all mounting components
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const { data, success } = await getSession();
-                setIsAuthenticated(!!data && success === true);
-            } catch (error) {
-                console.error("Auth check failed:", error);
-                setIsAuthenticated(false);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        checkAuth();
-    }, []);
+                let isMounted = true;
 
-    // Fetch cart from server and sync to Redux
-    const fetchCart = useCallback(async () => {
-        if (!isAuthenticated) return;
+                if (!authPromise) {
+                    authPromise = getSession()
+                        .then(({ data, success }) => ({
+                            isAuthenticated: !!data && success === true,
+                        }))
+                        .catch((err) => {
+                            console.error("Auth check failed:", err);
+                            return { isAuthenticated: false };
+                        });
+                }
 
-        try {
-            const { data, success, message } = await getCartItems();
-            if (!success) {
-                console.error("Failed to fetch cart:", message);
-                return;
-            }
-            if (data?.items) {
-                dispatch(setCart(data.items));
-            }
-        } catch (error) {
-            console.error("Failed to load cart:", error);
-        }
-    }, [isAuthenticated, dispatch]);
+                authPromise.then((res) => {
+                    if (isMounted) {
+                        setIsAuthenticated(res.isAuthenticated);
+                        setIsLoading(false);
+                    }
+                });
+
+                return () => {
+                    isMounted = false;
+                };
+            }, []);
 
     // Load guest cart from localStorage and sync to Redux
     const loadGuestCart = useCallback(() => {
-        const guestCart = cartStore.getCart();
+        const guestCart = guestCartStore.getCart();
         const formattedCart: ICartItem[] = guestCart.map((item) => ({
             id: `guest-${item.medicineId}`,
             medicineId: item.medicineId,
@@ -100,173 +103,223 @@ export function useCart() {
         dispatch(setCart(formattedCart));
     }, [dispatch]);
 
-    // Load cart when auth changes
+    // Fetch cart from server and sync to Redux (auto-merges guest cart on login)
+    const fetchCart = useCallback(async () => {
+        if (isSyncingCart) return;
+        isSyncingCart = true;
+
+        try {
+            // Check if there are orphaned guest items to merge on login
+            const guestItems = guestCartStore.getCart();
+            if (guestItems.length > 0) {
+                try {
+                    await mergeCartAction(guestItems);
+                    guestCartStore.clearCart();
+                } catch (mergeErr) {
+                    console.error("Failed to merge guest cart:", mergeErr);
+                }
+            }
+
+            const { data, success, message } = await getCartItems();
+            if (!success) {
+                console.error("Failed to fetch cart:", message);
+                return;
+            }
+            if (data?.items) {
+                dispatch(setCart(data.items));
+            }
+        } catch (error) {
+            console.error("Failed to load cart:", error);
+        } finally {
+            isSyncingCart = false;
+        }
+    }, [dispatch]);
+
+    // Initial load: Only runs if the cart has NOT been initialized yet
     useEffect(() => {
-        if (isLoading) return;
+        if (isLoading || isInitialized) return;
 
         if (isAuthenticated) {
             fetchCart();
         } else {
             loadGuestCart();
         }
-    }, [isAuthenticated, isLoading, fetchCart, loadGuestCart]);
+}, [isAuthenticated, isLoading, isInitialized, fetchCart, loadGuestCart]);
 
-    // Remove cart item
-    const removeCartItem = useCallback(
-        async (itemId: string) => {
-            if (isAuthenticated) {
-                try {
-                    const result = await removeCartItemAction(itemId);
-                    if (!result.success) {
-                        toast.error(result.message);
-                        return;
-                    }
-                    await fetchCart();
-                    router.refresh();
-                    toast.success("Item removed from cart");
-                } catch (error) {
-                    toast.error("Failed to remove item");
-                }
-            } else {
-                const medicineId = itemId.replace("guest-", "");
-                cartStore.removeItem(medicineId);
-                loadGuestCart();
-                router.refresh();
-                toast.success("Item removed from cart");
-            }
-        },
-        [isAuthenticated, fetchCart, loadGuestCart, router]
-    );
+// Remove cart item (Optimistic update)
+const removeCartItem = useCallback(
+    async (itemId: string) => {
+        // 1. Optimistically remove from Redux immediately (0ms UI lag)
+        dispatch(removeItemRedux(itemId));
 
-    // Update cart item
-    const updateCartItem = useCallback(
-        async (itemId: string, quantity: number) => {
-            if (quantity <= 0) {
-                await removeCartItem(itemId);
-                return;
-            }
-
-            if (isAuthenticated) {
-                setIsUpdating(true);
-                try {
-                    const result = await updateCartItemAction(itemId, quantity);
-                    if (!result.success) {
-                        toast.error(result.message);
-                        return;
-                    }
-                    await fetchCart();
-                    router.refresh();
-                    toast.success("Cart updated");
-                } catch (error) {
-                    toast.error("Failed to update cart");
-                } finally {
-                    setIsUpdating(false);
-                }
-            } else {
-                const medicineId = itemId.replace("guest-", "");
-                cartStore.updateQuantity(medicineId, quantity);
-                loadGuestCart();
-                router.refresh();
-                toast.success("Cart updated");
-            }
-        },
-        [isAuthenticated, fetchCart, loadGuestCart, removeCartItem, router]
-    );
-
-    // Add to cart
-    const addToCart = useCallback(
-        async (medicineId: string, quantity: number = 1) => {
-            setIsAdding(true);
-
+        if (isAuthenticated) {
             try {
-                const result = await addToCartAction(medicineId, quantity);
-
+                const result = await removeCartItemAction(itemId);
                 if (!result.success) {
                     toast.error(result.message);
-                    return false;
+                    await fetchCart(); // Revert from server on failure
+                    return;
                 }
+                toast.success("Item removed from cart");
+            } catch (error) {
+                toast.error("Failed to remove item");
+                await fetchCart(); // Revert from server on failure
+            }
+        } else {
+            const medicineId = itemId.replace("guest-", "");
+            guestCartStore.removeItem(medicineId);
+            toast.success("Item removed from cart");
+        }
+    },
+    [isAuthenticated, dispatch, fetchCart]
+);
 
-                if (isAuthenticated) {
-                    await fetchCart();
-                    router.refresh();
-                    toast.success(`Added to cart`);
+// Update cart item quantity (Optimistic update)
+const updateCartItem = useCallback(
+    async (itemId: string, quantity: number) => {
+        if (quantity <= 0) {
+            await removeCartItem(itemId);
+            return;
+        }
+
+        // 1. Optimistically update Redux immediately (0ms UI lag)
+        dispatch(updateQuantityRedux({ id: itemId, quantity }));
+
+        if (isAuthenticated) {
+            setIsUpdating(true);
+            try {
+                const result = await updateCartItemAction(itemId, quantity);
+                if (!result.success) {
+                    toast.error(result.message);
+                    await fetchCart(); // Revert from server on failure
+                    return;
+                }
+                toast.success("Cart updated");
+            } catch (error) {
+                toast.error("Failed to update cart");
+                await fetchCart(); // Revert from server on failure
+            } finally {
+                setIsUpdating(false);
+            }
+        } else {
+            const medicineId = itemId.replace("guest-", "");
+            guestCartStore.updateQuantity(medicineId, quantity);
+            toast.success("Cart updated");
+        }
+    },
+    [isAuthenticated, dispatch, fetchCart, removeCartItem]
+);
+
+// Add to cart
+const addToCart = useCallback(
+    async (medicineId: string, quantity: number = 1) => {
+        setIsAdding(true);
+
+        try {
+            const result = await addToCartAction(medicineId, quantity);
+
+            if (!result.success) {
+                toast.error(result.message);
+                return false;
+            }
+
+            if (isAuthenticated) {
+                // Update Redux from returned item or fetch
+                if (result.data) {
+                    dispatch(addToCartRedux(result.data));
                 } else {
-                    // Guest user - result.data contains the medicine details
-                    if (result.data) {
-                        if (!result.data.medicineId || !result.data.name) {
-                            console.error("Invalid guest item data:", result.data);
-                            toast.error("Failed to add item to cart");
-                            return false;
-                        }
-
-                        const guestItem = result.data as GuestCartItem;
-                        cartStore.addItem(guestItem);
-                        loadGuestCart();
-                        router.refresh();
-                        toast.success(`Added ${quantity} x ${result.data.name} to cart`);
-                    } else {
-                        console.error("No data in result for guest user");
+                    await fetchCart();
+                }
+                toast.success("Added to cart");
+            } else {
+                // Guest user: save to localStorage store and Redux
+                if (result.data) {
+                    if (!result.data.medicineId || !result.data.name) {
+                        console.error("Invalid guest item data:", result.data);
                         toast.error("Failed to add item to cart");
                         return false;
                     }
-                }
 
-                return true;
-            } catch (error) {
-                console.error("Add to cart error:", error);
-                toast.error("Failed to add to cart");
-                return false;
-            } finally {
-                setIsAdding(false);
-            }
-        },
-        [isAuthenticated, fetchCart, loadGuestCart, router]
-    );
-
-    // Clear cart
-    const clearCart = useCallback(async () => {
-        if (isAuthenticated) {
-            try {
-                const result = await clearCartAction();
-                if (!result.success) {
-                    toast.error(result.message);
-                    return;
+                    const guestItem = result.data as GuestCartItem;
+                    guestCartStore.addItem(guestItem);
+                    dispatch(
+                        addToCartRedux({
+                            id: `guest-${guestItem.medicineId}`,
+                            medicineId: guestItem.medicineId,
+                            name: guestItem.name,
+                            price: guestItem.price,
+                            quantity,
+                            stock: guestItem.stock,
+                            manufacturer: guestItem.manufacturer,
+                            imageUrl: guestItem.imageUrl,
+                            requiresPrescription: guestItem.requiresPrescription,
+                        })
+                    );
+                    toast.success(`Added ${quantity} x ${result.data.name} to cart`);
+                } else {
+                    console.error("No data in result for guest user");
+                    toast.error("Failed to add item to cart");
+                    return false;
                 }
-                dispatch(setCart([]));
-                router.refresh();
-                toast.success("Cart cleared");
-            } catch (error) {
-                toast.error("Failed to clear cart");
             }
-        } else {
-            cartStore.clearCart();
-            dispatch(setCart([]));
-            router.refresh();
+
+            return true;
+        } catch (error) {
+            console.error("Add to cart error:", error);
+            toast.error("Failed to add to cart");
+            return false;
+        } finally {
+            setIsAdding(false);
+        }
+    },
+    [isAuthenticated, dispatch, fetchCart]
+);
+
+// Clear cart (Optimistic update)
+const clearCart = useCallback(async () => {
+    // 1. Optimistically clear Redux store immediately
+    dispatch(clearCartRedux());
+
+    if (isAuthenticated) {
+        try {
+            const result = await clearCartAction();
+            if (!result.success) {
+                toast.error(result.message);
+                await fetchCart();
+                return;
+            }
             toast.success("Cart cleared");
-        }
-    }, [isAuthenticated, dispatch, router]);
-
-    // Refresh cart manually
-    const refreshCart = useCallback(async () => {
-        if (isAuthenticated) {
+        } catch (error) {
+            toast.error("Failed to clear cart");
             await fetchCart();
-        } else {
-            loadGuestCart();
         }
-    }, [isAuthenticated, fetchCart, loadGuestCart]);
+    } else {
+        guestCartStore.clearCart();
+        toast.success("Cart cleared");
+    }
+    }, [isAuthenticated, dispatch, fetchCart]);
 
-    return {
-        cart,
-        cartCount,
-        cartTotal,
-        isAdding,
-        isUpdating,
-        isLoading,
-        isAuthenticated,
-        addToCart,
-        updateCartItem,
-        removeCartItem,
-        clearCart,
-        refreshCart,
-    };
+// Force refresh cart manually (e.g. after checkout or re-login)
+const refreshCart = useCallback(async () => {
+    if (isAuthenticated) {
+        await fetchCart();
+    } else {
+        loadGuestCart();
+    }
+}, [isAuthenticated, fetchCart, loadGuestCart]);
+
+return {
+    cart,
+    cartCount,
+    cartTotal,
+    isAdding,
+    isUpdating,
+    isLoading,
+    isAuthenticated,
+    addToCart,
+    updateCartItem,
+    removeCartItem,
+    clearCart,
+    refreshCart,
+};
 }

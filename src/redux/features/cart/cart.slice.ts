@@ -6,6 +6,7 @@ const initialState: IInitialCartState = {
     couponCode: null,
     lastValidatedAt: null,
     isSyncing: false,
+    isInitialized: false,
     error: null,
 };
 
@@ -15,6 +16,10 @@ const cartSlice = createSlice({
     reducers: {
         setCart: (state, action: PayloadAction<ICartItem[]>) => {
             state.items = action.payload;
+            state.isInitialized = true;
+        },
+        setInitialized: (state, action: PayloadAction<boolean>) => {
+            state.isInitialized = action.payload;
         },
         addToCart: (state, action: PayloadAction<ICartItem>) => {
             const existingItem = state.items.find(
@@ -69,5 +74,5 @@ const cartSlice = createSlice({
     },
 });
 
-export const { setCart, addToCart, updateQuantity, removeItem, clearCart } = cartSlice.actions;
+export const { setCart, setInitialized, addToCart, updateQuantity, removeItem, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;
