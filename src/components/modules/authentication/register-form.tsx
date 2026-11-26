@@ -22,6 +22,8 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Mail, Lock, User, Store, ShoppingBag, Camera, X } from "lucide-react";
 import * as z from "zod";
 import { uploadTempAvatar } from "@/actions/upload.action";
+import { useAppDispatch } from "@/redux/hooks";
+import { handleAuthChange } from "@/lib/auth-sync";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -39,6 +41,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +88,7 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
         }
 
         toast.success("Account created successfully!", { id: toastId });
+        handleAuthChange(dispatch, false);
 
         // Redirect based on role
         if (result.data.role === "SELLER") {

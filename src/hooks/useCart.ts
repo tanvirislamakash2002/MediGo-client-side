@@ -37,6 +37,11 @@ interface GuestCartItem {
 let authPromise: Promise<{ isAuthenticated: boolean }> | null = null;
 let isSyncingCart = false;
 
+export function resetCartCache() {
+    authPromise = null;
+    isSyncingCart = false;
+}
+
 export function useCart() {
     const dispatch = useAppDispatch();
 

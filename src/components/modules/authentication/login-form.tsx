@@ -21,6 +21,8 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Mail, Lock, LogIn, Sparkles, Facebook } from "lucide-react";
 import * as z from "zod";
 import { Roles } from "@/constants/roles";
+import { useAppDispatch } from "@/redux/hooks";
+import { handleAuthChange } from "@/lib/auth-sync";
 
 interface User {
   id: string;
@@ -49,6 +51,7 @@ const DEMO_CREDENTIALS = {
 
 export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,6 +88,7 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
         }
 
         toast.success("Logged in successfully!", { id: toastId });
+        handleAuthChange(dispatch, false);
 
         // Redirect based on role
         const userData = response.data?.user as User;
@@ -153,6 +157,7 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
       }
 
       toast.success(`Logged in as ${role.toUpperCase()}!`, { id: toastId });
+      handleAuthChange(dispatch, false);
       router.push("/");
     } catch (error) {
       toast.error("Something went wrong. Please try again.", { id: toastId });

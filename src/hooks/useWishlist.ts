@@ -17,6 +17,11 @@ import { IWishlistItem } from "@/redux/features/wishlist/wishlist.type";
 let authPromise: Promise<{ isAuthenticated: boolean }> | null = null;
 let isFetchingWishlist = false;
 
+export function resetWishlistCache() {
+    authPromise = null;
+    isFetchingWishlist = false;
+}
+
 export function useWishlist() {
     const dispatch = useAppDispatch();
 
@@ -73,7 +78,17 @@ export function useWishlist() {
         try {
             const result = await getWishlist(1, 100);
             if (result.success && result.data?.items) {
-                dispatch(setWishlist(result.data.items));
+                let allItems = result.data.items;
+                const pagination = result.data.pagination;
+                if (pagination && pagination.totalPages > 1) {
+                    for (let p = 2; p <= Math.min(pagination.totalPages, 5); p++) {
+                        const nextRes = await getWishlist(p, 100);
+                        if (nextRes.success && nextRes.data?.items) {
+                            allItems = [...allItems, ...nextRes.data.items];
+                        }
+                    }
+                }
+                dispatch(setWishlist(allItems));
             }
         } catch (error) {
             console.error("Failed to load wishlist:", error);
